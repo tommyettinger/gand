@@ -1,7 +1,8 @@
 package com.github.tommyettinger.gand.algorithms;
 
+import com.badlogic.gdx.utils.BinaryHeap;
 import com.github.tommyettinger.gand.Array;
-import com.github.tommyettinger.gand.BinaryHeap;
+
 import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Node;
 import com.github.tommyettinger.gand.Path;
@@ -13,7 +14,7 @@ public class AStarSearch<V> extends Algorithm<V> {
     private Heuristic<V> heuristic;
     private SearchProcessor<V> processor;
     private SearchStep<V> step = new SearchStep<>();
-    private final BinaryHeap heap;
+    private final BinaryHeap<Node<V>> heap;
     private Node<V> start, target, u, end;
     private Path<V> path;
 
@@ -23,7 +24,7 @@ public class AStarSearch<V> extends Algorithm<V> {
         this.target = target;
         this.heuristic = heuristic;
         this.processor = processor;
-        heap = new BinaryHeap();
+        heap = new BinaryHeap<>();
         start.resetAlgorithmAttribs(id);
         start.setDistance(0);
         heap.add(start);

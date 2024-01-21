@@ -23,17 +23,26 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
+import com.badlogic.gdx.utils.BinaryHeap;
+
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class Node<V> {
+public class Node<V> extends BinaryHeap.Node {
 
     //================================================================================
     // Graph structure related members
     //================================================================================
 
+    private static final AtomicInteger ID_GENERATOR = new AtomicInteger(1);
+    private static int update(int x) {
+        // should be GWT-friendly
+        return x * 0x125493 ^ 0xD1B54A35;
+    }
     final int idHash;
+
     final V object;
 
     Map<Node<V>, Connection<V>> neighbours = new LinkedHashMap<>();
@@ -54,9 +63,10 @@ public class Node<V> {
     //================================================================================
 
     Node(V v, boolean trackInEdges, int objectHash) {
+        super(0f);
         this.object = v;
         this.objectHash = objectHash;
-        idHash = System.identityHashCode(this);
+        idHash = ID_GENERATOR.updateAndGet(Node::update);
         if (trackInEdges) setInEdges(new Array<>());
     }
 
@@ -206,7 +216,7 @@ public class Node<V> {
     //================================================================================
 
     int heapIndex;
-    float heapValue;
+    protected float heapValue;
 
     //================================================================================
     // Misc
@@ -243,5 +253,14 @@ public class Node<V> {
 
     public void setInEdges(Array<Connection<V>> inEdges) {
         this.inEdges = inEdges;
+    }
+
+    @Override
+    public float getValue() {
+        return heapValue;
+    }
+
+    public void setValue(float value) {
+        this.heapValue = value;
     }
 }
