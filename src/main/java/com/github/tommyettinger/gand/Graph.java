@@ -75,7 +75,10 @@ public abstract class Graph<V> {
 
     Graph(Graph<V> graph) {
         this(graph.getVertices());
-        graph.getEdges().forEach(this::addEdge);
+        for(Connection<V> edge : graph.edgeMap.values()){
+            addEdge(edge);
+        }
+//        graph.getEdges().forEach(this::addEdge);
     }
 
     //================================================================================

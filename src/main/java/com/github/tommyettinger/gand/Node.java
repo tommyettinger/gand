@@ -54,7 +54,6 @@ public class Node<V> extends BinaryHeap.Node {
     //================================================================================
 
     final int objectHash;
-    int mapHash;
     Node<V> nextInOrder = null, prevInOrder = null;
     Node<V> nextInBucket = null;
 

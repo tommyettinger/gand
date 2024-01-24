@@ -99,7 +99,6 @@ class NodeMap<V> {
         if (bucketHead == null) {
             // first in bucket
             bucketHead = new Node<>(v, graph.isDirected(), hash);
-            bucketHead.mapHash = hash;
             table[i] = bucketHead;
             size++;
             occupiedBuckets++;
@@ -116,7 +115,6 @@ class NodeMap<V> {
         }
 
         currentNode = new Node<>(v, graph.isDirected(), hash);
-        currentNode.mapHash = hash;
         previousNode.nextInBucket = currentNode;
         size++;
         addToList(currentNode);
@@ -228,7 +226,7 @@ class NodeMap<V> {
                 if (oldTable[i] != null) {
                     Node<V> tail1 = null, tail2 = null, current = oldTable[i];
                     while (current != null) {
-                        int newIndex = getIndex(current.mapHash, newLength);
+                        int newIndex = getIndex(current.objectHash, newLength);
                         if (newIndex == i) {
                             if (tail1 == null) {
                                 newTable[newIndex] = current;
@@ -286,7 +284,7 @@ class NodeMap<V> {
      * Get the hash used to calculate the index in the table at which the Node<V> associated with
      * v would be held.
      */
-    static int hash(Object v) {
+    protected int hash(Object v) {
         int hashcode = v.hashCode();
         return hashcode ^ (hashcode >>> 16);
     }
