@@ -24,8 +24,7 @@ SOFTWARE.
 
 package com.github.tommyettinger.gand;
 
-import java.util.Comparator;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * A hash structure with objects of type V as keys and Node<V> objects as values.
@@ -34,7 +33,7 @@ import java.util.Iterator;
  *
  */
 
-class NodeMap<V> {
+class NodeMap<V> implements Iterable<Node<V>> {
 
     final Graph<V> graph;
 
@@ -49,10 +48,13 @@ class NodeMap<V> {
     static final int MIN_TABLE_LENGTH = 32;
     static final float RESIZE_THRESHOLD = 0.7f;
     int threshold = (int) (RESIZE_THRESHOLD * MIN_TABLE_LENGTH);
+    int hashTotal = 1;
 
     // collections for returning to the user
     VertexCollection<V> vertexCollection;
     NodeCollection<V> nodeCollection;
+    transient NodeIterator<V> values1;
+    transient NodeIterator<V> values2;
 
     @SuppressWarnings("unchecked")
     public NodeMap(Graph<V> graph) {
@@ -125,6 +127,7 @@ class NodeMap<V> {
      * Add the node to the tail of the linked list.
      */
     void addToList(Node<V> node) {
+        hashTotal += node.idHash;
         if (head == null) {
             head = node;
             tail = node;
@@ -139,6 +142,7 @@ class NodeMap<V> {
      * Insert the node at a specific point in the linked list.
      */
     void insertIntoList(Node<V> v, Node<V> at, boolean before) {
+        hashTotal += v.idHash;
         if (before) {
             v.nextInOrder = at;
             v.prevInOrder = at.prevInOrder;
@@ -197,6 +201,7 @@ class NodeMap<V> {
      * Remove the node from the linked list.
      */
     void removeFromList(Node<V> node) {
+        hashTotal += node.idHash;
         if (head == node) {
             head = node.nextInOrder;
             if (head != null) head.prevInOrder = null;
@@ -267,6 +272,7 @@ class NodeMap<V> {
         occupiedBuckets = 0;
         head = null;
         tail = null;
+        hashTotal = 1;
     }
 
     /**
@@ -284,9 +290,34 @@ class NodeMap<V> {
      * Get the hash used to calculate the index in the table at which the Node<V> associated with
      * v would be held.
      */
-    protected int hash(Object v) {
+    int hash(Object v) {
         int hashcode = v.hashCode();
         return hashcode ^ (hashcode >>> 16);
+    }
+
+    /**
+     * Returns an Iterator over the Node items this holds. Remove is not supported.
+     * Note that the same iterator is returned each time this method is called. Use the {@link NodeIterator} constructor
+     * for nested or multithreaded iteration.
+     *
+     * @return an {@link Iterator} over {@link Node} of V values
+     */
+    @Override
+    public NodeIterator<V> iterator() {
+        if (values1 == null || values2 == null) {
+            values1 = new NodeIterator<>(this);
+            values2 = new NodeIterator<>(this);
+        }
+        if (!values1.valid) {
+            values1.reset();
+            values1.valid = true;
+            values2.valid = false;
+            return values1;
+        }
+        values2.reset();
+        values2.valid = true;
+        values1.valid = false;
+        return values2;
     }
 
     /**
@@ -296,9 +327,15 @@ class NodeMap<V> {
 
         final NodeMap<V> nodeMap;
         Node<V> current;
+        boolean valid = true;
 
         NodeIterator(NodeMap<V> nodeMap) {
             this.nodeMap = nodeMap;
+            current = nodeMap.head;
+            reset();
+        }
+
+        public void reset () {
             current = nodeMap.head;
         }
 
@@ -473,5 +510,27 @@ class NodeMap<V> {
         return sb.append("--------------").toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
+        NodeMap<?> nodeMap = (NodeMap<?>) o;
+
+        if (size != nodeMap.size) return false;
+
+        if (!Objects.equals(head, nodeMap.head)) return false;
+        if (!Objects.equals(tail, nodeMap.tail)) return false;
+        NodeIterator<V> it = iterator();
+        NodeIterator<?> ot = nodeMap.iterator();
+        while (it.hasNext() && ot.hasNext()){
+            if(!Objects.equals(it.next(), ot.next())) return false;
+        }
+        return it.hasNext() == ot.hasNext();
+    }
+
+    @Override
+    public int hashCode() {
+        return hashTotal;
+    }
 }
