@@ -17,8 +17,6 @@
 
 package com.github.tommyettinger.gand.function;
 
-import com.github.tommyettinger.gand.function.ObjToFloatFunction;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;

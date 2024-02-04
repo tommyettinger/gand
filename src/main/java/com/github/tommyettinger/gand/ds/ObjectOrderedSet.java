@@ -26,10 +26,10 @@ import static com.github.tommyettinger.gand.ds.Utilities.tableSize;
  * allocation is done except when growing the table size.
  * <p>
  * {@link #iterator() Iteration} is ordered and faster than an unordered set. Keys can also be accessed and the order changed
- * using {@link #orderedItems()}. There is some additional overhead for put and remove.
+ * using {@link #order()}. There is some additional overhead for put and remove.
  * <p>
  * This class performs fast contains (typically O(1), worst case O(n) but that is rare in practice). Remove is somewhat slower due
- * to {@link #orderedItems()}. Add may be slightly slower, depending on hash collisions. Load factors greater than 0.9 greatly increase
+ * to {@link #order()}. Add may be slightly slower, depending on hash collisions. Load factors greater than 0.9 greatly increase
  * the chances to resize to the next higher POT size.
  * <p>
  * Unordered sets and maps are not designed to provide especially fast iteration. Iteration is faster with ordered types
@@ -273,7 +273,7 @@ public class ObjectOrderedSet<T> extends ObjectSet<T> {
 	 *
 	 * @return the ObjectList of items, in iteration order (usually insertion-order), that this uses
 	 */
-	public ObjectList<T> orderedItems() {
+	public ObjectList<T> order() {
 		return items;
 	}
 
@@ -324,7 +324,7 @@ public class ObjectOrderedSet<T> extends ObjectSet<T> {
 	}
 
 	/**
-	 * Iterates through items in the same order as {@link #orderedItems()}.
+	 * Iterates through items in the same order as {@link #order()}.
 	 * Reuses one of two iterators, and does not permit nested iteration;
 	 * use {@link ObjectOrderedSetIterator#ObjectOrderedSetIterator(ObjectOrderedSet)} to nest iterators.
 	 *
