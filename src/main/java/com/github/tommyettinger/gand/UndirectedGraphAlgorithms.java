@@ -16,26 +16,25 @@
 package com.github.tommyettinger.gand;
 
 /**
- * Abstract superclass of any connection between nodes on a graph.
+ * Algorithms specific to undirected graphs, like {@link UndirectedGraph}, as well as general {@link Algorithms}.
+ * Currently, this only adds a {@link #findMinimumWeightSpanningTree()} method.
  * @param <V> the vertex type; often {@link com.badlogic.gdx.math.Vector2}
  * @author earlygrey
  */
-public abstract class Edge<V> {
-    public Edge(){}
+public class UndirectedGraphAlgorithms<V> extends Algorithms<V> {
 
-    public abstract V getA();
-    public abstract V getB();
-
-    public abstract boolean hasEndpoints(V u, V v);
-    public boolean hasEndpoint(V u) {
-        return getA().equals(u) || getB().equals(u);
+    UndirectedGraphAlgorithms(UndirectedGraph<V> graph) {
+        super(graph);
     }
 
-    public abstract float getWeight();
-    public abstract void setWeight(float weight);
+    /**
+     * Find a minimum weight spanning tree using Kruskal's algorithm.
+     * @return a Graph object containing a minimum weight spanning tree (if this graph is connected -
+     * in general a minimum weight spanning forest)
+     */
+    public Graph<V> findMinimumWeightSpanningTree() {
+        return implementations.kruskalsMinimumWeightSpanningTree(true);
+    }
 
-    protected abstract Node<V> getInternalNodeA();
-    protected abstract Node<V> getInternalNodeB();
 
-    protected abstract void set(Node<V> a, Node<V> b, float weight);
 }
