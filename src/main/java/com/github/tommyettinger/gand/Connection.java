@@ -33,7 +33,7 @@ public abstract class Connection<V> extends Edge<V> {
 
     Node<V> a, b;
 
-    WeightFunction<V> weight;
+    float weight;
 
     //================================================================================
     // Constructor
@@ -47,8 +47,7 @@ public abstract class Connection<V> extends Edge<V> {
     // Internal methods
     //================================================================================
 
-    @Override
-    void set(Node<V> a, Node<V> b, WeightFunction<V> weight) {
+    void set(Node<V> a, Node<V> b, float weight) {
         this.a = a;
         this.b = b;
         setWeight(weight);
@@ -80,22 +79,12 @@ public abstract class Connection<V> extends Edge<V> {
 
     @Override
     public float getWeight() {
-        return weight.getWeight(getA(), getB());
+        return weight;
     }
 
     @Override
     public void setWeight(float weight) {
-        setWeight((a, b) -> weight);
-    }
-
-    @Override
-    public void setWeight(WeightFunction<V> weight) {
         this.weight = weight;
-    }
-
-    @Override
-    public WeightFunction<V> getWeightFunction() {
-        return weight;
     }
 
     public Node<V> getNodeA() {
@@ -128,7 +117,7 @@ public abstract class Connection<V> extends Edge<V> {
 
         @Override
         public int hashCode() {
-            return (int) (a.hashCode() * 0xC13FA9A902A6328FL +(b.hashCode() * 0x91E10DA5C79E7B1DL) >>> 32);
+            return a.hashCode() * 107 + b.hashCode();
         }
 
         @Override
@@ -160,14 +149,14 @@ public abstract class Connection<V> extends Edge<V> {
         }
 
         @Override
-        public void setWeight(WeightFunction<V> weight) {
+        public void setWeight(float weight) {
             this.weight = weight;
             linked.weight = this.weight;
         }
 
         @Override
         public int hashCode() {
-            return a.hashCode() ^ (b.hashCode() >>> 32);
+            return a.hashCode() ^ b.hashCode();
         }
 
         @Override

@@ -1,19 +1,19 @@
 package com.github.tommyettinger.gand.algorithms;
 
-import java.util.ArrayDeque;
-import java.util.Comparator;
-import java.util.Queue;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.badlogic.gdx.utils.NumberUtils;
 import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Edge;
 import com.github.tommyettinger.gand.Node;
 import com.github.tommyettinger.gand.UndirectedGraph;
+import com.github.tommyettinger.gand.utils.ObjectDeque;
 
 public class MinimumWeightSpanningTree<V> extends Algorithm<V>{
 
     private UndirectedGraph<V> spanningTree;
-    private Queue<Connection<V>> edgeQueue;
+    private ObjectDeque<Connection<V>> edgeQueue;
     private int finishAt;
 
     // adapted from https://www.baeldung.com/java-spanning-trees-kruskal
@@ -25,9 +25,11 @@ public class MinimumWeightSpanningTree<V> extends Algorithm<V>{
 
         spanningTree.addVertices(graph.getVertices());
 
-        edgeQueue = graph.internals().getConnections().stream()
-                .sorted(minSpanningTree ? Comparator.comparing(Edge<V>::getWeight) : Comparator.comparing(Edge<V>::getWeight).reversed())
-                .collect(Collectors.toCollection(ArrayDeque::new));
+        edgeQueue = new ObjectDeque<>(graph.internals().getConnections());
+        if(minSpanningTree)
+            edgeQueue.sort((a, b) -> NumberUtils.floatToIntBits(a.getWeight() - b.getWeight() + 0f));
+        else
+            edgeQueue.sort((a, b) -> NumberUtils.floatToIntBits(b.getWeight() - a.getWeight() + 0f));
 
         finishAt = graph.isConnected() ? graph.size() - 1 : -1;
     }
@@ -41,7 +43,7 @@ public class MinimumWeightSpanningTree<V> extends Algorithm<V>{
         if (doesEdgeCreateCycle(edge.getNodeA(), edge.getNodeB(), id)) {
             return false;
         }
-        spanningTree.addEdge(edge.getA(), edge.getB(), edge.getWeightFunction());
+        spanningTree.addEdge(edge.getA(), edge.getB(), edge.getWeight());
 
         return isFinished();
     }

@@ -54,7 +54,7 @@ public abstract class Graph<V> {
 
     final Internals<V> internals = new Internals<>(this);
 
-    private WeightFunction<V> defaultEdgeWeight = (a, b) -> 1;
+    private float defaultEdgeWeight = 1;
 
 
     //================================================================================
@@ -179,7 +179,7 @@ public abstract class Graph<V> {
      * @return the edge
      */
     public Connection<V> addEdge(V v, V w) {
-        return addEdge(v, w, getDefaultEdgeWeightFunction());
+        return addEdge(v, w, getDefaultEdgeWeight());
     }
 
     /**
@@ -193,7 +193,7 @@ public abstract class Graph<V> {
     public Connection<V> addEdge(Edge<V> edge) {
         addVertex(edge.getA());
         addVertex(edge.getB());
-        return addEdge(edge.getA(), edge.getB(), edge.getWeightFunction());
+        return addEdge(edge.getA(), edge.getB(), edge.getWeight());
     }
 
     /**
@@ -206,25 +206,12 @@ public abstract class Graph<V> {
      * @return the edge
      */
     public Connection<V> addEdge(V v, V w, float weight) {
-        return addEdge(v, w, (a, b) -> weight);
-    }
-
-    /**
-     * Add an edge to the graph, from v to w and with the specified weight.
-     * If there is already an edge between v and w, its weight will be set to the specified weight.
-     *
-     * @param v              the tail vertex of the edge
-     * @param w              the head vertex of the edge
-     * @param weightFunction a function which will return the weight of the edge
-     * @return the edge
-     */
-    public Connection<V> addEdge(V v, V w, WeightFunction<V> weightFunction) {
         if (v == null || w == null) Errors.throwNullVertexException();
         if (v.equals(w)) Errors.throwSameVertexException();
         Node<V> a = getNode(v);
         Node<V> b = getNode(w);
         if (a == null || b == null) Errors.throwVertexNotInGraphVertexException(true);
-        return addConnection(a, b, weightFunction);
+        return addConnection(a, b, weight);
     }
 
     /**
@@ -301,10 +288,10 @@ public abstract class Graph<V> {
 
     Connection<V> addConnection(Node<V> a, Node<V> b) {
         Connection<V> e = a.getEdge(b);
-        return e != null ? e : addConnection(a, b, getDefaultEdgeWeightFunction());
+        return e != null ? e : addConnection(a, b, getDefaultEdgeWeight());
     }
 
-    Connection<V> addConnection(Node<V> a, Node<V> b, WeightFunction<V> weight) {
+    Connection<V> addConnection(Node<V> a, Node<V> b, float weight) {
         Connection<V> e = a.getEdge(b);
         if (e == null) {
             e = obtainEdge();
@@ -444,32 +431,21 @@ public abstract class Graph<V> {
     }
 
     /**
-     * Get the current default edge weight function. If none has been set, the default is a function returning the constant value 1f.
+     * Get the current default edge weight. If none has been set, the default is 1f.
      *
-     * @return the current default edge weight function
+     * @return the current default edge weight
      */
-    public WeightFunction<V> getDefaultEdgeWeightFunction() {
+    public float getDefaultEdgeWeight() {
         return defaultEdgeWeight;
     }
 
     /**
-     * Set the default edge weight function, which will be given to every edge for which the edge weight function is not specified.
-     * See {@link WeightFunction}.
+     * Set the default edge weight, which will be given to every edge for which the edge weight is not specified.
      *
-     * @param defaultEdgeWeight the edge weight function
+     * @param defaultEdgeWeight the edge weight
      */
-    public void setDefaultEdgeWeight(WeightFunction<V> defaultEdgeWeight) {
+    public void setDefaultEdgeWeight(float defaultEdgeWeight) {
         this.defaultEdgeWeight = defaultEdgeWeight;
-    }
-
-    /**
-     * Sets the default edge weight, which will be given to every edge for which the edge weight is not specified.
-     * Note that this actually sets the default edge weight function to a constant function returning the specified weight.
-     *
-     * @param weight the fixed value of the edge weight
-     */
-    public void setDefaultEdgeWeight(float weight) {
-        this.defaultEdgeWeight = (a, b) -> weight;
     }
 
     /**

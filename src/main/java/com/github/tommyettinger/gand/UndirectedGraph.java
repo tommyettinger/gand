@@ -63,7 +63,7 @@ public class UndirectedGraph<V> extends Graph<V> {
     }
 
     @Override
-    Connection<V> addConnection(Node<V> a, Node<V> b, WeightFunction<V> weight) {
+    Connection<V> addConnection(Node<V> a, Node<V> b, float weight) {
         Connection<V> e = a.getEdge(b);
         if (e == null) {
             UndirectedConnection<V> e1 = obtainEdge(), e2 = obtainEdge();
@@ -84,7 +84,7 @@ public class UndirectedGraph<V> extends Graph<V> {
     @Override
     Connection<V> addConnection(Node<V> a, Node<V> b) {
         Connection<V> e = a.getEdge(b);
-        return e != null ? edgeMap.get(e) : addConnection(a, b, getDefaultEdgeWeightFunction());
+        return e != null ? edgeMap.get(e) : addConnection(a, b, getDefaultEdgeWeight());
     }
 
     @Override

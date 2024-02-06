@@ -48,7 +48,7 @@ public class Internals<V> {
         return graph.edgeMap.values();
     }
 
-    public void addConnection(Node<V> a, Node<V> b, WeightFunction<V> weightFunction) {
+    public void addConnection(Node<V> a, Node<V> b, float weightFunction) {
         graph.addConnection(a, b, weightFunction);
     }
 }

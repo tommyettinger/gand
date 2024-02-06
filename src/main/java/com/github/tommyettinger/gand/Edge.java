@@ -39,12 +39,10 @@ public abstract class Edge<V> {
 
     public abstract float getWeight();
     public abstract void setWeight(float weight);
-    public abstract void setWeight(WeightFunction<V> weightFunction);
-    abstract WeightFunction<V> getWeightFunction();
 
     abstract Node<V> getInternalNodeA();
     abstract Node<V> getInternalNodeB();
 
     //abstract void set(Node<V> a, Node<V> b);
-    abstract void set(Node<V> a, Node<V> b, WeightFunction<V> weightFunction);
+    abstract void set(Node<V> a, Node<V> b, float weightFunction);
 }
