@@ -23,8 +23,6 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand.algorithms;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.github.tommyettinger.gand.Errors;
 import com.github.tommyettinger.gand.Graph;
 import com.github.tommyettinger.gand.Node;
@@ -35,14 +33,14 @@ import com.github.tommyettinger.gand.utils.SearchProcessor;
 public abstract class Algorithms<V> {
 
     protected final Graph<V> graph;
-    private AtomicInteger runID = new AtomicInteger();
+    private final int[] runID = {0};
 
     Algorithms(Graph<V> graph) {
         this.graph = graph;
     }
 
     public int requestRunID() {
-        return runID.getAndIncrement();
+        return runID[0]++;
     }
 
     //--------------------
