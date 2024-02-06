@@ -21,30 +21,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
+
 package com.github.tommyettinger.gand;
+
+import java.util.Collection;
 
 import com.github.tommyettinger.gand.utils.WeightFunction;
 
-public abstract class Edge<V> {
+public class Internals<V> {
 
+    final Graph<V> graph;
 
-    Edge(){}
-    
-    public abstract V getA();
-    public abstract V getB();
-    public abstract boolean hasEndpoints(V u, V v);
-    public boolean hasEndpoint(V u) {
-        return getA().equals(u) || getB().equals(u);
+    Internals(Graph<V> graph) {
+        this.graph = graph;
     }
 
-    public abstract float getWeight();
-    public abstract void setWeight(float weight);
-    public abstract void setWeight(WeightFunction<V> weightFunction);
-    abstract WeightFunction<V> getWeightFunction();
+    public Node<V> getNode(V v) {
+        return graph.getNode(v);
+    }
 
-    abstract Node<V> getInternalNodeA();
-    abstract Node<V> getInternalNodeB();
+    public Collection<Node<V>> getNodes() {
+        return graph.nodeMap.nodeCollection;
+    }
 
-    //abstract void set(Node<V> a, Node<V> b);
-    abstract void set(Node<V> a, Node<V> b, WeightFunction<V> weightFunction);
+    public Collection<Connection<V>> getConnections() {
+        return graph.edgeMap.values();
+    }
+
+    public void addConnection(Node<V> a, Node<V> b, WeightFunction<V> weightFunction) {
+        graph.addConnection(a, b, weightFunction);
+    }
 }

@@ -21,8 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-package com.github.tommyettinger.gand;
+package com.github.tommyettinger.old;
 
+import com.badlogic.gdx.math.Vector2;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -34,8 +35,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.github.tommyettinger.gand.TestUtils.Vector2;
-import com.github.tommyettinger.gand.utils.BadHashInteger;
+import com.github.tommyettinger.old.utils.BadHashInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -55,74 +55,74 @@ public class GraphTest {
             list.add(i);
         }
 
-        assertEquals(n, graph.size());
+        Assert.assertEquals(n, graph.size());
 
         Integer counter = 0;
         for (Integer v : graph.getVertices()) {
-            assertEquals(counter++, v);
-            assertTrue(graph.contains(v));
+            Assert.assertEquals(counter++, v);
+            Assert.assertTrue(graph.contains(v));
         }
 
         for (int j = 0; j < n/2; j++) {
             boolean wasInGraph = graph.removeVertex(j);
-            assertTrue(wasInGraph);
-            assertFalse(graph.contains(j));
+            Assert.assertTrue(wasInGraph);
+            Assert.assertFalse(graph.contains(j));
         }
 
-        assertEquals(n - n/2, graph.size());
+        Assert.assertEquals(n - n/2, graph.size());
 
         graph.removeAllVertices();
-        assertEquals(0, graph.size());
+        Assert.assertEquals(0, graph.size());
 
         Collections.shuffle(list, new Random(123));
 
         for (Integer i : list) {
-            assertTrue(graph.addVertex(i));
+            Assert.assertTrue(graph.addVertex(i));
         }
 
-        assertEquals(n, graph.size());
+        Assert.assertEquals(n, graph.size());
 
         counter = 0;
         for (Integer v : graph.getVertices()) {
-            assertEquals(list.get(counter++), v);
-            assertTrue(graph.contains(v));
+            Assert.assertEquals(list.get(counter++), v);
+            Assert.assertTrue(graph.contains(v));
         }
 
         for (int j = 0; j < n/2; j++) {
-            assertFalse(graph.addVertex(list.get(j)));
+            Assert.assertFalse(graph.addVertex(list.get(j)));
         }
 
         graph.removeAllVertices();
 
         for (int j = 0; j < n/2; j++) {
-            assertTrue(graph.addVertex(list.get(j)));
+            Assert.assertTrue(graph.addVertex(list.get(j)));
         }
 
-        assertEquals(n - n/2, graph.size());
+        Assert.assertEquals(n - n/2, graph.size());
 
 
         graph = new UndirectedGraph<>(IntStream.range(0, n).mapToObj(i -> i).collect(Collectors.toList()));
         graph.removeVertexIf(i -> i % 2 == 0);
 
         for (int i = 0; i < n; i+=2) {
-            assertFalse("Vertex not removed", graph.contains(i));
+            Assert.assertFalse("Vertex not removed", graph.contains(i));
             list.add(i);
         }
         for (int i = 1; i < n; i+=2) {
-            assertTrue("Vertex incorrectly removed", graph.contains(i));
+            Assert.assertTrue("Vertex incorrectly removed", graph.contains(i));
             list.add(i);
         }
 
 
-        UndirectedGraph<BadHashInteger> badGraph = new UndirectedGraph<>(IntStream.range(0, n).mapToObj(i -> new BadHashInteger(i)).collect(Collectors.toList()));
+        UndirectedGraph<BadHashInteger> badGraph = new UndirectedGraph<>(IntStream.range(0, n).mapToObj(BadHashInteger::new).collect(Collectors.toList()));
         badGraph.removeVertexIf(i -> i.value() % 2 == 0);
 
         for (int i = 0; i < n; i+=2) {
-            assertFalse("Vertex not removed", badGraph.contains(new BadHashInteger(i)));
+            Assert.assertFalse("Vertex not removed", badGraph.contains(new BadHashInteger(i)));
             list.add(i);
         }
         for (int i = 1; i < n; i+=2) {
-            assertTrue("Vertex incorrectly removed", badGraph.contains(new BadHashInteger(i)));
+            Assert.assertTrue("Vertex incorrectly removed", badGraph.contains(new BadHashInteger(i)));
             list.add(i);
         }
     }
@@ -141,13 +141,13 @@ public class GraphTest {
             graph.addEdge(i, i+1);
         }
 
-        assertEquals(n, graph.size());
-        assertEquals(n-1, graph.getEdgeCount());
+        Assert.assertEquals(n, graph.size());
+        Assert.assertEquals(n-1, graph.getEdgeCount());
 
         graph.removeVertex(n/2);
 
-        assertEquals(n-1, graph.size());
-        assertEquals(n-3, graph.getEdgeCount());
+        Assert.assertEquals(n-1, graph.size());
+        Assert.assertEquals(n-3, graph.getEdgeCount());
     }
 
     @Test
@@ -164,13 +164,13 @@ public class GraphTest {
             graph.addEdge(i, i+1);
         }
 
-        assertEquals(n, graph.size());
-        assertEquals(n-1, graph.getEdgeCount());
+        Assert.assertEquals(n, graph.size());
+        Assert.assertEquals(n-1, graph.getEdgeCount());
 
         graph.disconnect(n/2);
 
-        assertEquals(n, graph.size());
-        assertEquals(n-3, graph.getEdgeCount());
+        Assert.assertEquals(n, graph.size());
+        Assert.assertEquals(n-3, graph.getEdgeCount());
     }
 
     @Test
@@ -180,34 +180,34 @@ public class GraphTest {
         Graph<Vector2> diGraph = TestUtils.makeGridGraph(new DirectedGraph<>(), n);
 
         int expectedUndirected = 2*n*(n-1), expectedDirected = 2 * 2*n*(n-1);
-        assertEquals("Expected edge count not correct", expectedUndirected, undirectedGraph.getEdgeCount());
-        assertEquals("Expected edge count not correct", expectedDirected, diGraph.getEdgeCount());
+        Assert.assertEquals("Expected edge count not correct", expectedUndirected, undirectedGraph.getEdgeCount());
+        Assert.assertEquals("Expected edge count not correct", expectedDirected, diGraph.getEdgeCount());
 
         int edgeCount = 0;
         for (Vector2 v : undirectedGraph.getVertices()) {
             edgeCount += undirectedGraph.getEdges(v).size();
         }
-        assertEquals("Expected edge count not correct", expectedUndirected, edgeCount / 2); // counted each edge twice
+        Assert.assertEquals("Expected edge count not correct", expectedUndirected, edgeCount / 2); // counted each edge twice
 
         edgeCount = 0;
         for (Vector2 v : diGraph.getVertices()) {
             edgeCount += diGraph.getEdges(v).size();
         }
-        assertEquals("Expected edge count not correct", expectedDirected, edgeCount);
+        Assert.assertEquals("Expected edge count not correct", expectedDirected, edgeCount);
 
         undirectedGraph.removeEdge(new Vector2(0,0), new Vector2(1,0));
         undirectedGraph.removeEdge(new Vector2(0,0), new Vector2(0,1));
         diGraph.removeEdge(new Vector2(0,0), new Vector2(1,0));
         diGraph.removeEdge(new Vector2(0,0), new Vector2(0,1));
 
-        assertEquals("Two edges were not removed", expectedUndirected-2, undirectedGraph.getEdgeCount());
-        assertEquals("Two edges were not removed", expectedDirected-2, diGraph.getEdgeCount());
+        Assert.assertEquals("Two edges were not removed", expectedUndirected-2, undirectedGraph.getEdgeCount());
+        Assert.assertEquals("Two edges were not removed", expectedDirected-2, diGraph.getEdgeCount());
 
 
         undirectedGraph.removeAllEdges();
-        assertEquals("Not all edges removed", 0, undirectedGraph.getEdgeCount());
+        Assert.assertEquals("Not all edges removed", 0, undirectedGraph.getEdgeCount());
         diGraph.removeAllEdges();
-        assertEquals("Not all edges removed", 0, diGraph.getEdgeCount());
+        Assert.assertEquals("Not all edges removed", 0, diGraph.getEdgeCount());
 
 
         // check removing single edge functions appropriatedly for directed and undirected graphs
@@ -217,10 +217,10 @@ public class GraphTest {
         undirectedGraph.removeEdge(new Vector2(0,0), new Vector2(1,0));
         diGraph.removeEdge(new Vector2(0,0), new Vector2(1,0));
 
-        assertFalse("Edge not removed", undirectedGraph.edgeExists(new Vector2(0,0), new Vector2(1,0)));
-        assertFalse("Edge not removed", undirectedGraph.edgeExists(new Vector2(1,0), new Vector2(0,0)));
-        assertFalse("Edge not removed", diGraph.edgeExists(new Vector2(0,0), new Vector2(1,0)));
-        assertTrue("Both directed edges removed", diGraph.edgeExists(new Vector2(1,0), new Vector2(0,0)));
+        Assert.assertFalse("Edge not removed", undirectedGraph.edgeExists(new Vector2(0,0), new Vector2(1,0)));
+        Assert.assertFalse("Edge not removed", undirectedGraph.edgeExists(new Vector2(1,0), new Vector2(0,0)));
+        Assert.assertFalse("Edge not removed", diGraph.edgeExists(new Vector2(0,0), new Vector2(1,0)));
+        Assert.assertTrue("Both directed edges removed", diGraph.edgeExists(new Vector2(1,0), new Vector2(0,0)));
 
         // check removeEdgeIf
         undirectedGraph = TestUtils.makeGridGraph(new UndirectedGraph<>(), n);
@@ -230,14 +230,14 @@ public class GraphTest {
         undirectedGraph.removeEdgeIf(e -> e.hasEndpoint(v1) || e.hasEndpoint(v2));
         diGraph.removeEdgeIf(e -> e.getA().equals(v1) || e.getA().equals(v2));
 
-        assertEquals("Undirected eges not removed via removeEdgeIf", expectedUndirected - 7, undirectedGraph.getEdgeCount() );
-        assertEquals("Directed edges not removed via removeEdgeIf", expectedDirected - 8, diGraph.getEdgeCount());
+        Assert.assertEquals("Undirected eges not removed via removeEdgeIf", expectedUndirected - 7, undirectedGraph.getEdgeCount() );
+        Assert.assertEquals("Directed edges not removed via removeEdgeIf", expectedDirected - 8, diGraph.getEdgeCount());
 
         for (Edge<Vector2> e : undirectedGraph.getEdges()) {
-            assertFalse("Edge not removed via removeEdgeIf", e.hasEndpoint(v1) || e.hasEndpoint(v2));
+            Assert.assertFalse("Edge not removed via removeEdgeIf", e.hasEndpoint(v1) || e.hasEndpoint(v2));
         }
         for (Edge<Vector2> e : diGraph.getEdges()) {
-            assertFalse("Edge not removed via removeEdgeIf", e.getA().equals(v1) || e.getA().equals(v2));
+            Assert.assertFalse("Edge not removed via removeEdgeIf", e.getA().equals(v1) || e.getA().equals(v2));
         }
 
     }
@@ -253,7 +253,7 @@ public class GraphTest {
         graph.sortVertices(Comparator.comparing(v -> v));
         int i = 0;
         for (Integer vertex : graph.getVertices()) {
-            assertEquals(Integer.valueOf(i++), vertex);
+            Assert.assertEquals(Integer.valueOf(i++), vertex);
         }
     }
 
@@ -270,7 +270,7 @@ public class GraphTest {
         graph.sortEdges(Comparator.comparing(Edge::getA));
         int i = 0;
         for (Edge<Integer> edge : graph.getEdges()) {
-            assertEquals(Integer.valueOf(i++), edge.getA());
+            Assert.assertEquals(Integer.valueOf(i++), edge.getA());
         }
     }
 }

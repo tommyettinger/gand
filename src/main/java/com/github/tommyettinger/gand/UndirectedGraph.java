@@ -1,30 +1,37 @@
 /*
- * Copyright (c) 2020-2024 See AUTHORS file.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+MIT License
+
+Copyright (c) 2020 earlygrey
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
 import java.util.Collection;
 
-/**
- * A kind of {@link Graph} where all connections between vertices are two-way and have equal cost for traveling A to B
- * or B to A.
- * @param <V> the vertex type; often {@link com.badlogic.gdx.math.Vector2}
- * @author earlygrey
- */
-public class UndirectedGraph<V> extends Graph<V>{
-    protected UndirectedGraphAlgorithms<V> algorithms;
+import com.github.tommyettinger.gand.Connection.UndirectedConnection;
+import com.github.tommyettinger.gand.algorithms.UndirectedGraphAlgorithms;
+import com.github.tommyettinger.gand.utils.WeightFunction;
+
+public class UndirectedGraph<V> extends Graph<V> {
+
+    UndirectedGraphAlgorithms<V> algorithms;
 
     //================================================================================
     // Constructors
@@ -40,39 +47,59 @@ public class UndirectedGraph<V> extends Graph<V>{
         algorithms = new UndirectedGraphAlgorithms<>(this);
     }
 
+    public UndirectedGraph(Graph<V> graph) {
+        super(graph);
+        algorithms = new UndirectedGraphAlgorithms<>(this);
+    }
+
 
     //================================================================================
     // Graph building
     //================================================================================
 
     @Override
-    protected Connection<V> obtainEdge() {
-        return new Connection.UndirectedConnection<>();
+    protected UndirectedConnection<V> obtainEdge() {
+        return new UndirectedConnection<>();
     }
 
     @Override
-    protected Connection<V> addConnection(Node<V> a, Node<V> b, float weight) {
-        Connection<V> e = a.addEdge(b, weight);
-        edgeSet.add(e);
-        b.addEdge(a, weight);
+    Connection<V> addConnection(Node<V> a, Node<V> b, WeightFunction<V> weight) {
+        Connection<V> e = a.getEdge(b);
+        if (e == null) {
+            UndirectedConnection<V> e1 = obtainEdge(), e2 = obtainEdge();
+            e1.link(e2);
+            e2.link(e1);
+            e1.set(a, b, weight);
+            e2.set(b, a, weight);
+            a.addEdge(e1);
+            b.addEdge(e2);
+            edgeMap.put(e1, e1);
+            e = e1;
+        } else {
+            e.setWeight(weight);
+        }
         return e;
     }
 
     @Override
-    protected boolean removeConnection(Node<V> a, Node<V> b) {
+    Connection<V> addConnection(Node<V> a, Node<V> b) {
+        Connection<V> e = a.getEdge(b);
+        return e != null ? edgeMap.get(e) : addConnection(a, b, getDefaultEdgeWeightFunction());
+    }
+
+    @Override
+    boolean removeConnection(Node<V> a, Node<V> b) {
         Connection<V> e = a.removeEdge(b);
         if (e == null) return false;
         b.removeEdge(a);
-        edgeSet.remove(e);
+        edgeMap.remove(e);
         return true;
     }
 
     @Override
-    protected Connection<V> getEdge(Node<V> a, Node<V> b) {
+    Connection<V> getEdge(Node<V> a, Node<V> b) {
         Connection<V> edge = a.getEdge(b);
-        if (edge == null) return null;
-        edge = edgeSet.get(edge);
-        return edge;
+        return edge == null ? null : edgeMap.get(edge); // get from map to ensure consistent instance is returned
     }
 
 
@@ -86,7 +113,7 @@ public class UndirectedGraph<V> extends Graph<V>{
     }
 
     @Override
-    protected Graph<V> createNew() {
+    public UndirectedGraph<V> createNew() {
         return new UndirectedGraph<>();
     }
 
@@ -95,8 +122,16 @@ public class UndirectedGraph<V> extends Graph<V>{
         return algorithms;
     }
 
-    @Override
-    public String toString() {
-        return "UndirectedGraph" + vertexMap.keySet();
+
+    //================================================================================
+    // Misc
+    //================================================================================
+
+    /**
+     * @return the degree of this vertex, or -1 if it is not in the graph
+     */
+    public int getDegree(V v) {
+        Node<V> node = getNode(v);
+        return node == null ? -1 : node.getOutDegree();
     }
 }

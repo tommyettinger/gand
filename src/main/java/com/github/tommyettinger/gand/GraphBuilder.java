@@ -23,28 +23,29 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
-import com.github.tommyettinger.gand.utils.WeightFunction;
 
-public abstract class Edge<V> {
+public class GraphBuilder{
 
-
-    Edge(){}
-    
-    public abstract V getA();
-    public abstract V getB();
-    public abstract boolean hasEndpoints(V u, V v);
-    public boolean hasEndpoint(V u) {
-        return getA().equals(u) || getB().equals(u);
+    private GraphBuilder() {
     }
 
-    public abstract float getWeight();
-    public abstract void setWeight(float weight);
-    public abstract void setWeight(WeightFunction<V> weightFunction);
-    abstract WeightFunction<V> getWeightFunction();
+    public static <V, G extends Graph<V>> void buildCompleteGraph(G graph) {
+        for (Node<V> a : graph.nodeMap.nodeCollection) {
+            for (Node<V> b : graph.nodeMap.nodeCollection) {
+                if (!a.equals(b)) {
+                    Connection<V> e = a.getEdge(b);
+                    if (e == null) {
+                        graph.addConnection(a, b);
+                    }
+                    if (graph.isDirected()) {
+                        e = b.getEdge(a);
+                        if (e == null) {
+                            graph.addConnection(b, a);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-    abstract Node<V> getInternalNodeA();
-    abstract Node<V> getInternalNodeB();
-
-    //abstract void set(Node<V> a, Node<V> b);
-    abstract void set(Node<V> a, Node<V> b, WeightFunction<V> weightFunction);
 }

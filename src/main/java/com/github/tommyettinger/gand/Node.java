@@ -1,172 +1,215 @@
 /*
- * Copyright (c) 2020-2024 See AUTHORS file.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+MIT License
+
+Copyright (c) 2020 earlygrey
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
-import com.badlogic.gdx.math.Vector2;
-import com.github.tommyettinger.gand.ds.BinaryHeap;
-import com.github.tommyettinger.gand.ds.ObjectList;
-import com.github.tommyettinger.gand.ds.ObjectObjectMap;
+import com.badlogic.gdx.utils.ArrayMap;
 
-import java.util.Objects;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-/**
- * An extended version of {@link BinaryHeap.Node} that also stores a reference to the parent Graph,
- * a vertex object of type {@code V}, a Map of neighbor Nodes to the appropriate {@link Connection} per Node, an extra
- * List of those same Connections for faster iteration, and a lot of internal data used by algorithms in this package.
- * @param <V> the vertex type; often {@link Vector2}
- * @author earlygrey
- */
-public class Node<V> extends BinaryHeap.Node {
+public class Node<V> {
+
     //================================================================================
     // Graph structure related members
     //================================================================================
 
-    protected final Graph<V> graph;
-    protected final V object;
-    protected ObjectObjectMap<Node<V>, Connection<V>> neighbors = new ObjectObjectMap<>(4);
-    protected ObjectList<Connection<V>> outEdges = new ObjectList<>(4); // ObjectList reuses its iterator, should be fast
-    protected ObjectList<Connection<V>> inEdges;
+    final int idHash;
+    final V object;
+
+    protected ArrayMap<Node<V>, Connection<V>> neighbours = new ArrayMap<>(true, 8);
+    private Array<Connection<V>> outEdges = new Array<>();
+    private Array<Connection<V>> inEdges;
+
+    //================================================================================
+    // Node map fields
+    //================================================================================
+
+    final int objectHash;
+    int mapHash;
+    Node<V> nextInOrder = null, prevInOrder = null;
+    Node<V> nextInBucket = null;
 
     //================================================================================
     // Constructor
     //================================================================================
 
-    protected Node(V v, Graph<V> graph) {
-        super(0f);
-        assert (v != null);
+    Node(V v, boolean trackInEdges, int objectHash) {
         this.object = v;
-        this.graph = graph;
-        if(graph.isDirected())
-            inEdges = new ObjectList<>(4);
+        this.objectHash = objectHash;
+        idHash = System.identityHashCode(this);
+        if (trackInEdges) setInEdges(new Array<>());
     }
 
     //================================================================================
     // Internal methods
     //================================================================================
 
-    protected Connection<V> getEdge(Node<V> v) {
-        return neighbors.get(v);
+    Connection<V> getEdge(Node<V> v) {
+        return neighbours.get(v);
     }
 
-    protected Connection<V> addEdge(Node<V> v, float weight) {
-        Connection<V> edge = neighbors.get(v);
-        if (edge == null) {
-            edge = graph.obtainEdge();
-            edge.set(this, v, weight);
-            neighbors.put(v, edge);
-            outEdges.add(edge);
-            if (v.inEdges != null) v.inEdges.add(edge);
-            return edge;
-        } else {
-            edge.setWeight(weight);
-        }
-        return edge;
+    void addEdge(Connection<V> edge) {
+        Node<V> to = edge.getNodeB();
+        neighbours.put(to, edge);
+        getOutEdges().add(edge);
+        if (to.getInEdges() != null) to.getInEdges().add(edge);
     }
-    protected Connection<V> removeEdge(Node<V> v) {
-        Connection<V> edge = neighbors.remove(v);
+
+    Connection<V> removeEdge(Node<V> v) {
+        Connection<V> edge = neighbours.removeKey(v);
         if (edge == null) return null;
-        // loop backwards to make Graph#removeNode faster
-        for (int j = outEdges.size()-1; j >= 0; j--) {
-            Connection<V> connection = outEdges.get(j);
-            if (connection.equals(edge)) {
-                outEdges.removeAt(j);
-                break;
-            }
-        }
-        if(v.inEdges != null) {
-            for (int j = v.inEdges.size() - 1; j >= 0; j--) {
-                if (v.inEdges.get(j).equals(edge)) {
-                    v.inEdges.removeAt(j);
-                    break;
-                }
-            }
-        }
+        getOutEdges().remove(edge);
+        if (v.getInEdges() != null) v.getInEdges().remove(edge);
         return edge;
     }
 
-    protected void disconnect() {
-        neighbors.clear();
-        outEdges.clear();
-        if(inEdges != null) inEdges.clear();
+    void disconnect() {
+        neighbours.clear();
+        getOutEdges().clear();
+        if (getInEdges() != null) getInEdges().clear();
     }
 
     //================================================================================
     // Public Methods
     //================================================================================
 
-    public ObjectList<Connection<V>> getConnections() {
-        return outEdges;
+    public Collection<Connection<V>> getConnections() {
+        return getOutEdges();
     }
 
     public V getObject() {
         return object;
     }
 
+    public int getInDegree() {
+        return getInEdges() == null ? getOutDegree() : getInEdges().size();
+    }
+
+    public int getOutDegree() {
+        return getOutEdges().size();
+    }
+
     //================================================================================
     // Algorithm fields and methods
     //================================================================================
 
-    /**
-     * Internal; tracking bit for whether this Node has already been visited during the current algorithm.
-     */
-    protected boolean visited;
-    /**
-     * Internal; tracking bit for whether this Node has been checked during the current algorithm.
-     */
-    protected boolean seen;
-    /**
-     * Internal; confirmed distance so far to get to this Node from the start.
-     */
-    protected float distance;
-    /**
-     * Internal; estimated distance to get from this Node to the goal.
-     */
-    protected float estimate;
-    /**
-     * Internal; a reference to the previous Node in a BinaryHeap.
-     */
-    protected Node<V> prev;
-    /**
-     * Internal; a utility field used to store depth in some algorithms.
-     */
-    protected int i;
-    /**
-     * Internal; a utility field used to distinguish which algorithm last used this Node.
-     */
-    protected int lastRunID;
+    // util fields for algorithms, don't store data in them
+    private boolean processed;
+    private boolean seen;
+    private float distance;
+    private float estimate;
+    private Node<V> prev;
+    private Connection<V> connection;
+    private int index;
+    private int lastRunID = -1;
 
-    /**
-     * If {@code runID} is not equal to {@link #lastRunID}, this resets the internal fields {@link #visited},
-     * {@link #seen}, {@link #distance}, {@link #estimate}, {@link #prev}, and {@link #i}, then sets {@link #lastRunID}
-     * to {@code runID}.
-     * @param runID an int that identifies which run of an algorithm is currently active
-     * @return true if anything was reset, or false if {@code runID} is equal to {@link #lastRunID}
-     */
-    protected boolean resetAlgorithmAttributes(int runID) {
-        if (runID == this.lastRunID) return false;
-        visited = false;
-        prev = null;
-        distance = Float.MAX_VALUE;
-        estimate = 0;
-        i = 0;
-        seen = false;
-        this.lastRunID = runID;
+    public boolean resetAlgorithmAttribs(int runID) {
+        if (runID == this.getLastRunID()) return false;
+        setProcessed(false);
+        setPrev(null);
+        setConnection(null);
+        setDistance(Float.MAX_VALUE);
+        setEstimate(0);
+        setIndex(0);
+        setSeen(false);
+        this.setLastRunID(runID);
         return true;
     }
-    
+
+    public boolean isProcessed() {
+        return processed;
+    }
+
+    public void setProcessed(boolean processed) {
+        this.processed = processed;
+    }
+
+    public boolean isSeen() {
+        return seen;
+    }
+
+    public void setSeen(boolean seen) {
+        this.seen = seen;
+    }
+
+    public float getDistance() {
+        return distance;
+    }
+
+    public void setDistance(float distance) {
+        this.distance = distance;
+    }
+
+    public float getEstimate() {
+        return estimate;
+    }
+
+    public void setEstimate(float estimate) {
+        this.estimate = estimate;
+    }
+
+    public Node<V> getPrev() {
+        return prev;
+    }
+
+    public void setPrev(Node<V> prev) {
+        this.prev = prev;
+    }
+
+    public Connection<V> getConnection() {
+        return connection;
+    }
+
+    public void setConnection(Connection<V> connection) {
+        this.connection = connection;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public int getLastRunID() {
+        return lastRunID;
+    }
+
+    public void setLastRunID(int lastRunID) {
+        this.lastRunID = lastRunID;
+    }
+
+
+    //================================================================================
+    // Heap fields
+    //================================================================================
+
+    int heapIndex;
+    float heapValue;
+
     //================================================================================
     // Misc
     //================================================================================
@@ -174,21 +217,33 @@ public class Node<V> extends BinaryHeap.Node {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Node<?> node = (Node<?>) o;
-
-        return Objects.equals(object, node.object);
+        return o == this;
     }
+
 
     @Override
     public int hashCode() {
-        return object.hashCode();
+        return idHash;
     }
 
     @Override
     public String toString() {
         return "["+object+"]";
+    }
+
+    public Array<Connection<V>> getOutEdges() {
+        return outEdges;
+    }
+
+    public void setOutEdges(Array<Connection<V>> outEdges) {
+        this.outEdges = outEdges;
+    }
+
+    public Array<Connection<V>> getInEdges() {
+        return inEdges;
+    }
+
+    public void setInEdges(Array<Connection<V>> inEdges) {
+        this.inEdges = inEdges;
     }
 }

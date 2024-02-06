@@ -21,30 +21,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-package com.github.tommyettinger.gand;
+package com.github.tommyettinger.gand.algorithms;
 
-import com.github.tommyettinger.gand.utils.WeightFunction;
+import com.github.tommyettinger.gand.UndirectedGraph;
 
-public abstract class Edge<V> {
+public class UndirectedGraphAlgorithms<V> extends Algorithms<V> {
 
-
-    Edge(){}
-    
-    public abstract V getA();
-    public abstract V getB();
-    public abstract boolean hasEndpoints(V u, V v);
-    public boolean hasEndpoint(V u) {
-        return getA().equals(u) || getB().equals(u);
+    public UndirectedGraphAlgorithms(UndirectedGraph<V> graph) {
+        super(graph);
     }
 
-    public abstract float getWeight();
-    public abstract void setWeight(float weight);
-    public abstract void setWeight(WeightFunction<V> weightFunction);
-    abstract WeightFunction<V> getWeightFunction();
+    /**
+     * Find a minimum weight spanning tree using Kruskal's algorithm.
+     * @return a Graph object containing a minimum weight spanning tree (if this graph is connected -
+     * in general a minimum weight spanning forest)
+     */
+    public UndirectedGraph<V> findMinimumWeightSpanningTree() {
+        MinimumWeightSpanningTree<V> algorithm = new MinimumWeightSpanningTree<>(requestRunID(), (UndirectedGraph<V>) graph, true);
+        algorithm.finish();
+        return algorithm.getSpanningTree();
+    }
 
-    abstract Node<V> getInternalNodeA();
-    abstract Node<V> getInternalNodeB();
 
-    //abstract void set(Node<V> a, Node<V> b);
-    abstract void set(Node<V> a, Node<V> b, WeightFunction<V> weightFunction);
 }

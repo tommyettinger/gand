@@ -23,28 +23,28 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
-import com.github.tommyettinger.gand.utils.WeightFunction;
+public class Errors {
 
-public abstract class Edge<V> {
-
-
-    Edge(){}
-    
-    public abstract V getA();
-    public abstract V getB();
-    public abstract boolean hasEndpoints(V u, V v);
-    public boolean hasEndpoint(V u) {
-        return getA().equals(u) || getB().equals(u);
+    public static void throwNullVertexException() {
+        throw new IllegalArgumentException("Vertices cannot be null");
     }
 
-    public abstract float getWeight();
-    public abstract void setWeight(float weight);
-    public abstract void setWeight(WeightFunction<V> weightFunction);
-    abstract WeightFunction<V> getWeightFunction();
+    public static void throwNullItemException() {
+        throw new IllegalArgumentException("No item can be null");
+    }
 
-    abstract Node<V> getInternalNodeA();
-    abstract Node<V> getInternalNodeB();
+    public static void throwSameVertexException() {
+        throw new IllegalArgumentException("Self loops are not allowed");
+    }
 
-    //abstract void set(Node<V> a, Node<V> b);
-    abstract void set(Node<V> a, Node<V> b, WeightFunction<V> weightFunction);
+    public static void throwVertexNotInGraphVertexException(boolean multiple) {
+        if (multiple) throw new IllegalArgumentException("At least one vertex is not in the graph");
+        else throw new IllegalArgumentException("Vertex is not in the graph");
+    }
+
+    public static void throwModificationException() {
+        throw new UnsupportedOperationException("You cannot modify this Collection - use the Graph object.");
+    }
+
+
 }

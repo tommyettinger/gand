@@ -23,15 +23,18 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
-import com.badlogic.gdx.math.Vector2;
-import com.github.tommyettinger.gand.ds.ObjectDeque;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import com.github.tommyettinger.gand.TestUtils.Vector2;
+import com.github.tommyettinger.gand.utils.Heuristic;
+import com.github.tommyettinger.gand.utils.SearchProcessor;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class AlgorithmsTest {
 
@@ -42,7 +45,7 @@ public class AlgorithmsTest {
         Graph<Vector2> diGraph = TestUtils.makeGridGraph(new DirectedGraph<>(), n);
 
         Vector2 start = new Vector2(0, 0), end = new Vector2(n - 1, n - 1);
-        ObjectDeque<Vector2> path;
+        Path<Vector2> path;
 
         // without heuristic
         path = undirectedGraph.algorithms().findShortestPath(start, end);
@@ -82,18 +85,18 @@ public class AlgorithmsTest {
         assertEquals(0, path.size());
         path = undirectedGraph.algorithms().findShortestPath(start, end);
         assertEquals(0, path.size());
-        assertFalse(undirectedGraph.algorithms().isConnected(start, end));
+        assertTrue(!undirectedGraph.algorithms().isConnected(start, end));
 
         diGraph.disconnect(end);
         path = diGraph.algorithms().findShortestPath(start, end, h);
         assertEquals(0, path.size());
         path = diGraph.algorithms().findShortestPath(start, end);
         assertEquals(0, path.size());
-        assertFalse(diGraph.algorithms().isConnected(start, end));
+        assertTrue(!diGraph.algorithms().isConnected(start, end));
     }
 
 
-    private static boolean pathIsConnected(ObjectDeque<Vector2> path, Graph<Vector2> graph) {
+    private static boolean pathIsConnected(Path<Vector2> path, Graph<Vector2> graph) {
         for (int i = 0; i < path.size()-1; i++) {
             if (!graph.edgeExists(path.get(i), path.get(i+1))) return false;
         }
@@ -111,10 +114,10 @@ public class AlgorithmsTest {
 
         graph.addEdge(0, 1);
         graph.addEdge(1, 2);
-        assertFalse(graph.algorithms().containsCycle());
+        assertTrue(!graph.algorithms().containsCycle());
 
         graph.addEdge(0,2);
-        assertFalse(graph.algorithms().containsCycle());
+        assertTrue(!graph.algorithms().containsCycle());
 
         graph.addEdge(2,0);
         assertTrue(graph.algorithms().containsCycle());
@@ -127,7 +130,7 @@ public class AlgorithmsTest {
 
         graph.addEdge(0, 1);
         graph.addEdge(1, 2);
-        assertFalse(graph.algorithms().containsCycle());
+        assertTrue(!graph.algorithms().containsCycle());
 
         graph.addEdge(0,2);
         assertTrue(graph.algorithms().containsCycle());
@@ -150,64 +153,64 @@ public class AlgorithmsTest {
         
         return graph;
     }
-//Commented because we don't have the concept of a SearchProcessor yet.
-//    @Test
-//    public void bfsShouldWork() {
-//        Graph<Integer> graph = createDirectedSearchGraph();
-//
-//        Graph<Integer> tree = graph.createNew();
-//
-//        SearchProcessor<Integer> processor = (step) -> {
-//            tree.addVertex(step.vertex());
-//            if (step.count() > 0) {
-//                tree.addEdge(step.edge().getA(), step.edge().getB());
-//            }
-//        };
-//
-//        tree.addVertex(0);
-//        graph.algorithms().breadthFirstSearch(0, processor);
-//        assertEquals(6, tree.size());
-//        assertEquals(5, tree.getEdgeCount());
-//
-//        List<Integer> vxs = new ArrayList<>(tree.getVertices());
-//
-//        List<List<Integer>> expectedOrders = new ArrayList<>();
-//        expectedOrders.add(Arrays.asList(0, 1, 2, 3, 4, 5));
-//        expectedOrders.add(Arrays.asList(0, 2, 1, 3, 4, 5));
-//        expectedOrders.add(Arrays.asList(0, 1, 2, 4, 3, 5));
-//        expectedOrders.add(Arrays.asList(0, 2, 1, 3, 4, 5));
-//
-//        assertTrue("BFS not in correct order", expectedOrders.contains(vxs));
-//    }
-//
-//    @Test
-//    public void dfsShouldWork() {
-//        Graph<Integer> graph = createDirectedSearchGraph();
-//        Graph<Integer> tree = graph.createNew();
-//
-//        SearchProcessor<Integer> processor = step -> {
-//            if (step.depth() > 4) {
-//                step.ignore();
-//                return;
-//            }
-//            tree.addVertex(step.vertex());
-//            if (step.count() > 0) {
-//                tree.addEdge(step.edge().getA(), step.edge().getB());
-//            }
-//        };
-//
-//        graph.algorithms().depthFirstSearch(0, processor);
-//
-//
-//        assertEquals(6, tree.size());
-//        assertEquals(5, tree.getEdgeCount());
-//        List<Integer> vxs = new ArrayList<>(tree.getVertices());
-//
-//        List<List<Integer>> expectedOrders = new ArrayList<>();
-//        expectedOrders.add(Arrays.asList(0, 1, 3, 5, 2, 4));
-//        expectedOrders.add(Arrays.asList(0, 2, 4, 5, 1, 3));
-//        assertTrue("DFS not in correct order", expectedOrders.contains(vxs));
-//    }
+
+    @Test
+    public void bfsShouldWork() {
+        Graph<Integer> graph = createDirectedSearchGraph();
+
+        Graph<Integer> tree = graph.createNew();
+
+        SearchProcessor<Integer> processor = (step) -> {
+            tree.addVertex(step.vertex());
+            if (step.count() > 0) {
+                tree.addEdge(step.edge().getA(), step.edge().getB());
+            }
+        };
+
+        tree.addVertex(0);
+        graph.algorithms().breadthFirstSearch(0, processor);
+        assertEquals(6, tree.size());
+        assertEquals(5, tree.getEdgeCount());
+
+        List<Integer> vxs = new ArrayList<>(tree.getVertices());
+
+        List<List<Integer>> expectedOrders = new ArrayList<>();
+        expectedOrders.add(Arrays.asList(0, 1, 2, 3, 4, 5));
+        expectedOrders.add(Arrays.asList(0, 2, 1, 3, 4, 5));
+        expectedOrders.add(Arrays.asList(0, 1, 2, 4, 3, 5));
+        expectedOrders.add(Arrays.asList(0, 2, 1, 3, 4, 5));
+
+        assertTrue("BFS not in correct order", expectedOrders.contains(vxs));
+    }
+
+    @Test
+    public void dfsShouldWork() {
+        Graph<Integer> graph = createDirectedSearchGraph();
+        Graph<Integer> tree = graph.createNew();
+
+        SearchProcessor<Integer> processor = step -> {
+            if (step.depth() > 4) {
+                step.ignore();
+                return;
+            }
+            tree.addVertex(step.vertex());
+            if (step.count() > 0) {
+                tree.addEdge(step.edge().getA(), step.edge().getB());
+            }
+        };
+
+        graph.algorithms().depthFirstSearch(0, processor);
+
+
+        assertEquals(6, tree.size());
+        assertEquals(5, tree.getEdgeCount());
+        List<Integer> vxs = new ArrayList<>(tree.getVertices());
+
+        List<List<Integer>> expectedOrders = new ArrayList<>();
+        expectedOrders.add(Arrays.asList(0, 1, 3, 5, 2, 4));
+        expectedOrders.add(Arrays.asList(0, 2, 4, 5, 1, 3));
+        assertTrue("DFS not in correct order", expectedOrders.contains(vxs));
+    }
 
     @Test
     public void topologicalSortShouldWork() {
@@ -217,23 +220,23 @@ public class AlgorithmsTest {
 
         graph.addEdge(9,8);
         graph.addEdge(6,7);
-        assertTrue(graph.algorithms.topologicalSort());
+        assertTrue(graph.topologicalSort());
 
         graph.removeAllEdges();
 
         for (int i = 0; i < n-1; i++) graph.addEdge(i+1, i);
 
-        assertTrue(graph.algorithms.topologicalSort());
+        assertTrue(graph.topologicalSort());
         int i = n-1;
         for (Integer vertex : graph.getVertices()) {
-            Integer expected = i--;
+            Integer expected = Integer.valueOf(i--);
             assertEquals(expected, vertex);
         }
 
 
         graph.addEdge(n/2, n/2 + 1);
-        boolean success = graph.algorithms.topologicalSort();
-        assertFalse(success);
+        boolean success = graph.topologicalSort();
+        assertTrue(!success);
 
         graph = new DirectedGraph<>();
         graph.addVertices(0, 1, 2, 3, 4, 5);
@@ -242,7 +245,7 @@ public class AlgorithmsTest {
         graph.addEdge(4,1);
         graph.addEdge(4,2);
         graph.addEdge(3,5);
-        assertTrue(graph.algorithms.topologicalSort());
+        assertTrue(graph.topologicalSort());
 
         graph = new DirectedGraph<>();
         graph.addVertices(0, 1, 2, 3, 4, 5);
@@ -253,7 +256,7 @@ public class AlgorithmsTest {
         graph.addEdge(3,5);
 
         graph.addEdge(2,4);
-        assertFalse(graph.algorithms.topologicalSort());
+        assertTrue(!graph.topologicalSort());
     }
 
     @Test
@@ -271,8 +274,8 @@ public class AlgorithmsTest {
 
         assertEquals("Tree doesn't have correct number of vertices", n, mwst.size());
         assertEquals("Tree doesn't have correct number of edges", n-1, mwst.getEdgeCount());
-        assertFalse("Tree contains a cycle", mwst.algorithms().containsCycle());
-        assertEquals("Tree is not minimum weight", n-1 - 0.5f, mwst.getEdges().stream().mapToDouble(Edge::getWeight).sum(), 0.0001f);
+        assertTrue("Tree contains a cycle", !mwst.algorithms().containsCycle());
+        assertEquals("Tree is not minimum weight", n-1 - 0.5f, mwst.getEdges().stream().mapToDouble(e -> e.getWeight()).sum(), 0.0001f);
 
     }
 }

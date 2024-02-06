@@ -21,30 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-package com.github.tommyettinger.gand;
+package com.github.tommyettinger.gand.utils;
 
-import com.github.tommyettinger.gand.utils.WeightFunction;
+public interface WeightFunction<V> {
 
-public abstract class Edge<V> {
+    float getWeight(V a, V b);
 
-
-    Edge(){}
-    
-    public abstract V getA();
-    public abstract V getB();
-    public abstract boolean hasEndpoints(V u, V v);
-    public boolean hasEndpoint(V u) {
-        return getA().equals(u) || getB().equals(u);
-    }
-
-    public abstract float getWeight();
-    public abstract void setWeight(float weight);
-    public abstract void setWeight(WeightFunction<V> weightFunction);
-    abstract WeightFunction<V> getWeightFunction();
-
-    abstract Node<V> getInternalNodeA();
-    abstract Node<V> getInternalNodeB();
-
-    //abstract void set(Node<V> a, Node<V> b);
-    abstract void set(Node<V> a, Node<V> b, WeightFunction<V> weightFunction);
 }
