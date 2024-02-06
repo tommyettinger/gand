@@ -1,11 +1,7 @@
 package com.github.tommyettinger.gand.algorithms;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.badlogic.gdx.utils.NumberUtils;
 import com.github.tommyettinger.gand.Connection;
-import com.github.tommyettinger.gand.Edge;
 import com.github.tommyettinger.gand.Node;
 import com.github.tommyettinger.gand.UndirectedGraph;
 import com.github.tommyettinger.gand.utils.ObjectDeque;

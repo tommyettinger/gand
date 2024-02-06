@@ -228,7 +228,7 @@ class NodeMap<V> {
                 if (oldTable[i] != null) {
                     Node<V> tail1 = null, tail2 = null, current = oldTable[i];
                     while (current != null) {
-                        int newIndex = getIndex(current.mapHash, newLength);
+                        int newIndex = current.mapHash & newLength - 1;
                         if (newIndex == i) {
                             if (tail1 == null) {
                                 newTable[newIndex] = current;
@@ -275,11 +275,7 @@ class NodeMap<V> {
      * Get the table index of the Node<V> which has the given hash.
      */
     int getIndex(int hash) {
-        return getIndex(hash, table.length);
-    }
-
-    static int getIndex(int hash,  int length) {
-        return hash & (length - 1);
+        return hash & table.length - 1;
     }
 
     /**

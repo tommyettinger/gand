@@ -23,8 +23,6 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
-import com.github.tommyettinger.gand.utils.WeightFunction;
-
 public abstract class Edge<V> {
 
 

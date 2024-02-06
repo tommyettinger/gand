@@ -141,7 +141,7 @@ class NodeCollection<V> extends AbstractCollection<Node<V>> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(nodeMap);
+        return nodeMap.hashCode();
     }
 
 }

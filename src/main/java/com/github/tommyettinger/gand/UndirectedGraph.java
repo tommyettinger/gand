@@ -23,11 +23,10 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
-import java.util.Collection;
-
 import com.github.tommyettinger.gand.Connection.UndirectedConnection;
 import com.github.tommyettinger.gand.algorithms.UndirectedGraphAlgorithms;
-import com.github.tommyettinger.gand.utils.WeightFunction;
+
+import java.util.Collection;
 
 public class UndirectedGraph<V> extends Graph<V> {
 

@@ -23,19 +23,11 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 import com.github.tommyettinger.gand.algorithms.Algorithms;
-import com.github.tommyettinger.gand.utils.WeightFunction;
+import com.github.tommyettinger.gand.utils.ObjPredicate;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 
 public abstract class Graph<V> {
@@ -74,8 +66,16 @@ public abstract class Graph<V> {
     }
 
     Graph(Graph<V> graph) {
-        this(graph.getVertices());
-        graph.getEdges().forEach(this::addEdge);
+        nodeMap = new NodeMap<>(this);
+        this.setDefaultEdgeWeight(graph.getDefaultEdgeWeight());
+        Collection<Edge<V>> edges = graph.getEdges();
+        edgeMap = new LinkedHashMap<>(edges.size());
+        Collection<V> vertices = graph.getVertices();
+        for (V v : vertices) {
+            addVertex(v);
+        }
+        for(Edge<V> edge : edges)
+            addEdge(edge.getA(), edge.getB(), edge.getWeight());
     }
 
     //================================================================================
@@ -166,8 +166,24 @@ public abstract class Graph<V> {
         }
     }
 
-    public void removeVertexIf(Predicate<V> predicate) {
-        removeVertices(getVertices().stream().filter(predicate).collect(Collectors.toList()));
+    /**
+     * Removes all the vertices in the collection from the graph, and any adjacent edges.
+     *
+     * @param vertices vertices a collection of vertices to be removed
+     */
+    public void removeVertices(com.badlogic.gdx.utils.Array<V> vertices) {
+        for (V v : vertices) {
+            removeVertex(v);
+        }
+    }
+
+    public void removeVertexIf(final ObjPredicate<V> predicate) {
+        Collection<V> existing = getVertices();
+        com.badlogic.gdx.utils.Array<V> vertices = new com.badlogic.gdx.utils.Array<>(false, existing.size());
+        for(V v : existing){
+            if(predicate.test(v)) vertices.add(v);
+        }
+        removeVertices(vertices);
     }
 
     /**
@@ -231,12 +247,25 @@ public abstract class Graph<V> {
         return removeConnection(edge.getInternalNodeA(), edge.getInternalNodeB());
     }
 
-    public void removeEdges(Collection<Edge<V>> edges) {
-        edges.forEach(e -> removeConnection(e.getInternalNodeA(), e.getInternalNodeB()));
+    public void removeEdges(Collection<? extends Edge<V>> edges) {
+        for (Edge<V> e : edges) {
+            removeConnection(e.getInternalNodeA(), e.getInternalNodeB());
+        }
     }
 
-    public void removeEdgeIf(Predicate<Edge<V>> predicate) {
-        removeEdges(getEdges().stream().filter(predicate).collect(Collectors.toList()));
+    public void removeEdges(com.badlogic.gdx.utils.Array<? extends Edge<V>> edges) {
+        for (Edge<V> e : edges) {
+            removeConnection(e.getInternalNodeA(), e.getInternalNodeB());
+        }
+    }
+
+    public void removeEdgeIf(final ObjPredicate<Edge<V>> predicate) {
+        Collection<Edge<V>> existing = getEdges();
+        com.badlogic.gdx.utils.Array<Edge<V>> edges = new com.badlogic.gdx.utils.Array<>(false, existing.size());
+        for(Edge<V> v : existing){
+            if(predicate.test(v)) edges.add(v);
+        }
+        removeEdges(edges);
     }
 
     /**
@@ -456,12 +485,12 @@ public abstract class Graph<V> {
     }
 
     public int numberOfComponents() {
-        AtomicInteger visited = new AtomicInteger(1), components = new AtomicInteger();
-        while (visited.get() < size()) {
-            components.incrementAndGet();
-            algorithms().depthFirstSearch(getVertices().iterator().next(), v -> visited.incrementAndGet());
+        int[] visited = {1}, components = {0};
+        while (visited[0] < size()) {
+            ++components[0];
+            algorithms().depthFirstSearch(getVertices().iterator().next(), v -> ++visited[0]);
         }
-        return components.get();
+        return components[0];
     }
 
     //--------------------

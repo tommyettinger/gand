@@ -26,8 +26,6 @@ package com.github.tommyettinger.gand;
 
 import java.util.Collection;
 
-import com.github.tommyettinger.gand.utils.WeightFunction;
-
 public class Internals<V> {
 
     final Graph<V> graph;

@@ -100,11 +100,6 @@ class VertexCollection<V> extends AbstractCollection<V> {
     }
 
     @Override
-    public boolean containsAll(Collection<?> collection) {
-        return false;
-    }
-
-    @Override
     public boolean addAll(Collection<? extends V> collection) {
         Errors.throwModificationException();
         return false;
@@ -138,7 +133,7 @@ class VertexCollection<V> extends AbstractCollection<V> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(nodeMap);
+        return nodeMap.hashCode();
     }
 
     static class VertexIterator<V> implements Iterator<V> {

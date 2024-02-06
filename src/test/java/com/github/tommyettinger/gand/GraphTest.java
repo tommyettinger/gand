@@ -101,7 +101,7 @@ public class GraphTest {
         assertEquals(n - n/2, graph.size());
 
 
-        graph = new UndirectedGraph<>(IntStream.range(0, n).mapToObj(i -> i).collect(Collectors.toList()));
+        graph = new UndirectedGraph<>(IntStream.range(0, n).boxed().collect(Collectors.toList()));
         graph.removeVertexIf(i -> i % 2 == 0);
 
         for (int i = 0; i < n; i+=2) {
