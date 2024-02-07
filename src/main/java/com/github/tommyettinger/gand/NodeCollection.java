@@ -62,7 +62,7 @@ class NodeCollection<V> extends AbstractCollection<Node<V>> {
         for (int i = 0; i < nodeMap.table.length; i++) {
             Node<V> node = nodeMap.table[i];
             while (node != null) {
-                array[index++] = node.object;
+                array[index++] = node.getObject();
                 node = node.nextInBucket;
             }
         }
@@ -79,7 +79,7 @@ class NodeCollection<V> extends AbstractCollection<Node<V>> {
         for (int i = 0; i < nodeMap.table.length; i++) {
             Node<V> node = nodeMap.table[i];
             while (node != null) {
-                array[index++] = (T) node.object;
+                array[index++] = (T) node.getObject();
                 node = node.nextInBucket;
             }
         }

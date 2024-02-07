@@ -67,12 +67,12 @@ public abstract class Connection<V> extends Edge<V> {
 
     @Override
     public V getA() {
-        return a.object;
+        return a.getObject();
     }
 
     @Override
     public V getB() {
-        return b.object;
+        return b.getObject();
     }
 
     @Override

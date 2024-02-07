@@ -32,10 +32,10 @@ public class Node<V> {
     // Graph structure related members
     //================================================================================
 
-    final int idHash;
-    final V object;
+    public final int idHash;
+    private final V object;
 
-    protected ArrayMap<Node<V>, Connection<V>> neighbours = new ArrayMap<>(true, 8);
+    protected ArrayMap<Node<V>, Connection<V>> neighbors = new ArrayMap<>(true, 8);
     private ObjectDeque<Connection<V>> outEdges = new ObjectDeque<>(8);
     private ObjectDeque<Connection<V>> inEdges;
 
@@ -43,18 +43,38 @@ public class Node<V> {
     // Node map fields
     //================================================================================
 
-    final int objectHash;
-    int mapHash;
+    public int mapHash;
     Node<V> nextInOrder = null, prevInOrder = null;
     Node<V> nextInBucket = null;
+
+    //================================================================================
+    // Algorithm fields
+    //================================================================================
+
+    // util fields for algorithms, don't store data in them
+    private boolean processed;
+    private boolean seen;
+    private float distance;
+    private float estimate;
+    private Node<V> prev;
+    private Connection<V> connection;
+    private int index;
+    private int lastRunID = -1;
+
+    //================================================================================
+    // Heap fields
+    //================================================================================
+
+    public int heapIndex;
+    public float heapValue;
 
     //================================================================================
     // Constructor
     //================================================================================
 
-    Node(V v, boolean trackInEdges, int objectHash) {
+    public Node(V v, boolean trackInEdges, int objectHash) {
         this.object = v;
-        this.objectHash = objectHash;
+        this.mapHash = objectHash;
         idHash = System.identityHashCode(this);
         if (trackInEdges) setInEdges(new ObjectDeque<>(8));
     }
@@ -64,18 +84,18 @@ public class Node<V> {
     //================================================================================
 
     Connection<V> getEdge(Node<V> v) {
-        return neighbours.get(v);
+        return neighbors.get(v);
     }
 
     void addEdge(Connection<V> edge) {
         Node<V> to = edge.getNodeB();
-        neighbours.put(to, edge);
+        neighbors.put(to, edge);
         getOutEdges().add(edge);
         if (to.getInEdges() != null) to.getInEdges().add(edge);
     }
 
     Connection<V> removeEdge(Node<V> v) {
-        Connection<V> edge = neighbours.removeKey(v);
+        Connection<V> edge = neighbors.removeKey(v);
         if (edge == null) return null;
         getOutEdges().removeValue(edge, false);
         if (v.getInEdges() != null) v.getInEdges().remove(edge);
@@ -83,7 +103,7 @@ public class Node<V> {
     }
 
     void disconnect() {
-        neighbours.clear();
+        neighbors.clear();
         getOutEdges().clear();
         if (getInEdges() != null) getInEdges().clear();
     }
@@ -109,18 +129,8 @@ public class Node<V> {
     }
 
     //================================================================================
-    // Algorithm fields and methods
+    // Algorithm methods
     //================================================================================
-
-    // util fields for algorithms, don't store data in them
-    private boolean processed;
-    private boolean seen;
-    private float distance;
-    private float estimate;
-    private Node<V> prev;
-    private Connection<V> connection;
-    private int index;
-    private int lastRunID = -1;
 
     public boolean resetAlgorithmAttribs(int runID) {
         if (runID == this.getLastRunID()) return false;
@@ -201,22 +211,8 @@ public class Node<V> {
 
 
     //================================================================================
-    // Heap fields
-    //================================================================================
-
-    int heapIndex;
-    float heapValue;
-
-    //================================================================================
     // Misc
     //================================================================================
-
-
-    @Override
-    public boolean equals(Object o) {
-        return o == this;
-    }
-
 
     @Override
     public int hashCode() {

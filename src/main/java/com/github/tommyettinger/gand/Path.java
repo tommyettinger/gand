@@ -30,7 +30,7 @@ public class Path<V> extends ObjectDeque<V> {
 
     public static final Path EMPTY_PATH = new Path(0, false);
 
-    float length = 0;
+    private float length = 0;
 
     public Path(int capacity) {
         super(capacity);
@@ -51,7 +51,7 @@ public class Path<V> extends ObjectDeque<V> {
         return length;
     }
 
-    protected void setLength(float length) {
+    public void setLength(float length) {
         this.length = length;
     }
 }

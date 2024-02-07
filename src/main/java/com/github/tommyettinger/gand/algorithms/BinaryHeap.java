@@ -1,13 +1,6 @@
-package com.github.tommyettinger.gand;
+package com.github.tommyettinger.gand.algorithms;
 
-/**
- NOTE - This class was adapted from the original, which appears as the BinaryHeap class found in libgdx.
- Original appears here: https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/utils/BinaryHeap.java
- Generics and the BinaryHeap.Node class have been removed and replaced with the simple-graphs Node class.
- Safety checks and exceptions have been removed.
- **/
-
-/*******************************************************************************
+/* *****************************************************************************
  * Copyright 2011 See AUTHORS file.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,13 +17,22 @@ package com.github.tommyettinger.gand;
  ******************************************************************************/
 
 import com.badlogic.gdx.utils.NumberUtils;
+import com.github.tommyettinger.gand.Node;
 
-/** A binary heap that stores nodes which each have a float value and are sorted either lowest first or highest first.
- * @author Nathan Sweet */
-public class BinaryHeap {
+/**
+ * A binary heap that stores nodes which each have a float value and are sorted either lowest first or highest first.
+ * <br>
+ * This class was adapted from the original, which appears as the BinaryHeap class found in libgdx.
+ * <a href="https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/utils/BinaryHeap.java">Original appears here</a>.
+ * Generics and the BinaryHeap.Node class have been removed and replaced with the simple-graphs Node class.
+ * Safety checks and exceptions have been removed.
+ *
+ * @author Nathan Sweet
+ */
+class BinaryHeap {
     public int size;
 
-    private Node[] nodes;
+    protected Node[] nodes;
 
     public BinaryHeap() {
         this(16);

@@ -75,7 +75,7 @@ class NodeMap<V> {
 
         Node<V> currentNode = bucketHead;
         while (currentNode != null) {
-            if (v.equals(currentNode.object)) return currentNode;
+            if (v.equals(currentNode.getObject())) return currentNode;
             currentNode = currentNode.nextInBucket;
         }
 
@@ -101,7 +101,6 @@ class NodeMap<V> {
         if (bucketHead == null) {
             // first in bucket
             bucketHead = new Node<>(v, graph.isDirected(), hash);
-            bucketHead.mapHash = hash;
             table[i] = bucketHead;
             size++;
             occupiedBuckets++;
@@ -112,13 +111,12 @@ class NodeMap<V> {
         // find last in bucket
         Node<V> currentNode = bucketHead, previousNode = null;
         while (currentNode != null) {
-            if (v.equals(currentNode.object)) return null;
+            if (v.equals(currentNode.getObject())) return null;
             previousNode = currentNode;
             currentNode = currentNode.nextInBucket;
         }
 
         currentNode = new Node<>(v, graph.isDirected(), hash);
-        currentNode.mapHash = hash;
         previousNode.nextInBucket = currentNode;
         size++;
         addToList(currentNode);
@@ -174,7 +172,7 @@ class NodeMap<V> {
         Node<V> currentNode = table[i];
 
         // node is first in bucket
-        if (currentNode != null && v.equals(currentNode.object)) {
+        if (currentNode != null && v.equals(currentNode.getObject())) {
             table[i] = currentNode.nextInBucket;
             size--;
             removeFromList(currentNode);
@@ -184,7 +182,7 @@ class NodeMap<V> {
         // find node
         Node<V> previousNode = null;
         while (currentNode != null) {
-            if (v.equals(currentNode.object)) {
+            if (v.equals(currentNode.getObject())) {
                 if (previousNode != null) previousNode.nextInBucket = currentNode.nextInBucket;
                 size--;
                 removeFromList(currentNode);
@@ -369,7 +367,7 @@ class NodeMap<V> {
 
         Node<V> newHead;
 
-        if (comparator.compare(a.object, b.object) < 0) {
+        if (comparator.compare(a.getObject(), b.getObject()) < 0) {
             newHead = a;
             newHead.nextInOrder = sortedMerge(a.nextInOrder, b, comparator);
         } else {

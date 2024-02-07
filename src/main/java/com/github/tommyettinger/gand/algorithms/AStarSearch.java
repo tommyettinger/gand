@@ -1,6 +1,5 @@
 package com.github.tommyettinger.gand.algorithms;
 
-import com.github.tommyettinger.gand.BinaryHeap;
 import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Node;
 import com.github.tommyettinger.gand.Path;

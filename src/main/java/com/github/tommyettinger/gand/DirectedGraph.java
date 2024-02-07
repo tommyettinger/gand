@@ -47,6 +47,11 @@ public class DirectedGraph<V> extends Graph<V> {
         algorithms = new DirectedGraphAlgorithms<>(this);
     }
 
+    public DirectedGraph(Collection<V> vertices, Collection<Edge<V>> edges, float defaultEdgeWeight) {
+        super(vertices, edges, defaultEdgeWeight);
+        algorithms = new DirectedGraphAlgorithms<>(this);
+    }
+
     public DirectedGraph(Graph<V> graph) {
         super(graph);
         algorithms = new DirectedGraphAlgorithms<>(this);

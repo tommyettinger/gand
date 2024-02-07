@@ -65,7 +65,7 @@ class VertexCollection<V> extends AbstractCollection<V> {
         int index = 0;
         Node<V> node = nodeMap.head;
         while (node != null) {
-            array[index++] = node.object;
+            array[index++] = node.getObject();
             node = node.nextInOrder;
         }
         return array;
@@ -80,7 +80,7 @@ class VertexCollection<V> extends AbstractCollection<V> {
         int index = 0;
         Node<V> node = nodeMap.head;
         while (node != null) {
-            array[index++] = (T) node.object;
+            array[index++] = (T) node.getObject();
             node = node.nextInOrder;
         }
         return array;
@@ -150,7 +150,7 @@ class VertexCollection<V> extends AbstractCollection<V> {
 
         @Override
         public V next() {
-            return nodeIterator.next().object;
+            return nodeIterator.next().getObject();
         }
 
         @Override

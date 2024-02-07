@@ -43,9 +43,9 @@ public abstract class Graph<V> {
      * This is a map so that for undirected graphs, a consistent edge instance can be obtained from
      * either (u, v) or (v, u)
      */
-    final LinkedHashMap<Connection<V>, Connection<V>> edgeMap;
+    protected final LinkedHashMap<Connection<V>, Connection<V>> edgeMap;
 
-    final Internals<V> internals = new Internals<>(this);
+    protected final Internals<V> internals = new Internals<>(this);
 
     private float defaultEdgeWeight = 1;
 
@@ -66,7 +66,19 @@ public abstract class Graph<V> {
         }
     }
 
-    Graph(Graph<V> graph) {
+    protected Graph(Collection<V> vertices, Collection<Edge<V>> edges, float defaultEdgeWeight) {
+        nodeMap = new NodeMap<>(this);
+        this.setDefaultEdgeWeight(defaultEdgeWeight);
+        edgeMap = new LinkedHashMap<>(edges.size());
+        for (V v : vertices) {
+            addVertex(v);
+        }
+        for(Edge<V> edge : edges) {
+            addEdge(edge);
+        }
+    }
+
+    protected Graph(Graph<V> graph) {
         nodeMap = new NodeMap<>(this);
         this.setDefaultEdgeWeight(graph.getDefaultEdgeWeight());
         Collection<Edge<V>> edges = graph.getEdges();
@@ -75,8 +87,10 @@ public abstract class Graph<V> {
         for (V v : vertices) {
             addVertex(v);
         }
-        for(Edge<V> edge : edges)
+        for(Edge<V> edge : edges) {
+            // Each Edge is guaranteed to be valid here, so we don't need to re-add its vertices.
             addEdge(edge.getA(), edge.getB(), edge.getWeight());
+        }
     }
 
     //================================================================================
@@ -288,7 +302,7 @@ public abstract class Graph<V> {
      */
     public void sortEdges(final Comparator<Connection<V>> comparator) {
         List<Entry<Connection<V>, Connection<V>>> entryList = new ArrayList<>(edgeMap.entrySet());
-        Collections.sort(entryList, Entry.comparingByKey(comparator));
+        entryList.sort((a, b) -> comparator.compare(a.getKey(), b.getKey()));;
         edgeMap.clear();
         for (Entry<Connection<V>, Connection<V>> entry : entryList) {
             edgeMap.put(entry.getKey(), entry.getValue());
