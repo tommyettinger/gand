@@ -24,10 +24,7 @@ SOFTWARE.
 package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.utils.ArrayMap;
-
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.github.tommyettinger.gand.utils.ObjectDeque;
 
 public class Node<V> {
 
@@ -39,8 +36,8 @@ public class Node<V> {
     final V object;
 
     protected ArrayMap<Node<V>, Connection<V>> neighbours = new ArrayMap<>(true, 8);
-    private Array<Connection<V>> outEdges = new Array<>();
-    private Array<Connection<V>> inEdges;
+    private ObjectDeque<Connection<V>> outEdges = new ObjectDeque<>(8);
+    private ObjectDeque<Connection<V>> inEdges;
 
     //================================================================================
     // Node map fields
@@ -59,7 +56,7 @@ public class Node<V> {
         this.object = v;
         this.objectHash = objectHash;
         idHash = System.identityHashCode(this);
-        if (trackInEdges) setInEdges(new Array<>());
+        if (trackInEdges) setInEdges(new ObjectDeque<>(8));
     }
 
     //================================================================================
@@ -80,7 +77,7 @@ public class Node<V> {
     Connection<V> removeEdge(Node<V> v) {
         Connection<V> edge = neighbours.removeKey(v);
         if (edge == null) return null;
-        getOutEdges().remove(edge);
+        getOutEdges().removeValue(edge, false);
         if (v.getInEdges() != null) v.getInEdges().remove(edge);
         return edge;
     }
@@ -95,7 +92,7 @@ public class Node<V> {
     // Public Methods
     //================================================================================
 
-    public Collection<Connection<V>> getConnections() {
+    public ObjectDeque<Connection<V>> getConnections() {
         return getOutEdges();
     }
 
@@ -108,7 +105,7 @@ public class Node<V> {
     }
 
     public int getOutDegree() {
-        return getOutEdges().size();
+        return getOutEdges().size;
     }
 
     //================================================================================
@@ -231,19 +228,19 @@ public class Node<V> {
         return "["+object+"]";
     }
 
-    public Array<Connection<V>> getOutEdges() {
+    public ObjectDeque<Connection<V>> getOutEdges() {
         return outEdges;
     }
 
-    public void setOutEdges(Array<Connection<V>> outEdges) {
+    public void setOutEdges(ObjectDeque<Connection<V>> outEdges) {
         this.outEdges = outEdges;
     }
 
-    public Array<Connection<V>> getInEdges() {
+    public ObjectDeque<Connection<V>> getInEdges() {
         return inEdges;
     }
 
-    public void setInEdges(Array<Connection<V>> inEdges) {
+    public void setInEdges(ObjectDeque<Connection<V>> inEdges) {
         this.inEdges = inEdges;
     }
 }

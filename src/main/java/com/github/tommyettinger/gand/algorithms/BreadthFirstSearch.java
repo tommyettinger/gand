@@ -1,10 +1,8 @@
 package com.github.tommyettinger.gand.algorithms;
 
-import java.util.ArrayDeque;
-
-import com.github.tommyettinger.gand.Array;
 import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Node;
+import com.github.tommyettinger.gand.utils.ObjectDeque;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 
 public class BreadthFirstSearch<V> extends Algorithm<V> {
@@ -12,12 +10,12 @@ public class BreadthFirstSearch<V> extends Algorithm<V> {
     private SearchProcessor<V> processor;
     private SearchStep<V> step = new SearchStep<>();
 
-    private final ArrayDeque<Node<V>> queue;
+    private final ObjectDeque<Node<V>> queue;
 
     public BreadthFirstSearch(int id, Node<V> start, SearchProcessor<V> processor) {
         super(id);
         this.processor = processor;
-        queue = new ArrayDeque<>();
+        queue = new ObjectDeque<>();
         start.resetAlgorithmAttribs(id);
         queue.add(start);
         start.setSeen(true);
@@ -37,7 +35,7 @@ public class BreadthFirstSearch<V> extends Algorithm<V> {
             }
             if (step.ignore) return isFinished();
         }
-        Array<Connection<V>> outEdges = v.getOutEdges();
+        ObjectDeque<Connection<V>> outEdges = v.getOutEdges();
         for (Connection<V> e : outEdges) {
             Node<V> w = e.getNodeB();
             w.resetAlgorithmAttribs(id);

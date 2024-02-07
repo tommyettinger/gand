@@ -25,6 +25,7 @@ package com.github.tommyettinger.gand;
 
 import com.github.tommyettinger.gand.algorithms.Algorithms;
 import com.github.tommyettinger.gand.utils.ObjPredicate;
+import com.github.tommyettinger.gand.utils.ObjectDeque;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -166,20 +167,9 @@ public abstract class Graph<V> {
         }
     }
 
-    /**
-     * Removes all the vertices in the collection from the graph, and any adjacent edges.
-     *
-     * @param vertices vertices a collection of vertices to be removed
-     */
-    public void removeVertices(com.badlogic.gdx.utils.Array<V> vertices) {
-        for (V v : vertices) {
-            removeVertex(v);
-        }
-    }
-
     public void removeVertexIf(final ObjPredicate<V> predicate) {
         Collection<V> existing = getVertices();
-        com.badlogic.gdx.utils.Array<V> vertices = new com.badlogic.gdx.utils.Array<>(false, existing.size());
+        ObjectDeque<V> vertices = new ObjectDeque<>(existing.size());
         for(V v : existing){
             if(predicate.test(v)) vertices.add(v);
         }
@@ -253,15 +243,9 @@ public abstract class Graph<V> {
         }
     }
 
-    public void removeEdges(com.badlogic.gdx.utils.Array<? extends Edge<V>> edges) {
-        for (Edge<V> e : edges) {
-            removeConnection(e.getInternalNodeA(), e.getInternalNodeB());
-        }
-    }
-
     public void removeEdgeIf(final ObjPredicate<Edge<V>> predicate) {
         Collection<Edge<V>> existing = getEdges();
-        com.badlogic.gdx.utils.Array<Edge<V>> edges = new com.badlogic.gdx.utils.Array<>(false, existing.size());
+        ObjectDeque<Edge<V>> edges = new ObjectDeque<>(existing.size());
         for(Edge<V> v : existing){
             if(predicate.test(v)) edges.add(v);
         }

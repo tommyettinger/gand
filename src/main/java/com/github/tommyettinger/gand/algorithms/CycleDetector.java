@@ -1,12 +1,12 @@
 package com.github.tommyettinger.gand.algorithms;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import com.github.tommyettinger.gand.Array;
 import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Graph;
 import com.github.tommyettinger.gand.Node;
+import com.github.tommyettinger.gand.utils.ObjectDeque;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class CycleDetector<V> extends Algorithm<V> {
 
@@ -42,7 +42,7 @@ public class CycleDetector<V> extends Algorithm<V> {
     private boolean detectCycleDFS(Node<V> v, Node<V> parent, Set<Node<V>> recursiveStack, int runID, Graph<V> graph) {
         v.setProcessed(true);
         recursiveStack.add(v);
-        Array<Connection<V>> outEdges = v.getOutEdges();
+        ObjectDeque<Connection<V>> outEdges = v.getOutEdges();
         for (Connection<V> e : outEdges) {
             Node<V> u = e.getNodeB();
             if (!graph.isDirected() && u.equals(parent)) continue;

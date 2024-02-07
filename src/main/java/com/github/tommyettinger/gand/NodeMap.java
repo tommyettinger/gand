@@ -24,6 +24,8 @@ SOFTWARE.
 
 package com.github.tommyettinger.gand;
 
+import com.github.tommyettinger.gand.utils.ObjectDeque;
+
 import java.util.Comparator;
 import java.util.Iterator;
 
@@ -423,7 +425,7 @@ class NodeMap<V> {
 
         v.setSeen(true);
 
-        Array<Connection<V>> outEdges = v.getOutEdges();
+        ObjectDeque<Connection<V>> outEdges = v.getOutEdges();
         for (Connection<V> e : outEdges) {
             if (!recursiveTopologicalSort(e.getNodeB(), runID)) return false;
         }

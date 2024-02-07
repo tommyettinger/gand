@@ -1,11 +1,11 @@
 package com.github.tommyettinger.gand.algorithms;
 
-import com.github.tommyettinger.gand.Array;
 import com.github.tommyettinger.gand.BinaryHeap;
 import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Node;
 import com.github.tommyettinger.gand.Path;
 import com.github.tommyettinger.gand.utils.Heuristic;
+import com.github.tommyettinger.gand.utils.ObjectDeque;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 
 public class AStarSearch<V> extends Algorithm<V> {
@@ -55,7 +55,7 @@ public class AStarSearch<V> extends Algorithm<V> {
                 return true;
             }
 
-            Array<Connection<V>> outEdges = u.getOutEdges();
+            ObjectDeque<Connection<V>> outEdges = u.getOutEdges();
             for (Connection<V> e : outEdges) {
                 Node<V> v = e.getNodeB();
                 v.resetAlgorithmAttribs(id);
@@ -132,7 +132,7 @@ public class AStarSearch<V> extends Algorithm<V> {
                     if (step.ignore) continue;
                 }
                 u.setProcessed(true);
-                Array<Connection<V>> outEdges = u.getOutEdges();
+                ObjectDeque<Connection<V>> outEdges = u.getOutEdges();
                 for (Connection<V> e : outEdges) {
                     Node<V> v = e.getNodeB();
                     v.resetAlgorithmAttribs(id);
