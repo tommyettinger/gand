@@ -17,6 +17,9 @@
 
 package com.github.tommyettinger.gand.utils;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
+
 import java.util.*;
 
 /**
@@ -28,7 +31,7 @@ import java.util.*;
  * and {@link #set(int, Object)}. Unlike ArrayDeque in the JDK, this implements {@link #equals(Object)} and {@link #hashCode()}, as well
  * as {@link #equalsIdentity(Object)}.
  */
-public class ObjectDeque<T> implements Deque<T> {
+public class ObjectDeque<T> implements Deque<T>, Json.Serializable {
 
 	/**
 	 * The value returned when nothing can be obtained from this deque and an exception is not meant to be thrown,
@@ -1760,6 +1763,23 @@ public class ObjectDeque<T> implements Deque<T> {
 			throw new NoSuchElementException("ObjectDeque is empty.");
 		}
 		return get(random.nextInt(size));
+	}
+
+	@Override
+	public void write(Json json) {
+		json.writeArrayStart("items");
+		for (int i = 0; i < size; i++) {
+			json.writeValue(get(i), null);
+		}
+		json.writeArrayEnd();
+	}
+
+	@Override
+	public void read(Json json, JsonValue jsonData) {
+		clear();
+		for (JsonValue value = jsonData.child; value != null; value = value.next) {
+			add(json.readValue(null, value));
+		}
 	}
 
 	/**
