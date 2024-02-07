@@ -25,11 +25,14 @@ package com.github.tommyettinger.gand;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gand.Connection.DirectedConnection;
 import com.github.tommyettinger.gand.algorithms.DirectedGraphAlgorithms;
 
-public class DirectedGraph<V> extends Graph<V> {
+public class DirectedGraph<V> extends Graph<V> implements Json.Serializable {
 
     final DirectedGraphAlgorithms<V> algorithms;
 
@@ -119,5 +122,35 @@ public class DirectedGraph<V> extends Graph<V> {
         return nodeMap.topologicalSort();
     }
 
+    @Override
+    public void write(Json json) {
+        Set<?> vertices = getVertices();
+        json.writeArrayStart("v");
+        for(Object vertex : vertices) {
+            json.writeValue(vertex, null);
+        }
+        json.writeArrayEnd();
+        Collection<? extends Edge<?>> edges = getEdges();
+        json.writeArrayStart("e");
+        for(Edge<?> edge : edges) {
+            json.writeValue(edge.getA(), null);
+            json.writeValue(edge.getB(), null);
+            json.writeValue(edge.getWeight(), float.class);
+        }
+        json.writeArrayEnd();
 
+    }
+
+    @Override
+    public void read(Json json, JsonValue jsonData) {
+        this.removeAllVertices();
+        JsonValue entry = jsonData.getChild("v");
+        for (; entry != null; entry = entry.next) {
+            addVertex(json.readValue(null, entry));
+        }
+        entry = jsonData.getChild("e");
+        for (; entry != null; entry = entry.next) {
+            addEdge(json.readValue(null, entry), json.readValue(null, entry = entry.next), (entry = entry.next).asFloat());
+        }
+    }
 }

@@ -23,12 +23,15 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gand.Connection.UndirectedConnection;
 import com.github.tommyettinger.gand.algorithms.UndirectedGraphAlgorithms;
 
 import java.util.Collection;
+import java.util.Set;
 
-public class UndirectedGraph<V> extends Graph<V> {
+public class UndirectedGraph<V> extends Graph<V> implements Json.Serializable {
 
     UndirectedGraphAlgorithms<V> algorithms;
 
@@ -137,5 +140,37 @@ public class UndirectedGraph<V> extends Graph<V> {
     public int getDegree(V v) {
         Node<V> node = getNode(v);
         return node == null ? -1 : node.getOutDegree();
+    }
+
+    @Override
+    public void write(Json json) {
+        Set<?> vertices = getVertices();
+        json.writeArrayStart("v");
+        for(Object vertex : vertices) {
+            json.writeValue(vertex, null);
+        }
+        json.writeArrayEnd();
+        Collection<? extends Edge<?>> edges = getEdges();
+        json.writeArrayStart("e");
+        for(Edge<?> edge : edges) {
+            json.writeValue(edge.getA(), null);
+            json.writeValue(edge.getB(), null);
+            json.writeValue(edge.getWeight(), float.class);
+        }
+        json.writeArrayEnd();
+
+    }
+
+    @Override
+    public void read(Json json, JsonValue jsonData) {
+        this.removeAllVertices();
+        JsonValue entry = jsonData.getChild("v");
+        for (; entry != null; entry = entry.next) {
+            addVertex(json.readValue(null, entry));
+        }
+        entry = jsonData.getChild("e");
+        for (; entry != null; entry = entry.next) {
+            addEdge(json.readValue(null, entry), json.readValue(null, entry = entry.next), (entry = entry.next).asFloat());
+        }
     }
 }

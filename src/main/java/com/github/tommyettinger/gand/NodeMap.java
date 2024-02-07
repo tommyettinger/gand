@@ -53,14 +53,14 @@ class NodeMap<V> {
     int threshold = (int) (RESIZE_THRESHOLD * MIN_TABLE_LENGTH);
 
     // collections for returning to the user
-    VertexCollection<V> vertexCollection;
+    VertexSet<V> vertexSet;
     NodeCollection<V> nodeCollection;
 
     @SuppressWarnings("unchecked")
     public NodeMap(Graph<V> graph) {
         this.graph = graph;
         table = (Node<V>[]) new Node[MIN_TABLE_LENGTH];
-        vertexCollection = new VertexCollection<>(this);
+        vertexSet = new VertexSet<>(this);
         nodeCollection = new NodeCollection<>(this);
     }
 

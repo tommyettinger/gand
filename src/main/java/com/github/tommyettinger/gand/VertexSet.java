@@ -24,18 +24,15 @@ SOFTWARE.
 
 package com.github.tommyettinger.gand;
 
-import java.util.AbstractCollection;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 import com.github.tommyettinger.gand.NodeMap.NodeIterator;
 
-class VertexCollection<V> extends AbstractCollection<V> {
+class VertexSet<V> extends AbstractSet<V> {
 
     final NodeMap<V> nodeMap;
 
-    VertexCollection(NodeMap<V> nodeMap) {
+    VertexSet(NodeMap<V> nodeMap) {
         this.nodeMap = nodeMap;
     }
 
@@ -120,19 +117,6 @@ class VertexCollection<V> extends AbstractCollection<V> {
     @Override
     public void clear() {
         Errors.throwModificationException();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        VertexCollection<?> that = (VertexCollection<?>) o;
-        return nodeMap.equals(that.nodeMap);
-    }
-
-    @Override
-    public int hashCode() {
-        return nodeMap.hashCode();
     }
 
     static class VertexIterator<V> implements Iterator<V> {

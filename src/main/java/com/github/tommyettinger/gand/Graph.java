@@ -420,8 +420,8 @@ public abstract class Graph<V> {
      *
      * @return an unmodifiable collection of all the vertices in the graph
      */
-    public Collection<V> getVertices() {
-        return nodeMap.vertexCollection;
+    public Set<V> getVertices() {
+        return nodeMap.vertexSet;
     }
 
 
