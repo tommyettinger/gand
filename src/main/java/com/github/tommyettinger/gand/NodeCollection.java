@@ -24,10 +24,7 @@ SOFTWARE.
 
 package com.github.tommyettinger.gand;
 
-import java.util.AbstractCollection;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 import com.github.tommyettinger.gand.NodeMap.NodeIterator;
 
@@ -134,13 +131,14 @@ class NodeCollection<V> extends AbstractCollection<Node<V>> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         NodeCollection<?> that = (NodeCollection<?>) o;
-        return nodeMap.equals(that.nodeMap);
+
+        return Objects.equals(nodeMap, that.nodeMap);
     }
 
     @Override
     public int hashCode() {
-        return nodeMap.hashCode();
+        return nodeMap != null ? nodeMap.hashCode() : 0;
     }
-
 }

@@ -26,13 +26,14 @@ package com.github.tommyettinger.gand;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.github.tommyettinger.gand.utils.ObjectDeque;
 
+import java.util.Objects;
+
 public class Node<V> {
 
     //================================================================================
     // Graph structure related members
     //================================================================================
 
-    public final int idHash;
     private final V object;
 
     protected ArrayMap<Node<V>, Connection<V>> neighbors = new ArrayMap<>(true, 8);
@@ -75,7 +76,6 @@ public class Node<V> {
     public Node(V v, boolean trackInEdges, int objectHash) {
         this.object = v;
         this.mapHash = objectHash;
-        idHash = System.identityHashCode(this);
         if (trackInEdges) setInEdges(new ObjectDeque<>(8));
     }
 
@@ -215,8 +215,18 @@ public class Node<V> {
     //================================================================================
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Node<?> node = (Node<?>) o;
+
+        return Objects.equals(object, node.object);
+    }
+
+    @Override
     public int hashCode() {
-        return idHash;
+        return mapHash;
     }
 
     @Override

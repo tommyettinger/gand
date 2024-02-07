@@ -517,4 +517,22 @@ public abstract class Graph<V> {
         return (isDirected() ? "Directed" : "Undirected") + " graph with " +
                 size() + " vertices and " + getEdgeCount() + " edges";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Graph<?> graph = (Graph<?>) o;
+
+        if (!nodeMap.equals(graph.nodeMap)) return false;
+        return edgeMap.equals(graph.edgeMap);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = nodeMap.hashCode();
+        result = 31 * result + edgeMap.hashCode();
+        return result;
+    }
 }

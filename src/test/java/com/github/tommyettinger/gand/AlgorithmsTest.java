@@ -23,13 +23,14 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
+
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.tommyettinger.gand.TestUtils.Vector2;
+import com.badlogic.gdx.math.Vector2;
 import com.github.tommyettinger.gand.utils.Heuristic;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 

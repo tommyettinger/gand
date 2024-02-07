@@ -34,7 +34,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.github.tommyettinger.gand.TestUtils.Vector2;
+import com.badlogic.gdx.math.Vector2;
 import com.github.tommyettinger.gand.utils.BadHashInteger;
 
 import static org.junit.Assert.assertEquals;
@@ -128,7 +128,7 @@ public class GraphTest {
     }
 
     @Test
-    public void vertexanBeRemovedFromDirectedGraph() {
+    public void vertexCanBeRemovedFromDirectedGraph() {
         DirectedGraph<Integer> graph = new DirectedGraph<>();
 
         int n = 10;

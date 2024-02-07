@@ -23,46 +23,9 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
-import com.badlogic.gdx.utils.NumberUtils;
+import com.badlogic.gdx.math.Vector2;
 
 class TestUtils {
-
-    static class Vector2 {
-
-        float x, y;
-
-        Vector2(float x, float y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        float dst (Vector2 v) {
-            final float x_d = v.x - x;
-            final float y_d = v.y - y;
-            return (float) Math.sqrt(x_d * x_d + y_d * y_d);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Vector2 vector2 = (Vector2) o;
-            return Float.compare(vector2.x, x) == 0 &&
-                    Float.compare(vector2.y, y) == 0;
-        }
-
-        @Override
-        public int hashCode() {
-            return (int) (NumberUtils.floatToIntBits(x) * 0xC13FA9A902A6328FL
-                                + NumberUtils.floatToIntBits(y) * 0x91E10DA5C79E7B1DL >>> 32);
-        }
-
-        @Override
-        public String toString() {
-            return "(" +x +", " + y +')';
-        }
-    }
-
     static Graph<Vector2> makeGridGraph(Graph<Vector2> graph, int n) {
 
         for (int i = 0; i < n; i++) {

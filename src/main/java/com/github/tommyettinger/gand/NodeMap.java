@@ -26,6 +26,7 @@ package com.github.tommyettinger.gand;
 
 import com.github.tommyettinger.gand.utils.ObjectDeque;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 
@@ -471,5 +472,29 @@ class NodeMap<V> {
         return sb.append("--------------").toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
+        NodeMap<?> nodeMap = (NodeMap<?>) o;
+
+        if (size != nodeMap.size) return false;
+        if (table.length != nodeMap.table.length) return false;
+        for (int i = 0; i < table.length; i++) {
+            if(table[i] == null) {
+                if(nodeMap.table[i] != null) return false;
+            }
+            else if(nodeMap.table[i] == null) return false;
+            else if(!table[i].equals(nodeMap.table[i])) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(table);
+        result = 31 * result + size;
+        return result;
+    }
 }

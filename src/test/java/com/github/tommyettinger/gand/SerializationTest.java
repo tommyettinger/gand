@@ -27,7 +27,6 @@ public class SerializationTest {
         });
     }
 
-
     @Test
     public void testObjectDeque() {
         Json json = new Json();
@@ -37,6 +36,32 @@ public class SerializationTest {
         System.out.println(text);
         ObjectDeque next = json.fromJson(ObjectDeque.class, Vector2.class, text);
         System.out.println(json.toJson(next, ObjectDeque.class, Vector2.class));
+        Assert.assertEquals(data, next);
+    }
+
+    @Test
+    public void testUndirectedGraph() {
+        Json json = new Json();
+        registerVector2(json);
+        UndirectedGraph<Vector2> data = new UndirectedGraph<>();
+        TestUtils.makeGridGraph(data, 15);
+        String text = json.toJson(data, UndirectedGraph.class);
+        System.out.println(text);
+        UndirectedGraph next = json.fromJson(UndirectedGraph.class, text);
+        System.out.println(json.toJson(next, UndirectedGraph.class));
+        Assert.assertEquals(data, next);
+    }
+
+    @Test
+    public void testDirectedGraph() {
+        Json json = new Json();
+        registerVector2(json);
+        DirectedGraph<Vector2> data = new DirectedGraph<>();
+        TestUtils.makeGridGraph(data, 15);
+        String text = json.toJson(data, DirectedGraph.class);
+        System.out.println(text);
+        DirectedGraph next = json.fromJson(DirectedGraph.class, text);
+        System.out.println(json.toJson(next, DirectedGraph.class));
         Assert.assertEquals(data, next);
     }
 }
