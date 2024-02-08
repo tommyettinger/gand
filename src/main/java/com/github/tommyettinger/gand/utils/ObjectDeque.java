@@ -66,14 +66,14 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable {
 	protected transient ObjectDequeIterator<T> descendingIterator2;
 
 	/**
-	 * Creates a new ObjectDeque which can hold 16 values without needing to resize backing array.
+	 * Creates a new ObjectDeque which can hold 16 values without needing to resize its backing array.
 	 */
 	public ObjectDeque () {
 		this(16);
 	}
 
 	/**
-	 * Creates a new ObjectDeque which can hold the specified number of values without needing to resize backing array.
+	 * Creates a new ObjectDeque which can hold the specified number of values without needing to resize its backing array.
 	 */
 	public ObjectDeque (int initialSize) {
 		// noinspection unchecked
@@ -104,7 +104,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable {
 	}
 
 	/**
-	 * Creates a new ObjectDeque using all of the contents of the given array.
+	 * Creates a new ObjectDeque using all the contents of the given array.
 	 *
 	 * @param a an array of T that will be copied into this and used in full
 	 */

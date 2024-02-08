@@ -24,24 +24,82 @@ SOFTWARE.
 
 package com.github.tommyettinger.gand;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gand.utils.ObjectDeque;
 
-public class Path<V> extends ObjectDeque<V> {
+import java.util.Collection;
+
+public class Path<V> extends ObjectDeque<V> implements Json.Serializable {
 
     public static final Path EMPTY_PATH = new Path(0, false);
 
     private float length = 0;
 
+    /**
+     * Creates a new Path which can hold 16 values without needing to resize its backing array.
+     */
+    public Path() {
+        super();
+    }
+
     public Path(int capacity) {
         super(capacity);
-        this.size = capacity;
-
     }
 
     public Path(int capacity, boolean resize) {
         super(capacity);
         if (resize) this.size = capacity;
+    }
 
+    /**
+     * Creates a new Path using all the contents of the given Collection.
+     *
+     * @param coll a Collection of T that will be copied into this and used in full
+     */
+    public Path(Collection<? extends V> coll) {
+        super(coll);
+    }
+
+    /**
+     * Copies the given ObjectDeque exactly into a new Path. Individual values will be shallow-copied.
+     * Length will be 0.
+     *
+     * @param deque an ObjectDeque to copy
+     */
+    public Path(ObjectDeque<? extends V> deque) {
+        super(deque);
+    }
+
+    /**
+     * Copies the given Path exactly into this one. Individual values will be shallow-copied.
+     * Length will be the same as in the parameter.
+     *
+     * @param path a Path to copy
+     */
+    public Path(Path<? extends V> path) {
+        super(path);
+        length = path.length;
+    }
+
+    /**
+     * Creates a new Path using all the contents of the given array.
+     *
+     * @param a an array of T that will be copied into this and used in full
+     */
+    public Path(V[] a) {
+        super(a);
+    }
+
+    /**
+     * Creates a new Path using {@code count} items from {@code a}, starting at {@code offset}.
+     *
+     * @param a      an array of T
+     * @param offset where in {@code a} to start using items
+     * @param count  how many items to use from {@code a}
+     */
+    public Path(V[] a, int offset, int count) {
+        super(a, offset, count);
     }
 
     /**
@@ -53,5 +111,16 @@ public class Path<V> extends ObjectDeque<V> {
 
     public void setLength(float length) {
         this.length = length;
+    }
+//
+    public static <T> Path<T> with (T item) {
+        Path<T> path = new Path<>();
+        path.add(item);
+        return path;
+    }
+
+    @SafeVarargs
+    public static <T> Path<T> with (T... items) {
+        return new Path<>(items);
     }
 }

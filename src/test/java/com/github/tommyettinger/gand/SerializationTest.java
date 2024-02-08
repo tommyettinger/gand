@@ -40,6 +40,22 @@ public class SerializationTest {
     }
 
     @Test
+    public void testPath() {
+        Json json = new Json();
+        registerVector2(json);
+        int n = 20;
+        Graph<Vector2> undirectedGraph = TestUtils.makeGridGraph(new UndirectedGraph<>(), n);
+        Vector2 start = new Vector2(0, 0), end = new Vector2(n - 1, n - 1);
+        Path<Vector2> data = undirectedGraph.algorithms().findShortestPath(start, end);
+
+        String text = json.toJson(data, Path.class, Vector2.class);
+        System.out.println(text);
+        Path next = json.fromJson(Path.class, Vector2.class, text);
+        System.out.println(json.toJson(next, Path.class, Vector2.class));
+        Assert.assertEquals(data, next);
+    }
+
+    @Test
     public void testUndirectedGraph() {
         Json json = new Json();
         registerVector2(json);
