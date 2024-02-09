@@ -8,5 +8,5 @@ import com.github.tommyettinger.gand.algorithms.SearchStep;
  * of type V.
  * @param <V> the type parameter for each SearchStep; the vertex type
  */
-public interface SearchProcessor<V> extends ObjConsumer<SearchStep<V>> {
+public interface SearchProcessor<V> extends ObjectConsumer<SearchStep<V>> {
 }

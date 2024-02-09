@@ -9,7 +9,7 @@ package com.github.tommyettinger.gand.utils;
  * <br>
  * This is a functional interface whose functional method is {@link #accept(Object)}.
  */
-public interface ObjConsumer<T> {
+public interface ObjectConsumer<T> {
   /**
    * Performs this operation on the given argument.
    *

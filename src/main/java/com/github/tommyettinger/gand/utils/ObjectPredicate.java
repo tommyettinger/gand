@@ -9,7 +9,7 @@ package com.github.tommyettinger.gand.utils;
  * <br>
  * This is a functional interface whose functional method is {@link #test(Object)}.
  */
-public interface ObjPredicate<T> {
+public interface ObjectPredicate<T> {
   /**
    * Evaluates this predicate on the given argument.
    *

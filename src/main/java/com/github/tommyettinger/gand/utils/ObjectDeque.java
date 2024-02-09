@@ -31,7 +31,7 @@ import java.util.*;
  * and {@link #set(int, Object)}. Unlike ArrayDeque in the JDK, this implements {@link #equals(Object)} and {@link #hashCode()}, as well
  * as {@link #equalsIdentity(Object)}.
  */
-public class ObjectDeque<T> implements Deque<T>, Json.Serializable {
+public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess {
 
 	/**
 	 * The value returned when nothing can be obtained from this deque and an exception is not meant to be thrown,

@@ -24,7 +24,7 @@ SOFTWARE.
 package com.github.tommyettinger.gand;
 
 import com.github.tommyettinger.gand.algorithms.Algorithms;
-import com.github.tommyettinger.gand.utils.ObjPredicate;
+import com.github.tommyettinger.gand.utils.ObjectPredicate;
 import com.github.tommyettinger.gand.utils.ObjectDeque;
 
 import java.util.*;
@@ -181,7 +181,7 @@ public abstract class Graph<V> {
         }
     }
 
-    public void removeVertexIf(final ObjPredicate<V> predicate) {
+    public void removeVertexIf(final ObjectPredicate<V> predicate) {
         Collection<V> existing = getVertices();
         ObjectDeque<V> vertices = new ObjectDeque<>(existing.size());
         for(V v : existing){
@@ -257,7 +257,7 @@ public abstract class Graph<V> {
         }
     }
 
-    public void removeEdgeIf(final ObjPredicate<Edge<V>> predicate) {
+    public void removeEdgeIf(final ObjectPredicate<Edge<V>> predicate) {
         Collection<Edge<V>> existing = getEdges();
         ObjectDeque<Edge<V>> edges = new ObjectDeque<>(existing.size());
         for(Edge<V> v : existing){
