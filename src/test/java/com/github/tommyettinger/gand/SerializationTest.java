@@ -7,26 +7,9 @@ import com.github.tommyettinger.gand.utils.ObjectDeque;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static com.github.tommyettinger.gand.JsonRegistration.registerVector2;
+
 public class SerializationTest {
-    public static void registerVector2(Json json) {
-        json.addClassTag("V2", Vector2.class);
-        json.setSerializer(Vector2.class, new Json.Serializer<Vector2>() {
-            @Override
-            public void write(Json json, Vector2 object, Class knownType) {
-                json.writeObjectStart(Vector2.class, knownType);
-                json.writeValue("x", object.x);
-                json.writeValue("y", object.y);
-                json.writeObjectEnd();
-            }
-
-            @Override
-            public Vector2 read(Json json, JsonValue jsonData, Class type) {
-                if (jsonData == null || jsonData.isNull()) return null;
-                return new Vector2(jsonData.getFloat("x", 0f), jsonData.getFloat("y", 0f));
-            }
-        });
-    }
-
     @Test
     public void testObjectDeque() {
         Json json = new Json();
