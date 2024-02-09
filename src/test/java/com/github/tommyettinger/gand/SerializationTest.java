@@ -2,12 +2,11 @@ package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gand.utils.ObjectDeque;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.github.tommyettinger.gand.JsonRegistration.registerVector2;
+import static com.github.tommyettinger.gand.utils.JsonRegistration.registerVector2;
 
 public class SerializationTest {
     @Test

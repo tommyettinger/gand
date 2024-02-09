@@ -1,13 +1,24 @@
-package com.github.tommyettinger.gand;
+package com.github.tommyettinger.gand.utils;
 
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.Vector4;
+import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
+/**
+ * Utility methods to register common vertex types with an instance of libGDX {@link Json}.
+ * This can handle {@link Vector2}, {@link Vector3}, {@link Vector4}, {@link GridPoint2}, and {@link GridPoint3}.
+ * It also adds short class tags for each registered type, such as "V2" or "G3".
+ */
 public class JsonRegistration {
     private JsonRegistration() {}
+
+    public static void registerAll(Json json) {
+        registerVector2(json);
+        registerVector3(json);
+        registerVector4(json);
+        registerGridPoint2(json);
+        registerGridPoint3(json);
+    }
 
     public static void registerVector2(Json json) {
         json.addClassTag("V2", Vector2.class);
@@ -69,4 +80,45 @@ public class JsonRegistration {
             }
         });
     }
+
+
+    public static void registerGridPoint2(Json json) {
+        json.addClassTag("G2", GridPoint2.class);
+        json.setSerializer(GridPoint2.class, new Json.Serializer<GridPoint2>() {
+            @Override
+            public void write(Json json, GridPoint2 object, Class knownType) {
+                json.writeObjectStart(GridPoint2.class, knownType);
+                json.writeValue("x", object.x);
+                json.writeValue("y", object.y);
+                json.writeObjectEnd();
+            }
+
+            @Override
+            public GridPoint2 read(Json json, JsonValue jsonData, Class type) {
+                if (jsonData == null || jsonData.isNull()) return null;
+                return new GridPoint2(jsonData.getInt("x", 0), jsonData.getInt("y", 0));
+            }
+        });
+    }
+
+    public static void registerGridPoint3(Json json) {
+        json.addClassTag("G3", GridPoint3.class);
+        json.setSerializer(GridPoint3.class, new Json.Serializer<GridPoint3>() {
+            @Override
+            public void write(Json json, GridPoint3 object, Class knownType) {
+                json.writeObjectStart(GridPoint3.class, knownType);
+                json.writeValue("x", object.x);
+                json.writeValue("y", object.y);
+                json.writeValue("z", object.z);
+                json.writeObjectEnd();
+            }
+
+            @Override
+            public GridPoint3 read(Json json, JsonValue jsonData, Class type) {
+                if (jsonData == null || jsonData.isNull()) return null;
+                return new GridPoint3(jsonData.getInt("x", 0), jsonData.getInt("y", 0), jsonData.getInt("z", 0));
+            }
+        });
+    }
+
 }
