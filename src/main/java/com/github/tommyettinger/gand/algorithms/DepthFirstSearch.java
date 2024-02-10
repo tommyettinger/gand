@@ -5,6 +5,8 @@ import com.github.tommyettinger.gand.Node;
 import com.github.tommyettinger.gand.utils.ObjectDeque;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 
+import java.util.ArrayList;
+
 public class DepthFirstSearch<V> extends Algorithm<V> {
 
     private SearchProcessor<V> processor;
@@ -36,7 +38,7 @@ public class DepthFirstSearch<V> extends Algorithm<V> {
             }
             if (step.ignore) return isFinished();
         }
-        ObjectDeque<Connection<V>> outEdges = v.getOutEdges();
+        ArrayList<Connection<V>> outEdges = v.getOutEdges();
         for (Connection<V> e : outEdges) {
             Node<V> w = e.getNodeB();
             w.resetAlgorithmAttribs(id);

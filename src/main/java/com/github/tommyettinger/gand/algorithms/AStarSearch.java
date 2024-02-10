@@ -7,6 +7,8 @@ import com.github.tommyettinger.gand.utils.Heuristic;
 import com.github.tommyettinger.gand.utils.ObjectDeque;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 
+import java.util.ArrayList;
+
 public class AStarSearch<V> extends Algorithm<V> {
 
     private Heuristic<V> heuristic;
@@ -54,7 +56,7 @@ public class AStarSearch<V> extends Algorithm<V> {
                 return true;
             }
 
-            ObjectDeque<Connection<V>> outEdges = u.getOutEdges();
+            ArrayList<Connection<V>> outEdges = u.getOutEdges();
             for (Connection<V> e : outEdges) {
                 Node<V> v = e.getNodeB();
                 v.resetAlgorithmAttribs(id);
@@ -131,7 +133,7 @@ public class AStarSearch<V> extends Algorithm<V> {
                     if (step.ignore) continue;
                 }
                 u.setProcessed(true);
-                ObjectDeque<Connection<V>> outEdges = u.getOutEdges();
+                ArrayList<Connection<V>> outEdges = u.getOutEdges();
                 for (Connection<V> e : outEdges) {
                     Node<V> v = e.getNodeB();
                     v.resetAlgorithmAttribs(id);

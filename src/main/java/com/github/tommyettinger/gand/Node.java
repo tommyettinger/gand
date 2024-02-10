@@ -26,6 +26,7 @@ package com.github.tommyettinger.gand;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.github.tommyettinger.gand.utils.ObjectDeque;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class Node<V> {
@@ -37,7 +38,7 @@ public class Node<V> {
     private final V object;
 
     protected ArrayMap<Node<V>, Connection<V>> neighbors = new ArrayMap<>(true, 8);
-    private ObjectDeque<Connection<V>> outEdges = new ObjectDeque<>(8);
+    private ArrayList<Connection<V>> outEdges = new ArrayList<>(8);
     private ObjectDeque<Connection<V>> inEdges;
 
     //================================================================================
@@ -97,7 +98,7 @@ public class Node<V> {
     Connection<V> removeEdge(Node<V> v) {
         Connection<V> edge = neighbors.removeKey(v);
         if (edge == null) return null;
-        getOutEdges().removeValue(edge, false);
+        getOutEdges().remove(edge);
         if (v.getInEdges() != null) v.getInEdges().remove(edge);
         return edge;
     }
@@ -112,7 +113,7 @@ public class Node<V> {
     // Public Methods
     //================================================================================
 
-    public ObjectDeque<Connection<V>> getConnections() {
+    public ArrayList<Connection<V>> getConnections() {
         return getOutEdges();
     }
 
@@ -125,7 +126,7 @@ public class Node<V> {
     }
 
     public int getOutDegree() {
-        return getOutEdges().size;
+        return getOutEdges().size();
     }
 
     //================================================================================
@@ -234,11 +235,11 @@ public class Node<V> {
         return "["+object+"]";
     }
 
-    public ObjectDeque<Connection<V>> getOutEdges() {
+    public ArrayList<Connection<V>> getOutEdges() {
         return outEdges;
     }
 
-    public void setOutEdges(ObjectDeque<Connection<V>> outEdges) {
+    public void setOutEdges(ArrayList<Connection<V>> outEdges) {
         this.outEdges = outEdges;
     }
 
