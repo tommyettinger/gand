@@ -283,7 +283,11 @@ class NodeMap<V> {
      * v would be held.
      */
     static int hash(Object v) {
-        return (int)(v.hashCode() * 0xABC98388FB8FAC03L >>> 25);
+        return v.hashCode();// * 0xFAC03 ^ 0xF0EDEF5D;
+//        return v.hashCode() * 0xFAC03 ^ 0xF0EDEF5D;
+
+//        return (int)(v.hashCode() * 0xABC98388FB8FAC03L >>> 25);
+
 //        int hashcode = v.hashCode();
 //        return hashcode ^ (hashcode >>> 16);
     }
