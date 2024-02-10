@@ -24,11 +24,11 @@ SOFTWARE.
 package com.github.tommyettinger.gand;
 
 import com.github.tommyettinger.gand.algorithms.Algorithms;
+import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
 import com.github.tommyettinger.gand.utils.ObjectPredicate;
-import com.github.tommyettinger.gand.utils.ObjectDeque;
+import com.github.tommyettinger.gand.ds.ObjectDeque;
 
 import java.util.*;
-import java.util.Map.Entry;
 
 
 public abstract class Graph<V> {
@@ -43,7 +43,7 @@ public abstract class Graph<V> {
      * This is a map so that for undirected graphs, a consistent edge instance can be obtained from
      * either (u, v) or (v, u)
      */
-    protected final LinkedHashMap<Connection<V>, Connection<V>> edgeMap;
+    protected final ObjectOrderedSet<Connection<V>> edgeSet;
 
     protected final Internals<V> internals = new Internals<>(this);
 
@@ -56,7 +56,7 @@ public abstract class Graph<V> {
 
     protected Graph() {
         nodeMap = new NodeMap<>(this);
-        edgeMap = new LinkedHashMap<>();
+        edgeSet = new ObjectOrderedSet<>();
     }
 
     protected Graph(Collection<V> vertices) {
@@ -69,7 +69,7 @@ public abstract class Graph<V> {
     protected Graph(Collection<V> vertices, Collection<Edge<V>> edges, float defaultEdgeWeight) {
         nodeMap = new NodeMap<>(this);
         this.setDefaultEdgeWeight(defaultEdgeWeight);
-        edgeMap = new LinkedHashMap<>(edges.size());
+        edgeSet = new ObjectOrderedSet<>(edges.size());
         for (V v : vertices) {
             addVertex(v);
         }
@@ -81,8 +81,8 @@ public abstract class Graph<V> {
     protected Graph(Graph<V> graph) {
         nodeMap = new NodeMap<>(this);
         this.setDefaultEdgeWeight(graph.getDefaultEdgeWeight());
-        Collection<Edge<V>> edges = graph.getEdges();
-        edgeMap = new LinkedHashMap<>(edges.size());
+        Collection<Connection<V>> edges = graph.getEdges();
+        edgeSet = new ObjectOrderedSet<>(edges.size());
         Collection<V> vertices = graph.getVertices();
         for (V v : vertices) {
             addVertex(v);
@@ -133,7 +133,8 @@ public abstract class Graph<V> {
         }
     }
 
-    public void addVertices(V... vertices) {
+    @SafeVarargs
+    public final void addVertices(V... vertices) {
         for (V v : vertices) {
             addVertex(v);
         }
@@ -258,7 +259,7 @@ public abstract class Graph<V> {
     }
 
     public void removeEdgeIf(final ObjectPredicate<Edge<V>> predicate) {
-        Collection<Edge<V>> existing = getEdges();
+        Collection<Connection<V>> existing = getEdges();
         ObjectDeque<Edge<V>> edges = new ObjectDeque<>(existing.size());
         for(Edge<V> v : existing){
             if(predicate.test(v)) edges.add(v);
@@ -273,14 +274,14 @@ public abstract class Graph<V> {
         for (Node<V> v : getNodes()) {
             v.disconnect();
         }
-        edgeMap.clear();
+        edgeSet.clear();
     }
 
     /**
      * Removes all vertices and edges from the graph.
      */
     public void removeAllVertices() {
-        edgeMap.clear();
+        edgeSet.clear();
         nodeMap.clear();
     }
 
@@ -301,12 +302,10 @@ public abstract class Graph<V> {
      * @param comparator a comparator for comparing edges
      */
     public void sortEdges(final Comparator<Connection<V>> comparator) {
-        List<Entry<Connection<V>, Connection<V>>> entryList = new ArrayList<>(edgeMap.entrySet());
-        Collections.sort(entryList, (a, b) -> comparator.compare(a.getKey(), b.getKey()));;
-        edgeMap.clear();
-        for (Entry<Connection<V>, Connection<V>> entry : entryList) {
-            edgeMap.put(entry.getKey(), entry.getValue());
-        }
+        List<Connection<V>> entryList = new ArrayList<>(edgeSet);
+        Collections.sort(entryList, comparator);
+        edgeSet.clear();
+        edgeSet.addAll(entryList);
     }
 
     //--------------------
@@ -324,7 +323,7 @@ public abstract class Graph<V> {
             e = obtainEdge();
             e.set(a, b, weight);
             a.addEdge(e);
-            edgeMap.put(e, e);
+            edgeSet.add(e);
         } else {
             e.setWeight(weight);
         }
@@ -338,7 +337,7 @@ public abstract class Graph<V> {
     boolean removeConnection(Node<V> a, Node<V> b, boolean removeFromMap) {
         Connection<V> e = a.removeEdge(b);
         if (e == null) return false;
-        if (removeFromMap) edgeMap.remove(e);
+        if (removeFromMap) edgeSet.remove(e);
         return true;
     }
 
@@ -411,8 +410,8 @@ public abstract class Graph<V> {
      *
      * @return an unmodifiable collection of all the edges in the graph
      */
-    public Collection<Edge<V>> getEdges() {
-        return Collections.unmodifiableCollection(edgeMap.values());
+    public Set<Connection<V>> getEdges() {
+        return Collections.unmodifiableSet(edgeSet);
     }
 
     /**
@@ -449,7 +448,7 @@ public abstract class Graph<V> {
      * @return the number of edges
      */
     public int getEdgeCount() {
-        return edgeMap.size();
+        return edgeSet.size();
     }
 
 
@@ -526,13 +525,13 @@ public abstract class Graph<V> {
         Graph<?> graph = (Graph<?>) o;
 
         if (!nodeMap.equals(graph.nodeMap)) return false;
-        return edgeMap.equals(graph.edgeMap);
+        return edgeSet.equals(graph.edgeSet);
     }
 
     @Override
     public int hashCode() {
         int result = nodeMap.hashCode();
-        result = 31 * result + edgeMap.hashCode();
+        result = 31 * result + edgeSet.hashCode();
         return result;
     }
 }

@@ -4,7 +4,7 @@ import com.badlogic.gdx.utils.NumberUtils;
 import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Node;
 import com.github.tommyettinger.gand.UndirectedGraph;
-import com.github.tommyettinger.gand.utils.ObjectDeque;
+import com.github.tommyettinger.gand.ds.ObjectDeque;
 
 public class MinimumWeightSpanningTree<V> extends Algorithm<V>{
 

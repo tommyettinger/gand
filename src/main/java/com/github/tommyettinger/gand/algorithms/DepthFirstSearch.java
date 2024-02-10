@@ -2,7 +2,7 @@ package com.github.tommyettinger.gand.algorithms;
 
 import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Node;
-import com.github.tommyettinger.gand.utils.ObjectDeque;
+import com.github.tommyettinger.gand.ds.ObjectDeque;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 
 import java.util.ArrayList;

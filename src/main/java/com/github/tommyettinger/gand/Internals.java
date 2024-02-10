@@ -24,6 +24,8 @@ SOFTWARE.
 
 package com.github.tommyettinger.gand;
 
+import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
+
 import java.util.Collection;
 
 public class Internals<V> {
@@ -42,8 +44,8 @@ public class Internals<V> {
         return graph.nodeMap.nodeCollection;
     }
 
-    public Collection<Connection<V>> getConnections() {
-        return graph.edgeMap.values();
+    public ObjectOrderedSet<Connection<V>> getConnections() {
+        return graph.edgeSet;
     }
 
     public void addConnection(Node<V> a, Node<V> b, float weight) {

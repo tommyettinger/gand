@@ -80,7 +80,7 @@ public class UndirectedGraph<V> extends Graph<V> implements Json.Serializable {
             e2.set(b, a, weight);
             a.addEdge(e1);
             b.addEdge(e2);
-            edgeMap.put(e1, e1);
+            edgeSet.add(e1);
             e = e1;
         } else {
             e.setWeight(weight);
@@ -91,7 +91,7 @@ public class UndirectedGraph<V> extends Graph<V> implements Json.Serializable {
     @Override
     Connection<V> addConnection(Node<V> a, Node<V> b) {
         Connection<V> e = a.getEdge(b);
-        return e != null ? edgeMap.get(e) : addConnection(a, b, getDefaultEdgeWeight());
+        return e != null ? edgeSet.get(e) : addConnection(a, b, getDefaultEdgeWeight());
     }
 
     @Override
@@ -99,14 +99,15 @@ public class UndirectedGraph<V> extends Graph<V> implements Json.Serializable {
         Connection<V> e = a.removeEdge(b);
         if (e == null) return false;
         b.removeEdge(a);
-        edgeMap.remove(e);
+        edgeSet.remove(e);
         return true;
     }
 
     @Override
     Connection<V> getEdge(Node<V> a, Node<V> b) {
         Connection<V> edge = a.getEdge(b);
-        return edge == null ? null : edgeMap.get(edge); // get from map to ensure consistent instance is returned
+        // get from ObjectOrderedSet to ensure consistent instance is returned
+        return edge == null ? null : edgeSet.get(edge);
     }
 
 

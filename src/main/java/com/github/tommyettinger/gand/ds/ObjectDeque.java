@@ -15,7 +15,7 @@
  *
  */
 
-package com.github.tommyettinger.gand.utils;
+package com.github.tommyettinger.gand.ds;
 
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;

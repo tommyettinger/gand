@@ -2,7 +2,7 @@ package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
-import com.github.tommyettinger.gand.utils.ObjectDeque;
+import com.github.tommyettinger.gand.ds.ObjectDeque;
 import org.junit.Assert;
 import org.junit.Test;
 
