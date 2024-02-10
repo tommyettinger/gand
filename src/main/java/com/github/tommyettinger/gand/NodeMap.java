@@ -282,14 +282,18 @@ class NodeMap<V> {
      * Get the hash used to calculate the index in the table at which the Node<V> associated with
      * v would be held.
      */
-    static int hash(Object v) {
-        return v.hashCode();
+    protected int hash(Object v) {
+        // This is substantially slower for Vector2 keys.
+//        return v.hashCode();
+        // This probably is not any better, since it only improves the upper bits.
 //        return v.hashCode() * 0xFAC03 ^ 0xF0EDEF5D;
 
-//        return (int)(v.hashCode() * 0xABC98388FB8FAC03L >>> 25);
+        // 0xABC98388FB8FAC03L is the first constant in Utilities#GOOD_MULTIPLIERS
+        return (int)(v.hashCode() * 0xABC98388FB8FAC03L >>> 25);
 
-//        int hashcode = v.hashCode();
-//        return hashcode ^ (hashcode >>> 16);
+        // The original mixer used here.
+//        int h = v.hashCode();
+//        return h ^ h >>> 16;
     }
 
     /**
