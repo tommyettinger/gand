@@ -302,7 +302,7 @@ public abstract class Graph<V> {
      */
     public void sortEdges(final Comparator<Connection<V>> comparator) {
         List<Entry<Connection<V>, Connection<V>>> entryList = new ArrayList<>(edgeMap.entrySet());
-        entryList.sort((a, b) -> comparator.compare(a.getKey(), b.getKey()));;
+        Collections.sort(entryList, (a, b) -> comparator.compare(a.getKey(), b.getKey()));;
         edgeMap.clear();
         for (Entry<Connection<V>, Connection<V>> entry : entryList) {
             edgeMap.put(entry.getKey(), entry.getValue());

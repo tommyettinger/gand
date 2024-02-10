@@ -25,7 +25,6 @@ SOFTWARE.
 package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gand.utils.ObjectDeque;
 
 import java.util.Collection;

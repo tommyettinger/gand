@@ -24,8 +24,6 @@ SOFTWARE.
 
 package com.github.tommyettinger.gand;
 
-import com.github.tommyettinger.gand.utils.ObjectDeque;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -285,8 +283,9 @@ class NodeMap<V> {
      * v would be held.
      */
     static int hash(Object v) {
-        int hashcode = v.hashCode();
-        return hashcode ^ (hashcode >>> 16);
+        return (int)(v.hashCode() * 0xABC98388FB8FAC03L >>> 25);
+//        int hashcode = v.hashCode();
+//        return hashcode ^ (hashcode >>> 16);
     }
 
     /**

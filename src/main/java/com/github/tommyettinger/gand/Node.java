@@ -23,8 +23,7 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
-import com.badlogic.gdx.utils.ArrayMap;
-import com.github.tommyettinger.gand.utils.ObjectDeque;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -37,9 +36,9 @@ public class Node<V> {
 
     private final V object;
 
-    protected ArrayMap<Node<V>, Connection<V>> neighbors = new ArrayMap<>(true, 8);
+    protected ObjectMap<Node<V>, Connection<V>> neighbors = new ObjectMap<>(8, 0.5f);
     private ArrayList<Connection<V>> outEdges = new ArrayList<>(8);
-    private ObjectDeque<Connection<V>> inEdges;
+    private ArrayList<Connection<V>> inEdges;
 
     //================================================================================
     // Node map fields
@@ -77,7 +76,7 @@ public class Node<V> {
     public Node(V v, boolean trackInEdges, int objectHash) {
         this.object = v;
         this.mapHash = objectHash;
-        if (trackInEdges) setInEdges(new ObjectDeque<>(8));
+        if (trackInEdges) setInEdges(new ArrayList<>(8));
     }
 
     //================================================================================
@@ -96,7 +95,7 @@ public class Node<V> {
     }
 
     Connection<V> removeEdge(Node<V> v) {
-        Connection<V> edge = neighbors.removeKey(v);
+        Connection<V> edge = neighbors.remove(v);
         if (edge == null) return null;
         getOutEdges().remove(edge);
         if (v.getInEdges() != null) v.getInEdges().remove(edge);
@@ -243,11 +242,11 @@ public class Node<V> {
         this.outEdges = outEdges;
     }
 
-    public ObjectDeque<Connection<V>> getInEdges() {
+    public ArrayList<Connection<V>> getInEdges() {
         return inEdges;
     }
 
-    public void setInEdges(ObjectDeque<Connection<V>> inEdges) {
+    public void setInEdges(ArrayList<Connection<V>> inEdges) {
         this.inEdges = inEdges;
     }
 }

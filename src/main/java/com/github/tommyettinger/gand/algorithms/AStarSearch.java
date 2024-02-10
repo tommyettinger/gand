@@ -4,7 +4,6 @@ import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Node;
 import com.github.tommyettinger.gand.Path;
 import com.github.tommyettinger.gand.utils.Heuristic;
-import com.github.tommyettinger.gand.utils.ObjectDeque;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 
 import java.util.ArrayList;

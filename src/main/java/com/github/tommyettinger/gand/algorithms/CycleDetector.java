@@ -3,7 +3,6 @@ package com.github.tommyettinger.gand.algorithms;
 import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Graph;
 import com.github.tommyettinger.gand.Node;
-import com.github.tommyettinger.gand.utils.ObjectDeque;
 
 import java.util.ArrayList;
 import java.util.HashSet;

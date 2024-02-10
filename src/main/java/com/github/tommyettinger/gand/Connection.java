@@ -97,7 +97,7 @@ public abstract class Connection<V> extends Edge<V> {
     // Subclasses
     //================================================================================
 
-    static class DirectedConnection<V> extends Connection<V> {
+    public static class DirectedConnection<V> extends Connection<V> {
 
         @Override
         public boolean hasEndpoints(V u, V v) {
@@ -125,7 +125,7 @@ public abstract class Connection<V> extends Edge<V> {
 
     }
 
-    static class UndirectedConnection<V> extends Connection<V> {
+    public static class UndirectedConnection<V> extends Connection<V> {
 
         private UndirectedConnection<V> linked;
 
