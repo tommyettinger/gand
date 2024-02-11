@@ -67,8 +67,9 @@ class NodeMap<V> {
     /**
      * Return the `Node<V>` to which the vertex v is mapped, or null if not in the map.
      */
+    @SuppressWarnings("unchecked")
     Node<V> get(Object v) {
-        int hash = hash(v);
+        int hash = graph.hash((V)v);
         int i = getIndex(hash);
         Node<V> bucketHead = table[i];
         if (bucketHead == null) return null;
@@ -95,7 +96,7 @@ class NodeMap<V> {
         // but it will only be off by one
         checkLength(1);
 
-        int hash = hash(v);
+        int hash = graph.hash(v);
         int i = getIndex(hash);
         Node<V> bucketHead = table[i];
         if (bucketHead == null) {
@@ -167,7 +168,7 @@ class NodeMap<V> {
      * @return the `Node<V>` that v was associated with, or null if v is not in the map.
      */
     Node<V> remove(V v) {
-        int hash = hash(v);
+        int hash = graph.hash(v);
         int i = getIndex(hash);
         Node<V> currentNode = table[i];
 
@@ -276,24 +277,6 @@ class NodeMap<V> {
      */
     int getIndex(int hash) {
         return hash & table.length - 1;
-    }
-
-    /**
-     * Get the hash used to calculate the index in the table at which the Node<V> associated with
-     * v would be held.
-     */
-    protected int hash(Object v) {
-        // This is substantially slower for Vector2 keys.
-//        return v.hashCode();
-        // This probably is not any better, since it only improves the upper bits.
-//        return v.hashCode() * 0xFAC03 ^ 0xF0EDEF5D;
-
-        // 0xABC98388FB8FAC03L is the first constant in Utilities#GOOD_MULTIPLIERS
-        return (int)(v.hashCode() * 0xABC98388FB8FAC03L >>> 25);
-
-        // The original mixer used here.
-//        int h = v.hashCode();
-//        return h ^ h >>> 16;
     }
 
     /**
@@ -501,8 +484,10 @@ class NodeMap<V> {
 
     @Override
     public int hashCode() {
-        int result = Arrays.hashCode(table);
-        result = 31 * result + size;
+        int result = size;
+        for (int i = 0; i < table.length; i++) {
+            if(table[i] != null) result ^= table[i].hashCode();
+        }
         return result;
     }
 }

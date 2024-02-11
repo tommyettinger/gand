@@ -308,6 +308,24 @@ public abstract class Graph<V> {
         edgeSet.addAll(entryList);
     }
 
+
+    /**
+     * Get the hash used to calculate the index in the table at which the Node<V> associated with
+     * v would be held. What this returns is also used in {@link Node#mapHash}.
+     * <br>
+     * The default implementation is much like what {@link com.badlogic.gdx.utils.ObjectMap} uses to mix hashCodes it
+     * receives: it multiplies the hashCode() by a large long constant, then right-shifts and casts to int. This can be
+     * overridden by Graph subclasses that know more about their vertex type to use a more appropriate mixing algorithm.
+     */
+    public int hash(V v) {
+        // 0xABC98388FB8FAC03L is the first constant in Utilities#GOOD_MULTIPLIERS
+        return (int)(v.hashCode() * 0xABC98388FB8FAC03L >>> 25);
+
+        // The original mixer used here.
+//        final int h = v.hashCode();
+//        return h ^ h >>> 16;
+    }
+
     //--------------------
     //  Internal Methods
     //--------------------

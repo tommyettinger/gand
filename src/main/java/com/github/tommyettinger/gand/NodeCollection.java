@@ -43,7 +43,7 @@ class NodeCollection<V> extends AbstractCollection<Node<V>> {
 
     @Override
     public boolean contains(Object o) {
-        return nodeMap.contains((V) o);
+        return nodeMap.contains(o);
     }
 
     @Override
@@ -67,6 +67,7 @@ class NodeCollection<V> extends AbstractCollection<Node<V>> {
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T[] toArray(T[] array) {
         if (array.length < nodeMap.size) {
