@@ -24,6 +24,7 @@ SOFTWARE.
 package com.github.tommyettinger.gand;
 
 
+import com.badlogic.gdx.math.GridPoint2;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -34,8 +35,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.github.tommyettinger.gand.utils.Heuristic;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class AlgorithmsTest {
 
@@ -86,18 +86,56 @@ public class AlgorithmsTest {
         assertEquals(0, path.size());
         path = undirectedGraph.algorithms().findShortestPath(start, end);
         assertEquals(0, path.size());
-        assertTrue(!undirectedGraph.algorithms().isConnected(start, end));
+        assertFalse(undirectedGraph.algorithms().isConnected(start, end));
 
         diGraph.disconnect(end);
         path = diGraph.algorithms().findShortestPath(start, end, h);
         assertEquals(0, path.size());
         path = diGraph.algorithms().findShortestPath(start, end);
         assertEquals(0, path.size());
-        assertTrue(!diGraph.algorithms().isConnected(start, end));
+        assertFalse(diGraph.algorithms().isConnected(start, end));
     }
 
+    @Test
+    public void shortestGridPathShouldBeCorrect() {
+        int n = 25;
+        Grid2DDirectedGraph diGraph = new Grid2DDirectedGraph(TestUtils.DUNGEON, '.', 1f);
+        diGraph.connectAdjacent(null, true);
+        GridPoint2 start = new GridPoint2(1, 1), end = new GridPoint2(n - 2, n - 2);
+        Path<GridPoint2> path;
+
+        path = diGraph.algorithms().findShortestPath(start, end);
+        assertNotEquals("Shortest path is wrong size", 0, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnectedGrid(path, diGraph));
+
+        // with heuristic
+        Heuristic<GridPoint2> h = GridPoint2::dst;
+
+        path = diGraph.algorithms().findShortestPath(start, end, h);
+        assertNotEquals("Shortest path is wrong size", 0, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnectedGrid(path, diGraph));
+        assertTrue("Shortest path is not connected", diGraph.algorithms().isConnected(start, end));
+
+        // no path exists
+
+        diGraph.disconnect(end);
+        path = diGraph.algorithms().findShortestPath(start, end, h);
+        assertEquals(0, path.size());
+        path = diGraph.algorithms().findShortestPath(start, end);
+        assertEquals(0, path.size());
+        assertFalse(diGraph.algorithms().isConnected(start, end));
+    }
 
     private static boolean pathIsConnected(Path<Vector2> path, Graph<Vector2> graph) {
+        for (int i = 0; i < path.size()-1; i++) {
+            if (!graph.edgeExists(path.get(i), path.get(i+1))) return false;
+        }
+        return true;
+    }
+
+    private static boolean pathIsConnectedGrid(Path<GridPoint2> path, Graph<GridPoint2> graph) {
         for (int i = 0; i < path.size()-1; i++) {
             if (!graph.edgeExists(path.get(i), path.get(i+1))) return false;
         }
@@ -115,10 +153,10 @@ public class AlgorithmsTest {
 
         graph.addEdge(0, 1);
         graph.addEdge(1, 2);
-        assertTrue(!graph.algorithms().containsCycle());
+        assertFalse(graph.algorithms().containsCycle());
 
         graph.addEdge(0,2);
-        assertTrue(!graph.algorithms().containsCycle());
+        assertFalse(graph.algorithms().containsCycle());
 
         graph.addEdge(2,0);
         assertTrue(graph.algorithms().containsCycle());
@@ -131,7 +169,7 @@ public class AlgorithmsTest {
 
         graph.addEdge(0, 1);
         graph.addEdge(1, 2);
-        assertTrue(!graph.algorithms().containsCycle());
+        assertFalse(graph.algorithms().containsCycle());
 
         graph.addEdge(0,2);
         assertTrue(graph.algorithms().containsCycle());
@@ -237,7 +275,7 @@ public class AlgorithmsTest {
 
         graph.addEdge(n/2, n/2 + 1);
         boolean success = graph.topologicalSort();
-        assertTrue(!success);
+        assertFalse(success);
 
         graph = new DirectedGraph<>();
         graph.addVertices(0, 1, 2, 3, 4, 5);
@@ -257,7 +295,7 @@ public class AlgorithmsTest {
         graph.addEdge(3,5);
 
         graph.addEdge(2,4);
-        assertTrue(!graph.topologicalSort());
+        assertFalse(graph.topologicalSort());
     }
 
     @Test
@@ -275,7 +313,7 @@ public class AlgorithmsTest {
 
         assertEquals("Tree doesn't have correct number of vertices", n, mwst.size());
         assertEquals("Tree doesn't have correct number of edges", n-1, mwst.getEdgeCount());
-        assertTrue("Tree contains a cycle", !mwst.algorithms().containsCycle());
+        assertFalse("Tree contains a cycle", mwst.algorithms().containsCycle());
         assertEquals("Tree is not minimum weight", n-1 - 0.5f, mwst.getEdges().stream().mapToDouble(e -> e.getWeight()).sum(), 0.0001f);
 
     }

@@ -63,6 +63,25 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
     }
 
     /**
+     * Given a 2D char array, adds a vertex where a cell in {@code validGrid} is equal to {@code validChar}, or ignores
+     * it otherwise.
+     * This only adds vertices; to automatically add edges you can use {@link #connectAdjacent(Heuristic, boolean)}.
+     * @param validGrid a 2D char array where {@code validChar} means to add that vertex; may be jagged, but this will just use its largest dimensions then
+     * @param validChar the char that, when found in {@code validGrid}, means a vertex will be added
+     * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
+     */
+    public Grid2DDirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight){
+        super();
+        setDefaultEdgeWeight(defaultEdgeWeight);
+        for (int x = 0; x < validGrid.length; x++) {
+            for (int y = 0; y < validGrid[x].length; y++) {
+                if(validGrid[x][y] == validChar)
+                    addVertex(new GridPoint2(x, y));
+            }
+        }
+    }
+
+    /**
      * Given a 2D float array, adds a vertex where a cell in {@code validGrid} has a value between
      * {@code minimumThreshold} and {@code maximumThreshold}, both inclusive, or ignores it otherwise.
      * This only adds vertices; to automatically add edges you can use {@link #connectAdjacent(Heuristic, boolean)}.
@@ -112,6 +131,19 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
                 }
             }
         }
+    }
+
+    /**
+     * Get the hash used to calculate the index in the table at which the Node<V> associated with
+     * v would be held. What this returns is also used in {@link Node#mapHash}.
+     *
+     * @param gp a non-null GridPoint2 to hash
+     */
+    @Override
+    public int hash(GridPoint2 gp) {
+        // Rosenberg-Strong followed up with an XLCG that's GWT-safe
+        final int max = Math.max(gp.x, gp.y);
+        return (max * max + max + gp.x - gp.y) * 0x9E373 ^ 0x7F4A7C15;
     }
 
     @Override

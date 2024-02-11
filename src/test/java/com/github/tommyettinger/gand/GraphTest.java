@@ -43,7 +43,6 @@ import static org.junit.Assert.assertTrue;
 
 public class GraphTest {
 
-
     @Test
     public void verticesCanBeAddedAndRemoved() {
         UndirectedGraph<Integer> graph = new UndirectedGraph<>();
@@ -210,7 +209,7 @@ public class GraphTest {
         assertEquals("Not all edges removed", 0, diGraph.getEdgeCount());
 
 
-        // check removing single edge functions appropriatedly for directed and undirected graphs
+        // check removing single edge functions appropriately for directed and undirected graphs
         undirectedGraph = TestUtils.makeGridGraph(new UndirectedGraph<>(), n);
         diGraph = TestUtils.makeGridGraph(new DirectedGraph<>(), n);
 
