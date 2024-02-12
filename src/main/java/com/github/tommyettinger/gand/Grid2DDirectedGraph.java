@@ -5,6 +5,7 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gand.utils.Heuristic;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
@@ -22,8 +23,8 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
     public boolean addVertex(GridPoint2 gridPoint2) {
         if(super.addVertex(gridPoint2))
         {
-            width = Math.max(width, gridPoint2.x);
-            height = Math.max(height, gridPoint2.y);
+            width = Math.max(width, gridPoint2.x+1);
+            height = Math.max(height, gridPoint2.y+1);
             return true;
         }
         return false;
@@ -112,9 +113,9 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
         GridPoint2 test = new GridPoint2(), next = new GridPoint2(), t;
         Node<GridPoint2> nmt, nmn;
         if(heu == null) heu = (a, b) -> getDefaultEdgeWeight();
-        for (int x = 0; x <= width; x++) {
+        for (int x = 0; x < width; x++) {
             test.x = x;
-            for (int y = 0; y <= height; y++) {
+            for (int y = 0; y < height; y++) {
                 test.y = y;
                 if((nmt = nodeMap.get(test)) != null){
                     t = nmt.getObject();
@@ -156,6 +157,40 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
 //        return (max * max + max + gp.x - gp.y) * 0x9E373 ^ 0x7F4A7C15;
     }
 
+    /**
+     * Creates a 1D char array (which can be passed to {@link String#valueOf(char[])}) filled with a grid made of the
+     * vertices in this Graph and their estimated costs, if this has done an estimate. Each estimate is rounded to the
+     * nearest int and only printed if it is 4 digits or fewer; otherwise this puts '####' in the grid cell. This is a
+     * building-block for toString() implementations that may have debugging uses as well.
+     * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
+     */
+    public char[] show() {
+        final int w5 = width * 5;
+        final char[] cs = new char[w5 * height];
+        Arrays.fill(cs,  '#');
+        for (int i = 4; i < cs.length; i += 5) {
+            cs[i] = (i + 1) % w5 == 0 ? '\n' : ' ';
+        }
+        final int rid = algorithms.lastRunID();
+        for (Node<GridPoint2> nc : nodeMap.nodeCollection) {
+            if(nc == null || nc.getLastRunID() != rid || nc.getDistance() >= 9999.5)
+                continue;
+            int d = (int) (nc.getDistance() + 0.5), x = nc.getObject().x * 5, y = nc.getObject().y;
+//            if(y * w5 + x + 3 >= cs.length)
+//                System.out.printf("x: %d, y: %d", x, y);
+            cs[y * w5 + x    ] = (d >= 1000) ? (char) ('0' + d / 1000) : ' ';
+            cs[y * w5 + x + 1] = (d >= 100)  ? (char) ('0' + d / 100 % 10) : ' ';
+            cs[y * w5 + x + 2] = (d >= 10)   ? (char) ('0' + d / 10 % 10) : ' ';
+            cs[y * w5 + x + 3] = (char) ('0' + d % 10);
+        }
+        return cs;
+    }
+
+    @Override
+    public String toString() {
+        return "Grid2DDirectedGraph: {\n" + String.valueOf(show()) + "\n}";
+    }
+
     @Override
     public void write(Json json) {
         Set<?> vertices = getVertices();
@@ -185,6 +220,5 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
         for (; entry != null; entry = entry.next) {
             addEdge(json.readValue(GridPoint2.class, entry), json.readValue(GridPoint2.class, entry = entry.next), (entry = entry.next).asFloat());
         }
-
     }
 }

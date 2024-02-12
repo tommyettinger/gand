@@ -122,6 +122,24 @@ public class DirectedGraph<V> extends Graph<V> implements Json.Serializable {
         return nodeMap.topologicalSort();
     }
 
+    /**
+     * Perform a topological sort on the graph, and puts the sorted vertices in the supplied list.
+     * That is, for every edge from vertex u to vertex v, u will come before v in the supplied list.
+     * Note that the graph cannot contain any cycles for a topological order to exist. If a cycle exists, the sorting procedure will
+     * terminate and the supplied list will only contain the vertices up until the point of termination.
+     * @param sortedVertices will be cleared and, if the sort was successful, filled with the vertices in-order
+     * @return true if the sort was successful, false if the graph contains a cycle
+     */
+    public boolean topologicalSort(Collection<V> sortedVertices) {
+        sortedVertices.clear();
+        boolean success = nodeMap.topologicalSort();
+        if(success){
+            sortedVertices.addAll(nodeMap.vertexSet);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void write(Json json) {
         Set<?> vertices = getVertices();

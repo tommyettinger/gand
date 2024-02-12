@@ -24,7 +24,7 @@ import com.github.tommyettinger.gand.Node;
  * <br>
  * This class was adapted from the original, which appears as the BinaryHeap class found in libgdx.
  * <a href="https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/utils/BinaryHeap.java">Original appears here</a>.
- * Generics and the BinaryHeap.Node class have been removed and replaced with the simple-graphs Node class.
+ * Generics and the BinaryHeap.Node class have been removed and replaced with the Gand Node class.
  * Safety checks and exceptions have been removed.
  *
  * @author Nathan Sweet

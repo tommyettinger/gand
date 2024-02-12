@@ -33,14 +33,18 @@ import com.github.tommyettinger.gand.utils.SearchProcessor;
 public abstract class Algorithms<V> {
 
     protected final Graph<V> graph;
-    private final int[] runID = {0};
+    private final int[] runID = {-1};
 
     Algorithms(Graph<V> graph) {
         this.graph = graph;
     }
 
+    public int lastRunID() {
+        return runID[0];
+    }
+
     public int requestRunID() {
-        return runID[0]++;
+        return ++runID[0];
     }
 
     //--------------------
