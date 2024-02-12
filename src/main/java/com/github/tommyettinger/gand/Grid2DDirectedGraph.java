@@ -141,10 +141,11 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
      */
     @Override
     public int hash(GridPoint2 gp) {
-        // Harmonious numbers
-        return (int)(gp.x * 0xC13FA9A902A6328FL + gp.y * 0x91E10DA5C79E7B1DL >>> 32);
+//        // Harmonious numbers
+//        return (int)(gp.x * 0xC13FA9A902A6328FL + gp.y * 0x91E10DA5C79E7B1DL >>> 32);
 //        // int-based
 //        return (gp.x * 0xC13FB ^ gp.y * 0x91E0F);
+        return gp.x ^ gp.y * 107;
 //        // Cantor pairing function
 //        return gp.y + ((gp.x + gp.y) * (gp.x + gp.y + 1) >> 1);
 //        // Rosenberg-Strong pairing function
