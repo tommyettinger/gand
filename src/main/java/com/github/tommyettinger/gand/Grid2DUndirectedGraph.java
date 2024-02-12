@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
-public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Json.Serializable {
+public class Grid2DUndirectedGraph extends UndirectedGraph<GridPoint2> implements Json.Serializable {
 
     private int width = 0;
     private int height = 0;
@@ -30,19 +30,19 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
         return false;
     }
 
-    public Grid2DDirectedGraph() {
+    public Grid2DUndirectedGraph() {
         super();
     }
 
-    public Grid2DDirectedGraph(Collection<GridPoint2> vertices) {
+    public Grid2DUndirectedGraph(Collection<GridPoint2> vertices) {
         super(vertices);
     }
 
-    public Grid2DDirectedGraph(Collection<GridPoint2> vertices, Collection<Edge<GridPoint2>> edges, float defaultEdgeWeight) {
+    public Grid2DUndirectedGraph(Collection<GridPoint2> vertices, Collection<Edge<GridPoint2>> edges, float defaultEdgeWeight) {
         super(vertices, edges, defaultEdgeWeight);
     }
 
-    public Grid2DDirectedGraph(Graph<GridPoint2> graph) {
+    public Grid2DUndirectedGraph(Graph<GridPoint2> graph) {
         super(graph);
     }
 
@@ -52,7 +52,7 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
      * @param validGrid a 2D boolean array where true means to add that vertex; may be jagged, but this will just use its largest dimensions then
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid2DDirectedGraph(boolean[][] validGrid, float defaultEdgeWeight){
+    public Grid2DUndirectedGraph(boolean[][] validGrid, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
@@ -71,7 +71,7 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
      * @param validChar the char that, when found in {@code validGrid}, means a vertex will be added
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid2DDirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight){
+    public Grid2DUndirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
@@ -91,7 +91,7 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
      * @param maximumThreshold the maximum inclusive value in {@code validGrid} to allow as a vertex
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid2DDirectedGraph(float[][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
+    public Grid2DUndirectedGraph(float[][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
@@ -135,8 +135,8 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
     }
 
     @Override
-    public Grid2DDirectedGraph createNew() {
-        return new Grid2DDirectedGraph();
+    public Grid2DUndirectedGraph createNew() {
+        return new Grid2DUndirectedGraph();
     }
 
     /**
@@ -193,7 +193,7 @@ public class Grid2DDirectedGraph extends DirectedGraph<GridPoint2> implements Js
 
     @Override
     public String toString() {
-        return "Grid2DDirectedGraph: {\n" + String.valueOf(show()) + "\n}";
+        return "Grid2DUndirectedGraph: {\n" + String.valueOf(show()) + "\n}";
     }
 
     @Override
