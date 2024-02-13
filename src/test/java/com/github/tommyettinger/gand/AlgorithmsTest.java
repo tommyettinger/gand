@@ -97,11 +97,68 @@ public class AlgorithmsTest {
     }
 
     @Test
+    public void shortestVector2PathShouldBeCorrect() {
+        int n = 20;
+        Graph<Vector2> undirectedGraph = TestUtils.makeGridGraph(new UndirectedGraph<>(), n);
+        Graph<Vector2> diGraph = TestUtils.makeGridGraph(new Vector2DirectedGraph(), n);
+
+        Vector2 start = new Vector2(0, 0), end = new Vector2(n - 1, n - 1);
+        Path<Vector2> path;
+
+        // without heuristic
+        path = undirectedGraph.algorithms().findShortestPath(start, end);
+        assertEquals("Shortest path is wrong size", 2*(n-1) + 1, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(path, undirectedGraph));
+
+        path = diGraph.algorithms().findShortestPath(start, end);
+        assertEquals("Shortest path is wrong size", 2*(n-1) + 1, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(path, diGraph));
+
+        // with heuristic
+        Heuristic<Vector2> h = Vector2::dst;
+
+        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
+        assertEquals("Shortest path is wrong size", 2*(n-1) + 1, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(path, undirectedGraph));
+
+        path = diGraph.algorithms().findShortestPath(start, end, h);
+        assertEquals("Shortest path is wrong size", 2*(n-1) + 1, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(path, diGraph));
+        assertTrue("Shortest path is not connected", diGraph.algorithms().isConnected(start, end));
+
+        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
+        assertEquals(2*(n-1) + 1, path.size());
+        assertEquals(start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(path, undirectedGraph));
+        assertTrue("Shortest path is not connected", undirectedGraph.algorithms().isConnected(start, end));
+
+
+        // no path exists
+        undirectedGraph.disconnect(end);
+        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
+        assertEquals(0, path.size());
+        path = undirectedGraph.algorithms().findShortestPath(start, end);
+        assertEquals(0, path.size());
+        assertFalse(undirectedGraph.algorithms().isConnected(start, end));
+
+        diGraph.disconnect(end);
+        path = diGraph.algorithms().findShortestPath(start, end, h);
+        assertEquals(0, path.size());
+        path = diGraph.algorithms().findShortestPath(start, end);
+        assertEquals(0, path.size());
+        assertFalse(diGraph.algorithms().isConnected(start, end));
+    }
+
+    @Test
     public void shortestGridPathShouldBeCorrect() {
         int n = 25;
-        Grid2DUndirectedGraph undirectedGraph = new Grid2DUndirectedGraph(TestUtils.DUNGEON, '.', 1f);
+        Grid2UndirectedGraph undirectedGraph = new Grid2UndirectedGraph(TestUtils.DUNGEON, '.', 1f);
         undirectedGraph.connectAdjacent(null, true);
-        Grid2DDirectedGraph diGraph = new Grid2DDirectedGraph(TestUtils.DUNGEON, '.', 1f);
+        Grid2DirectedGraph diGraph = new Grid2DirectedGraph(TestUtils.DUNGEON, '.', 1f);
         diGraph.connectAdjacent(null, true);
 
         GridPoint2 start = new GridPoint2(1, 1), end = new GridPoint2(n - 2, n - 2);

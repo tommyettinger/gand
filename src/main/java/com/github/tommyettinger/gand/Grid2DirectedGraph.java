@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
-public class Grid2DUndirectedGraph extends UndirectedGraph<GridPoint2> implements Json.Serializable {
+public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Json.Serializable {
 
     private int width = 0;
     private int height = 0;
@@ -30,19 +30,19 @@ public class Grid2DUndirectedGraph extends UndirectedGraph<GridPoint2> implement
         return false;
     }
 
-    public Grid2DUndirectedGraph() {
+    public Grid2DirectedGraph() {
         super();
     }
 
-    public Grid2DUndirectedGraph(Collection<GridPoint2> vertices) {
+    public Grid2DirectedGraph(Collection<GridPoint2> vertices) {
         super(vertices);
     }
 
-    public Grid2DUndirectedGraph(Collection<GridPoint2> vertices, Collection<Edge<GridPoint2>> edges, float defaultEdgeWeight) {
+    public Grid2DirectedGraph(Collection<GridPoint2> vertices, Collection<Edge<GridPoint2>> edges, float defaultEdgeWeight) {
         super(vertices, edges, defaultEdgeWeight);
     }
 
-    public Grid2DUndirectedGraph(Graph<GridPoint2> graph) {
+    public Grid2DirectedGraph(Graph<GridPoint2> graph) {
         super(graph);
     }
 
@@ -52,7 +52,7 @@ public class Grid2DUndirectedGraph extends UndirectedGraph<GridPoint2> implement
      * @param validGrid a 2D boolean array where true means to add that vertex; may be jagged, but this will just use its largest dimensions then
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid2DUndirectedGraph(boolean[][] validGrid, float defaultEdgeWeight){
+    public Grid2DirectedGraph(boolean[][] validGrid, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
@@ -71,7 +71,7 @@ public class Grid2DUndirectedGraph extends UndirectedGraph<GridPoint2> implement
      * @param validChar the char that, when found in {@code validGrid}, means a vertex will be added
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid2DUndirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight){
+    public Grid2DirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
@@ -91,7 +91,7 @@ public class Grid2DUndirectedGraph extends UndirectedGraph<GridPoint2> implement
      * @param maximumThreshold the maximum inclusive value in {@code validGrid} to allow as a vertex
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid2DUndirectedGraph(float[][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
+    public Grid2DirectedGraph(float[][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
@@ -135,8 +135,8 @@ public class Grid2DUndirectedGraph extends UndirectedGraph<GridPoint2> implement
     }
 
     @Override
-    public Grid2DUndirectedGraph createNew() {
-        return new Grid2DUndirectedGraph();
+    public Grid2DirectedGraph createNew() {
+        return new Grid2DirectedGraph();
     }
 
     /**
@@ -148,10 +148,10 @@ public class Grid2DUndirectedGraph extends UndirectedGraph<GridPoint2> implement
     @Override
     public int hash(GridPoint2 gp) {
 //        // Harmonious numbers
-//        return (int)(gp.x * 0xC13FA9A902A6328FL + gp.y * 0x91E10DA5C79E7B1DL >>> 32);
+        return (int)(gp.x * 0xC13FA9A902A6328FL + gp.y * 0x91E10DA5C79E7B1DL >>> 32);
 //        // int-based
 //        return (gp.x * 0xC13FB ^ gp.y * 0x91E0F);
-        return gp.x ^ gp.y * 107;
+//        return gp.x ^ gp.y * 107;
 //        // Cantor pairing function
 //        return gp.y + ((gp.x + gp.y) * (gp.x + gp.y + 1) >> 1);
 //        // Rosenberg-Strong pairing function
@@ -193,7 +193,7 @@ public class Grid2DUndirectedGraph extends UndirectedGraph<GridPoint2> implement
 
     @Override
     public String toString() {
-        return "Grid2DUndirectedGraph: {\n" + String.valueOf(show()) + "\n}";
+        return "Grid2DirectedGraph: {\n" + String.valueOf(show()) + "\n}";
     }
 
     @Override
