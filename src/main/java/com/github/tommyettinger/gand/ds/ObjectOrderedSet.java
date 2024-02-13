@@ -51,6 +51,7 @@ public class ObjectOrderedSet<T> extends ObjectSet<T> {
 	protected final ArrayList<T> items;
 
 	public ObjectOrderedSet () {
+		super();
 		items = new ArrayList<>();
 	}
 

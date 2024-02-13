@@ -72,7 +72,7 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 	 * This only needs to be serialized if the full key and value tables are serialized, or if the iteration order should be
 	 * the same before and after serialization. Iteration order is better handled by using {@link ObjectOrderedSet}.
 	 */
-	protected long hashMultiplier = 0xD1B54A32D192ED03L;
+	protected static final long hashMultiplier = 0xD1B54A32D192ED03L;
 
 	/**
 	 * A bitmask used to confine hashcodes to the size of the table. Must be all 1 bits in its low positions, ie a power of two
@@ -128,7 +128,7 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 		shift = set.shift;
 		keyTable = Arrays.copyOf(set.keyTable, set.keyTable.length);
 		size = set.size;
-		hashMultiplier = set.hashMultiplier;
+//		hashMultiplier = set.hashMultiplier;
 
 	}
 
@@ -153,7 +153,7 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 	}
 
 	/**
-	 * Creates a new set containing all of the items in the given array.
+	 * Creates a new set containing all the items in the given array.
 	 *
 	 * @param array an array that will be used in full, except for duplicate items
 	 */
@@ -544,7 +544,7 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 		mask = newSize - 1;
 		shift = Long.numberOfLeadingZeros(mask);
 
-		hashMultiplier = Utilities.GOOD_MULTIPLIERS[(int)(hashMultiplier >>> 48 + shift) & 511];
+//		hashMultiplier = Utilities.GOOD_MULTIPLIERS[(int)(hashMultiplier >>> 48 + shift) & 511];
 		T[] oldKeyTable = keyTable;
 
 		keyTable = (T[])new Object[newSize];
@@ -557,38 +557,38 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 		}
 	}
 
-	/**
-	 * Gets the current hash multiplier as used by {@link #place(Object)}; for specific advanced usage only.
-	 * The hash multiplier changes whenever {@link #resize(int)} is called, though its value before the resize
-	 * affects its value after.
-	 * @return the current hash multiplier, which should always be a large odd long
-	 */
-	public long getHashMultiplier () {
-		return hashMultiplier;
-	}
-
-	/**
-	 * Sets the current hash multiplier, then immediately calls {@link #resize(int)} without changing the target size; this
-	 * is for specific advanced usage only. Calling resize() will change the multiplier before it gets used, and the current
-	 * {@link #size()} of the data structure also changes the value. The hash multiplier is used by {@link #place(Object)}.
-	 * The hash multiplier must be an odd long, and should usually be "rather large." Here, that means the absolute value of
-	 * the multiplier should be at least a quadrillion or so (a million billions, or roughly {@code 0x4000000000000L}). The
-	 * only validation this does is to ensure the multiplier is odd; everything else is up to the caller. The hash multiplier
-	 * changes whenever {@link #resize(int)} is called, though its value before the resize affects its value after. Because
-	 * of how resize() randomizes the multiplier, even inputs such as {@code 1L} and {@code -1L} actually work well.
-	 * <br>
-	 * This is accessible at all mainly so serialization code that has a need to access the hash multiplier can do so, but
-	 * also to provide an "emergency escape route" in case of hash flooding. Using one of the "known good" longs in
-	 * {@link Utilities#GOOD_MULTIPLIERS} should usually be fine if you don't know what multiplier will work well.
-	 * Be advised that because this has to call resize(), it isn't especially fast, and it slows
-	 * down the more items are in the data structure. If you in a situation where you are worried about hash flooding, you
-	 * also shouldn't permit adversaries to cause this method to be called frequently.
-	 * @param hashMultiplier any odd long; will not be used as-is
-	 */
-	public void setHashMultiplier (long hashMultiplier) {
-		this.hashMultiplier = hashMultiplier | 1L;
-		resize(keyTable.length);
-	}
+//	/**
+//	 * Gets the current hash multiplier as used by {@link #place(Object)}; for specific advanced usage only.
+//	 * The hash multiplier changes whenever {@link #resize(int)} is called, though its value before the resize
+//	 * affects its value after.
+//	 * @return the current hash multiplier, which should always be a large odd long
+//	 */
+//	public long getHashMultiplier () {
+//		return hashMultiplier;
+//	}
+//
+//	/**
+//	 * Sets the current hash multiplier, then immediately calls {@link #resize(int)} without changing the target size; this
+//	 * is for specific advanced usage only. Calling resize() will change the multiplier before it gets used, and the current
+//	 * {@link #size()} of the data structure also changes the value. The hash multiplier is used by {@link #place(Object)}.
+//	 * The hash multiplier must be an odd long, and should usually be "rather large." Here, that means the absolute value of
+//	 * the multiplier should be at least a quadrillion or so (a million billions, or roughly {@code 0x4000000000000L}). The
+//	 * only validation this does is to ensure the multiplier is odd; everything else is up to the caller. The hash multiplier
+//	 * changes whenever {@link #resize(int)} is called, though its value before the resize affects its value after. Because
+//	 * of how resize() randomizes the multiplier, even inputs such as {@code 1L} and {@code -1L} actually work well.
+//	 * <br>
+//	 * This is accessible at all mainly so serialization code that has a need to access the hash multiplier can do so, but
+//	 * also to provide an "emergency escape route" in case of hash flooding. Using one of the "known good" longs in
+//	 * {@link Utilities#GOOD_MULTIPLIERS} should usually be fine if you don't know what multiplier will work well.
+//	 * Be advised that because this has to call resize(), it isn't especially fast, and it slows
+//	 * down the more items are in the data structure. If you in a situation where you are worried about hash flooding, you
+//	 * also shouldn't permit adversaries to cause this method to be called frequently.
+//	 * @param hashMultiplier any odd long; will not be used as-is
+//	 */
+//	public void setHashMultiplier (long hashMultiplier) {
+//		this.hashMultiplier = hashMultiplier | 1L;
+//		resize(keyTable.length);
+//	}
 
 	@Override
 	public Object [] toArray () {
