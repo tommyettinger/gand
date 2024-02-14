@@ -25,6 +25,7 @@ package com.github.tommyettinger.gand;
 
 
 import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.math.GridPoint3;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -211,6 +212,66 @@ public class AlgorithmsTest {
         assertFalse(diGraph.algorithms().isConnected(start, end));
     }
 
+
+    @Test
+    public void shortestGrid3PathShouldBeCorrect() {
+        int n = 25;
+//        Grid2UndirectedGraph undirectedGraph = new Grid2UndirectedGraph(TestUtils.DUNGEON, '.', 1f);
+//        undirectedGraph.connectAdjacent(null, true);
+        Grid3DirectedGraph diGraph = new Grid3DirectedGraph(TestUtils.DUNGEON_3D, '.', 1f);
+        diGraph.connectAdjacent(null, true);
+
+        diGraph.sortVertices((g, h) -> (h.z * 4 + h.y * 2 + h.x) - (g.z * 4 + g.y * 2 + g.x));
+        GridPoint3 start = new GridPoint3(1, 1, 0), end = diGraph.getVertices().iterator().next();
+        Path<GridPoint3> path;
+
+        // without heuristic
+//        path = undirectedGraph.algorithms().findShortestPath(start, end);
+//        assertNotEquals("Shortest path is wrong size", 0, path.size());
+//        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+//        assertTrue("Shortest path is not connected", pathIsConnectedGrid(path, undirectedGraph));
+
+        path = diGraph.algorithms().findShortestPath(start, end);
+        assertNotEquals("Shortest path is wrong size", 0, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnectedGrid3(path, diGraph));
+
+        // with heuristic
+        Heuristic<GridPoint3> h = GridPoint3::dst;
+
+//        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
+//        assertNotEquals("Shortest path is wrong size", 0, path.size());
+//        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+//        assertTrue("Shortest path is not connected", pathIsConnectedGrid(path, undirectedGraph));
+
+        path = diGraph.algorithms().findShortestPath(start, end, h);
+        assertNotEquals("Shortest path is wrong size", 0, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnectedGrid3(path, diGraph));
+        assertTrue("Shortest path is not connected", diGraph.algorithms().isConnected(start, end));
+
+//        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
+//        assertNotEquals(0, path.size());
+//        assertEquals(start, path.get(0));
+//        assertTrue("Shortest path is not connected", pathIsConnectedGrid(path, undirectedGraph));
+//        assertTrue("Shortest path is not connected", undirectedGraph.algorithms().isConnected(start, end));
+
+        // no path exists
+//        undirectedGraph.disconnect(end);
+//        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
+//        assertEquals(0, path.size());
+//        path = undirectedGraph.algorithms().findShortestPath(start, end);
+//        assertEquals(0, path.size());
+//        assertFalse(undirectedGraph.algorithms().isConnected(start, end));
+
+        diGraph.disconnect(end);
+        path = diGraph.algorithms().findShortestPath(start, end, h);
+        assertEquals(0, path.size());
+        path = diGraph.algorithms().findShortestPath(start, end);
+        assertEquals(0, path.size());
+        assertFalse(diGraph.algorithms().isConnected(start, end));
+    }
+
     private static boolean pathIsConnected(Path<Vector2> path, Graph<Vector2> graph) {
         for (int i = 0; i < path.size()-1; i++) {
             if (!graph.edgeExists(path.get(i), path.get(i+1))) return false;
@@ -219,6 +280,13 @@ public class AlgorithmsTest {
     }
 
     private static boolean pathIsConnectedGrid(Path<GridPoint2> path, Graph<GridPoint2> graph) {
+        for (int i = 0; i < path.size()-1; i++) {
+            if (!graph.edgeExists(path.get(i), path.get(i+1))) return false;
+        }
+        return true;
+    }
+
+    private static boolean pathIsConnectedGrid3(Path<GridPoint3> path, Graph<GridPoint3> graph) {
         for (int i = 0; i < path.size()-1; i++) {
             if (!graph.edgeExists(path.get(i), path.get(i+1))) return false;
         }

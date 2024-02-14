@@ -57,10 +57,10 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
     public Grid3DirectedGraph(boolean[][][] validGrid, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
-        for (int x = 0; x < validGrid.length; x++) {
-            for (int y = 0; y < validGrid[x].length; y++) {
-                for (int z = 0; z < validGrid[x][y].length; z++) {
-                    if (validGrid[x][y][z])
+        for (int z = 0; z < validGrid.length; z++) {
+            for (int y = 0; y < validGrid[z].length; y++) {
+                for (int x = 0; x < validGrid[z][y].length; x++) {
+                    if (validGrid[z][y][x])
                         addVertex(new GridPoint3(x, y, z));
                 }
             }
@@ -78,10 +78,10 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
     public Grid3DirectedGraph(char[][][] validGrid, char validChar, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
-        for (int x = 0; x < validGrid.length; x++) {
-            for (int y = 0; y < validGrid[x].length; y++) {
-                for (int z = 0; z < validGrid[x][y].length; z++) {
-                    if (validGrid[x][y][z] == validChar)
+        for (int z = 0; z < validGrid.length; z++) {
+            for (int y = 0; y < validGrid[z].length; y++) {
+                for (int x = 0; x < validGrid[z][y].length; x++) {
+                    if (validGrid[z][y][x] == validChar)
                         addVertex(new GridPoint3(x, y, z));
                 }
             }
@@ -100,10 +100,10 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
     public Grid3DirectedGraph(float[][][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
-        for (int x = 0; x < validGrid.length; x++) {
-            for (int y = 0; y < validGrid[x].length; y++) {
-                for (int z = 0; z < validGrid[x][y].length; z++) {
-                    if(validGrid[x][y][z] >= minimumThreshold && validGrid[x][y][z] <= maximumThreshold)
+        for (int z = 0; z < validGrid.length; z++) {
+            for (int y = 0; y < validGrid[z].length; y++) {
+                for (int x = 0; x < validGrid[z][y].length; x++) {
+                    if(validGrid[z][y][x] >= minimumThreshold && validGrid[z][y][x] <= maximumThreshold)
                         addVertex(new GridPoint3(x, y, z));
                 }
             }

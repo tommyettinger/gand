@@ -23,6 +23,7 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
+import com.badlogic.gdx.math.RandomXS128;
 import com.badlogic.gdx.math.Vector2;
 
 class TestUtils {
@@ -94,6 +95,66 @@ class TestUtils {
             "#.........##............#".toCharArray(),
             "#.........##.......##...#".toCharArray(),
             "#########################".toCharArray(),
+    },
+    DUNGEON2 = {
+            "#########################".toCharArray(),
+            "#........##..##....######".toCharArray(),
+            "#........##..##.....#...#".toCharArray(),
+            "#........#...##.........#".toCharArray(),
+            "#..###..##..............#".toCharArray(),
+            "#....#####..........#...#".toCharArray(),
+            "##...........##.....#..##".toCharArray(),
+            "###..........##....##...#".toCharArray(),
+            "######...############...#".toCharArray(),
+            "######..####....#########".toCharArray(),
+            "###.....####....######..#".toCharArray(),
+            "#.......####....######..#".toCharArray(),
+            "#.....###.##....#.......#".toCharArray(),
+            "#.....#.................#".toCharArray(),
+            "#.....#.................#".toCharArray(),
+            "#.........####..##......#".toCharArray(),
+            "#.##......####..##......#".toCharArray(),
+            "#.##......####..##..##..#".toCharArray(),
+            "##############..######..#".toCharArray(),
+            "##############..######..#".toCharArray(),
+            "##############..######..#".toCharArray(),
+            "##############..######..#".toCharArray(),
+            "####............#####...#".toCharArray(),
+            "#.###...................#".toCharArray(),
+            "#..###..................#".toCharArray(),
+            "#...###......#####....###".toCharArray(),
+            "##...##.....######....###".toCharArray(),
+            "###........##...........#".toCharArray(),
+            "####.....###............#".toCharArray(),
+            "####..######..###########".toCharArray(),
+            "##.....#####......#######".toCharArray(),
+            "##.....#####.....####...#".toCharArray(),
+            "#.........##....#####...#".toCharArray(),
+            "#...##....##..####......#".toCharArray(),
+            "#..#####..##....##.....##".toCharArray(),
+            "#..#####..##........#####".toCharArray(),
+            "#..#####..##........#####".toCharArray(),
+            "#.##......######....#####".toCharArray(),
+            "###.......###.....#######".toCharArray(),
+            "#########################".toCharArray(),
     };
+
+    public static final char[][][] DUNGEON_3D = {
+            DUNGEON,
+            new char[DUNGEON.length][DUNGEON[0].length],
+            DUNGEON2
+    };
+
+    static {
+        RandomXS128 random = new RandomXS128(123456789);
+        char[][] halls = DUNGEON_3D[1];
+        for (int y = 1; y < halls.length-1; y++) {
+            for (int x = 1; x < halls[y].length-1; x++) {
+                if((x & y & 3) == 1 && random.nextFloat() < 0.15f){
+                    halls[y][x] = '.';
+                } else halls[y][x] = '#';
+            }
+        }
+    }
 
 }
