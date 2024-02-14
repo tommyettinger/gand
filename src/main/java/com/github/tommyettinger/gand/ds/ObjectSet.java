@@ -60,24 +60,23 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 	 */
 	protected int threshold;
 
-	/**
-	 * Used by {@link #place(Object)} typically, this should always equal {@code Long.countLeadingZeros(mask)}.
-	 * For a table that could hold 2 items (with 1 bit indices), this would be {@code 64 - 1 == 63}. For a table that
-	 * could hold 256 items (with 8 bit indices), this would be {@code 64 - 8 == 56}.
-	 */
-	protected int shift;
+//	/**
+//	 * Used by {@link #place(Object)} typically, this should always equal {@code Long.countLeadingZeros(mask)}.
+//	 * For a table that could hold 2 items (with 1 bit indices), this would be {@code 64 - 1 == 63}. For a table that
+//	 * could hold 256 items (with 8 bit indices), this would be {@code 64 - 8 == 56}.
+//	 */
+//	protected int shift;
+
+//	/**
+//	 * Used by {@link #place(Object)} to mix hashCode() results. Changes on every call to {@link #resize(int)} by default.
+//	 * This only needs to be serialized if the full key and value tables are serialized, or if the iteration order should be
+//	 * the same before and after serialization. Iteration order is better handled by using {@link ObjectOrderedSet}.
+//	 */
+//	protected static final long hashMultiplier = 0xD1B54A32D192ED03L;
 
 	/**
-	 * Used by {@link #place(Object)} to mix hashCode() results. Changes on every call to {@link #resize(int)} by default.
-	 * This only needs to be serialized if the full key and value tables are serialized, or if the iteration order should be
-	 * the same before and after serialization. Iteration order is better handled by using {@link ObjectOrderedSet}.
-	 */
-	protected static final long hashMultiplier = 0xD1B54A32D192ED03L;
-
-	/**
-	 * A bitmask used to confine hashcodes to the size of the table. Must be all 1 bits in its low positions, ie a power of two
-	 * minus 1. If {@link #place(Object)} is overridden, this can be used instead of {@link #shift} to isolate usable bits of a
-	 * hash.
+	 * A bitmask used to confine hashcodes to the size of the table. Must be all 1-bits in its low positions, ie a
+	 * power of two minus 1. This is used to isolate usable bits of a hash.
 	 */
 	protected int mask;
 	protected transient ObjectSetIterator<T> iterator1;
@@ -113,7 +112,7 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 		int tableSize = tableSize(initialCapacity, loadFactor);
 		threshold = (int)(tableSize * loadFactor);
 		mask = tableSize - 1;
-		shift = Long.numberOfLeadingZeros(mask);
+//		shift = Long.numberOfLeadingZeros(mask);
 
 		keyTable = (T[])new Object[tableSize];
 	}
@@ -125,7 +124,7 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 		loadFactor = set.loadFactor;
 		threshold = set.threshold;
 		mask = set.mask;
-		shift = set.shift;
+//		shift = set.shift;
 		keyTable = Arrays.copyOf(set.keyTable, set.keyTable.length);
 		size = set.size;
 //		hashMultiplier = set.hashMultiplier;
@@ -162,41 +161,19 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 	}
 
 	/**
-	 * Returns an index &gt;= 0 and &lt;= {@link #mask} for the specified {@code item}, mixed.
-	 * <p>
-	 * The default behavior uses a basic hash mixing family; it simply gets the
-	 * {@link Object#hashCode()} of {@code item}, multiplies it by the current
-	 * {@link #hashMultiplier}, and makes an unsigned right shift by {@link #shift} before
-	 * casting to int and returning. Because the hashMultiplier changes every time the backing
-	 * table resizes, if a problematic sequence of keys piles up with many collisions, that won't
-	 * continue to cause problems when the next resize changes the hashMultiplier again. This
-	 * doesn't have much way of preventing trouble from hashCode() implementations that always
-	 * or very frequently return 0, but nothing really can handle that well.
+	 * Returns an index &gt;= 0 and &lt;= {@link #mask} for the specified {@code item}.
 	 * <br>
-	 * This can be overridden to hash {@code item} differently, though all implementors must
-	 * ensure this returns results in the range of 0 to {@link #mask}, inclusive. If nothing
-	 * else is changed, then unsigned-right-shifting an int or long by {@link #shift} will also
-	 * restrict results to the correct range. You should usually override this method
-	 * if you also override {@link #equate(Object, Object)}, because two equal values should have
-	 * the same hash. If you are confident that the hashCode() implementation used by item will
-	 * have reasonable quality, you can override this with a simpler implementation, such as
-	 * {@code return item.hashCode() & mask;}. This simpler version is not used by default, even
-	 * though it can be slightly faster, because the default hashing family provides much
-	 * better resilience against high collision rates when they occur accidentally. If collision
-	 * rates are high on the low bits of many hashes, then the simpler version tends to be
-	 * significantly slower than the hashing family. Neither version provides stronger defenses
-	 * against maliciously-chosen items, but linear probing naturally won't fail entirely even in
-	 * that case. It is possible that a user could write an implementation of place() that is more
-	 * robust against malicious inputs; one such approach is optionally employed by .NET Core and
-	 * newer versions for the hashes of strings. That approach is similar to the current one here.
+	 * This does not mix the given hashCode; it only returns its lower bits (as determined by mask).
+	 * Here, this should be acceptable because any {@code T} type used in this codebase already mixes its hashCode.
 	 *
-	 * @param item a non-null Object; its hashCode() method should be used by most implementations
+	 * @param item a non-null Object; its hashCode() method is called once
 	 * @return an index between 0 and {@link #mask} (both inclusive)
 	 */
 	protected int place (Object item) {
-		return (int)(item.hashCode() * hashMultiplier >>> shift);
+		// Should be used if item.hashCode() can have quality issues.
+//		return (int)(item.hashCode() * hashMultiplier >>> shift);
 		// This can be used if you know hashCode() has few collisions normally, and won't be maliciously manipulated.
-//		return item.hashCode() & mask;
+		return item.hashCode() & mask;
 	}
 
 	/**
@@ -542,9 +519,8 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 		int oldCapacity = keyTable.length;
 		threshold = (int)(newSize * loadFactor);
 		mask = newSize - 1;
-		shift = Long.numberOfLeadingZeros(mask);
+//		shift = Long.numberOfLeadingZeros(mask);
 
-//		hashMultiplier = Utilities.GOOD_MULTIPLIERS[(int)(hashMultiplier >>> 48 + shift) & 511];
 		T[] oldKeyTable = keyTable;
 
 		keyTable = (T[])new Object[newSize];
@@ -557,46 +533,13 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 		}
 	}
 
-//	/**
-//	 * Gets the current hash multiplier as used by {@link #place(Object)}; for specific advanced usage only.
-//	 * The hash multiplier changes whenever {@link #resize(int)} is called, though its value before the resize
-//	 * affects its value after.
-//	 * @return the current hash multiplier, which should always be a large odd long
-//	 */
-//	public long getHashMultiplier () {
-//		return hashMultiplier;
-//	}
-//
-//	/**
-//	 * Sets the current hash multiplier, then immediately calls {@link #resize(int)} without changing the target size; this
-//	 * is for specific advanced usage only. Calling resize() will change the multiplier before it gets used, and the current
-//	 * {@link #size()} of the data structure also changes the value. The hash multiplier is used by {@link #place(Object)}.
-//	 * The hash multiplier must be an odd long, and should usually be "rather large." Here, that means the absolute value of
-//	 * the multiplier should be at least a quadrillion or so (a million billions, or roughly {@code 0x4000000000000L}). The
-//	 * only validation this does is to ensure the multiplier is odd; everything else is up to the caller. The hash multiplier
-//	 * changes whenever {@link #resize(int)} is called, though its value before the resize affects its value after. Because
-//	 * of how resize() randomizes the multiplier, even inputs such as {@code 1L} and {@code -1L} actually work well.
-//	 * <br>
-//	 * This is accessible at all mainly so serialization code that has a need to access the hash multiplier can do so, but
-//	 * also to provide an "emergency escape route" in case of hash flooding. Using one of the "known good" longs in
-//	 * {@link Utilities#GOOD_MULTIPLIERS} should usually be fine if you don't know what multiplier will work well.
-//	 * Be advised that because this has to call resize(), it isn't especially fast, and it slows
-//	 * down the more items are in the data structure. If you in a situation where you are worried about hash flooding, you
-//	 * also shouldn't permit adversaries to cause this method to be called frequently.
-//	 * @param hashMultiplier any odd long; will not be used as-is
-//	 */
-//	public void setHashMultiplier (long hashMultiplier) {
-//		this.hashMultiplier = hashMultiplier | 1L;
-//		resize(keyTable.length);
-//	}
-
 	@Override
 	public Object [] toArray () {
 		return toArray(new Object[size()]);
 	}
 
 	/**
-	 * Returns an array containing all of the elements in this set; the
+	 * Returns an array containing all the elements in this set; the
 	 * runtime type of the returned array is that of the specified array.
 	 * If the set fits in the specified array, it is returned therein.
 	 * Otherwise, a new array is allocated with the runtime type of the

@@ -154,7 +154,7 @@ public abstract class Connection<V> extends Edge<V> {
 
         @Override
         public int hashCode() {
-            return a.hashCode() ^ b.hashCode();
+            return a.hashCode() + b.hashCode();
         }
 
         @Override
