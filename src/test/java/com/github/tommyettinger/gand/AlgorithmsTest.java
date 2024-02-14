@@ -99,7 +99,7 @@ public class AlgorithmsTest {
     @Test
     public void shortestVector2PathShouldBeCorrect() {
         int n = 20;
-        Graph<Vector2> undirectedGraph = TestUtils.makeGridGraph(new UndirectedGraph<>(), n);
+        Graph<Vector2> undirectedGraph = TestUtils.makeGridGraph(new Vector2UndirectedGraph(), n);
         Graph<Vector2> diGraph = TestUtils.makeGridGraph(new Vector2DirectedGraph(), n);
 
         Vector2 start = new Vector2(0, 0), end = new Vector2(n - 1, n - 1);
