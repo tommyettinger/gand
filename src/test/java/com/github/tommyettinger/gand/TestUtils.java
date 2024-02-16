@@ -23,8 +23,10 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.RandomXS128;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 
 class TestUtils {
     static Graph<Vector2> makeGridGraph(Graph<Vector2> graph, int n) {
@@ -51,6 +53,57 @@ class TestUtils {
             }
         }
 
+        return graph;
+    }
+    static Graph<Vector3> makeGridGraph3(Graph<Vector3> graph, int n) {
+
+        long newSeed = MathUtils.random.nextLong();
+        MathUtils.random.setSeed(123456789L);
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int k = 0; k < n; k++) {
+                    if ((i & j & k & 1) == 0 || MathUtils.randomBoolean(0.3f)) {
+                        Vector3 v = new Vector3(i, j, k);
+                        graph.addVertex(v);
+                    }
+                }
+            }
+        }
+
+        Vector3 v1 = new Vector3(), v2 = new Vector3();
+        for (int i = 0; i < n; i++) {
+            v1.x = i;
+            for (int j = 0; j < n; j++) {
+                v1.y = j;
+                for (int k = 0; k < n; k++) {
+                    v1.z = k;
+                    if(!graph.contains(v1))
+                        continue;
+                    if (i < n - 1) {
+                        v2.set(i + 1, j, k);
+                        if (graph.contains(v2)) {
+                            graph.addEdge(v1, v2, v1.dst(v2));
+                            if (graph.isDirected()) graph.addEdge(v2, v1, v1.dst(v2));
+                        }
+                    }
+                    if (j < n - 1) {
+                        v2.set(i, j+1, k);
+                        if (graph.contains(v2)) {
+                            graph.addEdge(v1, v2, v1.dst(v2));
+                            if (graph.isDirected()) graph.addEdge(v2, v1, v1.dst(v2));
+                        }
+                    }
+                    if (k < n - 1) {
+                        v2.set(i, j, k+1);
+                        if (graph.contains(v2)) {
+                            graph.addEdge(v1, v2, v1.dst(v2));
+                            if (graph.isDirected()) graph.addEdge(v2, v1, v1.dst(v2));
+                        }
+                    }
+                }
+            }
+        }
+        MathUtils.random.setSeed(newSeed);
         return graph;
     }
 
