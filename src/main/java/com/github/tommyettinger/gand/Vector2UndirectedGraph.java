@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.NumberUtils;
+import com.github.tommyettinger.gand.utils.Heuristic;
 
 import java.util.Collection;
 import java.util.Set;
@@ -58,6 +59,40 @@ public class Vector2UndirectedGraph extends UndirectedGraph<Vector2> implements 
             for (int y = 0; y < validGrid[x].length; y++) {
                 if(validGrid[x][y] == validChar)
                     addVertex(new Vector2(x, y));
+            }
+        }
+    }
+
+    /**
+     * Given a 2D char array, adds a vertex where a cell in {@code validGrid} is equal to {@code validChar}, or ignores
+     * it otherwise.
+     * This only adds vertices, not edges.
+     * @param validGrid a 2D char array where {@code validChar} means to add that vertex; may be jagged, but this will just use its largest dimensions then
+     * @param validChar the char that, when found in {@code validGrid}, means a vertex will be added
+     * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
+     */
+    public Vector2UndirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight, Heuristic<Vector2> heu, boolean permitDiagonal){
+        this(validGrid, validChar, defaultEdgeWeight);
+        if(heu == null) heu = (a, b) -> defaultEdgeWeight;
+        Vector2 test = new Vector2(), next = new Vector2(), t;
+        Node<Vector2> nmt, nmn;
+        for (int x = 0; x < validGrid.length; x++) {
+            test.x = x;
+            for (int y = 0; y < validGrid[x].length; y++) {
+                test.y = y;
+                if((nmt = nodeMap.get(test)) != null){
+                    t = nmt.getObject();
+                    if(permitDiagonal){
+                        next.x = x-1; next.y = y-1; if((nmn = nodeMap.get(next)) != null) addEdge(t, nmn.getObject(), heu.getEstimate(test, next));
+                        next.x = x+1; next.y = y-1; if((nmn = nodeMap.get(next)) != null) addEdge(t, nmn.getObject(), heu.getEstimate(test, next));
+                        next.x = x-1; next.y = y+1; if((nmn = nodeMap.get(next)) != null) addEdge(t, nmn.getObject(), heu.getEstimate(test, next));
+                        next.x = x+1; next.y = y+1; if((nmn = nodeMap.get(next)) != null) addEdge(t, nmn.getObject(), heu.getEstimate(test, next));
+                    }
+                    next.x = x; next.y = y-1; if((nmn = nodeMap.get(next)) != null) addEdge(t, nmn.getObject(), heu.getEstimate(test, next));
+                    next.x = x-1; next.y = y; if((nmn = nodeMap.get(next)) != null) addEdge(t, nmn.getObject(), heu.getEstimate(test, next));
+                    next.x = x+1; next.y = y; if((nmn = nodeMap.get(next)) != null) addEdge(t, nmn.getObject(), heu.getEstimate(test, next));
+                    next.x = x; next.y = y+1; if((nmn = nodeMap.get(next)) != null) addEdge(t, nmn.getObject(), heu.getEstimate(test, next));
+                }
             }
         }
     }
