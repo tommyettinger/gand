@@ -28,7 +28,7 @@ import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
 
 import java.util.Collection;
 
-public class Internals<V> {
+public final class Internals<V> {
 
     final Graph<V> graph;
 

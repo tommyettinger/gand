@@ -27,6 +27,7 @@ package com.github.tommyettinger.gand;
 import java.util.*;
 
 import com.github.tommyettinger.gand.NodeMap.NodeIterator;
+import com.github.tommyettinger.gand.utils.Errors;
 
 class VertexSet<V> extends AbstractSet<V> {
 

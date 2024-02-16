@@ -24,7 +24,7 @@ SOFTWARE.
 package com.github.tommyettinger.gand;
 
 
-public class GraphBuilder{
+public final class GraphBuilder{
 
     private GraphBuilder() {
     }
@@ -47,5 +47,4 @@ public class GraphBuilder{
             }
         }
     }
-
 }

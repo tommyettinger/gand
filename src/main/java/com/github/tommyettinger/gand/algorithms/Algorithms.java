@@ -23,7 +23,7 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand.algorithms;
 
-import com.github.tommyettinger.gand.Errors;
+import com.github.tommyettinger.gand.utils.Errors;
 import com.github.tommyettinger.gand.Graph;
 import com.github.tommyettinger.gand.Node;
 import com.github.tommyettinger.gand.Path;

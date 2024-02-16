@@ -37,14 +37,14 @@ public class Node<V> {
     private final V object;
 
     protected ObjectMap<Node<V>, Connection<V>> neighbors = new ObjectMap<>(8, 0.5f);
-    private ArrayList<Connection<V>> outEdges = new ArrayList<>(8);
-    private ArrayList<Connection<V>> inEdges;
+    protected ArrayList<Connection<V>> outEdges = new ArrayList<>(8);
+    protected ArrayList<Connection<V>> inEdges;
 
     //================================================================================
     // Node map fields
     //================================================================================
 
-    public int mapHash;
+    public final int mapHash;
     Node<V> nextInOrder = null, prevInOrder = null;
     Node<V> nextInBucket = null;
 
@@ -102,12 +102,6 @@ public class Node<V> {
         return edge;
     }
 
-    void disconnect() {
-        neighbors.clear();
-        getOutEdges().clear();
-        if (getInEdges() != null) getInEdges().clear();
-    }
-
     //================================================================================
     // Public Methods
     //================================================================================
@@ -126,6 +120,12 @@ public class Node<V> {
 
     public int getOutDegree() {
         return getOutEdges().size();
+    }
+
+    public void disconnect() {
+        neighbors.clear();
+        getOutEdges().clear();
+        if (getInEdges() != null) getInEdges().clear();
     }
 
     //================================================================================

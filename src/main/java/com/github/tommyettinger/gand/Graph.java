@@ -25,6 +25,7 @@ package com.github.tommyettinger.gand;
 
 import com.github.tommyettinger.gand.algorithms.Algorithms;
 import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
+import com.github.tommyettinger.gand.utils.Errors;
 import com.github.tommyettinger.gand.utils.ObjectPredicate;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
 

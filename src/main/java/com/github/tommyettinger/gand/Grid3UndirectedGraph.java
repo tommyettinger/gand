@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
-public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Json.Serializable {
+public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements Json.Serializable {
 
     private int width = 0;
     private int height = 0;
@@ -32,19 +32,19 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
         return false;
     }
 
-    public Grid3DirectedGraph() {
+    public Grid3UndirectedGraph() {
         super();
     }
 
-    public Grid3DirectedGraph(Collection<GridPoint3> vertices) {
+    public Grid3UndirectedGraph(Collection<GridPoint3> vertices) {
         super(vertices);
     }
 
-    public Grid3DirectedGraph(Collection<GridPoint3> vertices, Collection<Edge<GridPoint3>> edges, float defaultEdgeWeight) {
+    public Grid3UndirectedGraph(Collection<GridPoint3> vertices, Collection<Edge<GridPoint3>> edges, float defaultEdgeWeight) {
         super(vertices, edges, defaultEdgeWeight);
     }
 
-    public Grid3DirectedGraph(Graph<GridPoint3> graph) {
+    public Grid3UndirectedGraph(Graph<GridPoint3> graph) {
         super(graph);
     }
 
@@ -54,7 +54,7 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
      * @param validGrid a 3D boolean array where true means to add that vertex; may be jagged, but this will just use its largest dimensions then
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid3DirectedGraph(boolean[][][] validGrid, float defaultEdgeWeight){
+    public Grid3UndirectedGraph(boolean[][][] validGrid, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int z = 0; z < validGrid.length; z++) {
@@ -75,7 +75,7 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
      * @param validChar the char that, when found in {@code validGrid}, means a vertex will be added
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid3DirectedGraph(char[][][] validGrid, char validChar, float defaultEdgeWeight){
+    public Grid3UndirectedGraph(char[][][] validGrid, char validChar, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int z = 0; z < validGrid.length; z++) {
@@ -97,7 +97,7 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
      * @param maximumThreshold the maximum inclusive value in {@code validGrid} to allow as a vertex
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid3DirectedGraph(float[][][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
+    public Grid3UndirectedGraph(float[][][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int z = 0; z < validGrid.length; z++) {
@@ -114,11 +114,6 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
      * Adds edges between all pairs of adjacent vertices, where adjacency is 6-way if {@code permitDiagonal} is false,
      * or 26-way if it is true. The given Heuristic is used to determine the edge weight for any connection, unless
      * {@code heu} is null, in which case the {@link #getDefaultEdgeWeight()} is used for all edges.
-     * <br>
-     * This treats x, y, and z as all equivalent for the purpose of connection, but {@code heu} doesn't have to treat a
-     * downward z-connection as the same cost as an upward z-connection, or have it related at all to a cost on the
-     * horizontal plane. This is only true for directed graphs; undirected graphs would need to have an upward and a
-     * downward z-connection cost the same.
      * @param heu used to calculate the weight for each edge; may be null to use {@link #getDefaultEdgeWeight()}
      * @param permitDiagonal if false, this will use 6-way adjacency only; if true, it will use 26-way
      */
@@ -175,8 +170,8 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
     }
 
     @Override
-    public Grid3DirectedGraph createNew() {
-        return new Grid3DirectedGraph();
+    public Grid3UndirectedGraph createNew() {
+        return new Grid3UndirectedGraph();
     }
 
     /**
@@ -226,6 +221,8 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
             if(nc == null || nc.getLastRunID() != rid || nc.getDistance() >= 9999.5)
                 continue;
             int d = (int) (nc.getDistance() + 0.5), x = nc.getObject().x * 5, y = nc.getObject().y, z = nc.getObject().z;
+//            if(y * w5 + x + 3 >= cs.length)
+//                System.out.printf("x: %d, y: %d", x, y);
             int i = z * (hw + 1) + y * w5 + x;
             cs[i    ] = (d >= 1000) ? (char) ('0' + d / 1000) : ' ';
             cs[i + 1] = (d >= 100)  ? (char) ('0' + d / 100 % 10) : ' ';
@@ -237,7 +234,7 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
 
     @Override
     public String toString() {
-        return "Grid3DirectedGraph: {\n" + String.valueOf(show()) + "\n}";
+        return "Grid3UndirectedGraph: {\n" + String.valueOf(show()) + "\n}";
     }
 
     @Override
