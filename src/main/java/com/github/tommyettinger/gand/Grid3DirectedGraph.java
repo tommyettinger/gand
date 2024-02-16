@@ -17,16 +17,16 @@ public class Grid3DirectedGraph extends DirectedGraph<GridPoint3> implements Jso
     /**
      * Adds a vertex to the graph.
      *
-     * @param gridPoint2 the vertex to be added
+     * @param gridPoint3 the vertex to be added
      * @return true if the vertex was not already in the graph, false otherwise
      */
     @Override
-    public boolean addVertex(GridPoint3 gridPoint2) {
-        if(super.addVertex(gridPoint2))
+    public boolean addVertex(GridPoint3 gridPoint3) {
+        if(super.addVertex(gridPoint3))
         {
-            width = Math.max(width, gridPoint2.x+1);
-            height = Math.max(height, gridPoint2.y+1);
-            depth = Math.max(depth, gridPoint2.z+1);
+            width = Math.max(width, gridPoint3.x+1);
+            height = Math.max(height, gridPoint3.y+1);
+            depth = Math.max(depth, gridPoint3.z+1);
             return true;
         }
         return false;

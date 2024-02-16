@@ -97,17 +97,6 @@ public class Vector2DirectedGraph extends DirectedGraph<Vector2> implements Json
     public int hash(Vector2 gp) {
 //        // Harmonious numbers
         return (int)(NumberUtils.floatToIntBits(gp.x) * 0xC13FA9A902A6328FL + NumberUtils.floatToIntBits(gp.y) * 0x91E10DA5C79E7B1DL >>> 32);
-//        // int-based
-//        return (gp.x * 0xC13FB ^ gp.y * 0x91E0F);
-//        return gp.x ^ gp.y * 107;
-//        // Cantor pairing function
-//        return gp.y + ((gp.x + gp.y) * (gp.x + gp.y + 1) >> 1);
-//        // Rosenberg-Strong pairing function
-//        final int max = Math.max(gp.x, gp.y);
-//        return (max * max + max + gp.x - gp.y);
-//        // Rosenberg-Strong followed up with an XLCG that's GWT-safe
-//        final int max = Math.max(gp.x, gp.y);
-//        return (max * max + max + gp.x - gp.y) * 0x9E373 ^ 0x7F4A7C15;
     }
 
     @Override
