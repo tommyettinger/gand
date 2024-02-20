@@ -17,6 +17,9 @@
 
 package com.github.tommyettinger.gand.ds;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
+
 import java.util.*;
 
 import static com.github.tommyettinger.gand.ds.Utilities.tableSize;
@@ -43,7 +46,7 @@ import static com.github.tommyettinger.gand.ds.Utilities.tableSize;
  * @author Nathan Sweet
  * @author Tommy Ettinger
  */
-public class ObjectSet<T> implements Iterable<T>, Set<T> {
+public class ObjectSet<T> implements Iterable<T>, Set<T>, Json.Serializable {
 
 	protected int size;
 
@@ -681,6 +684,22 @@ public class ObjectSet<T> implements Iterable<T>, Set<T> {
 		iterator2.valid = true;
 		iterator1.valid = false;
 		return iterator2;
+	}
+
+	@Override
+	public void write(Json json) {
+		json.writeArrayStart("items"); // This name is special.
+		for (Object o : this) {
+			json.writeValue(o, null);
+		}
+		json.writeArrayEnd();
+	}
+
+	@Override
+	public void read(Json json, JsonValue jsonValue) {
+		for (JsonValue value = jsonValue.child; value != null; value = value.next) {
+			add(json.readValue(null, value));
+		}
 	}
 
 	public static class ObjectSetIterator<T> implements Iterable<T>, Iterator<T> {

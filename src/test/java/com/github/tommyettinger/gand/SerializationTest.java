@@ -1,8 +1,12 @@
 package com.github.tommyettinger.gand;
 
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
+import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
+import com.github.tommyettinger.gand.ds.ObjectSet;
+import com.github.tommyettinger.gand.utils.JsonRegistration;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,7 +20,7 @@ public class SerializationTest {
         ObjectDeque<Vector2> data = ObjectDeque.with(new Vector2(1, 0.1f), new Vector2(2, 0.2f), new Vector2(3, 0.3f));
         String text = json.toJson(data, ObjectDeque.class, Vector2.class);
         System.out.println(text);
-        ObjectDeque next = json.fromJson(ObjectDeque.class, Vector2.class, text);
+        ObjectDeque<?> next = json.fromJson(ObjectDeque.class, Vector2.class, text);
         System.out.println(json.toJson(next, ObjectDeque.class, Vector2.class));
         Assert.assertEquals(data, next);
     }
@@ -32,9 +36,61 @@ public class SerializationTest {
 
         String text = json.toJson(data, Path.class, Vector2.class);
         System.out.println(text);
-        Path next = json.fromJson(Path.class, Vector2.class, text);
+        Path<?> next = json.fromJson(Path.class, Vector2.class, text);
         System.out.println(json.toJson(next, Path.class, Vector2.class));
         Assert.assertEquals(data, next);
+    }
+
+    @Test
+    public void testObjectSet() {
+        Json json = new Json();
+        ObjectSet<String> words = ObjectSet.with("Peanut", "Butter", "Jelly", "Time");
+        String data = json.toJson(words);
+        System.out.println(data);
+        ObjectSet<?> words2 = json.fromJson(ObjectSet.class, data);
+        for(Object word : words2) {
+            System.out.print(word);
+            System.out.print(", ");
+        }
+        Assert.assertEquals(words, words2);
+        System.out.println();
+        JsonRegistration.registerGridPoint2(json);
+        ObjectSet<GridPoint2> points = ObjectSet.with(new GridPoint2(42, 42), new GridPoint2(23, 23), new GridPoint2(666, 666));
+        data = json.toJson(points);
+        System.out.println(data);
+        ObjectSet<?> points2 = json.fromJson(ObjectSet.class, data);
+        for(Object point : points2) {
+            System.out.print(point);
+            System.out.print(", ");
+        }
+        Assert.assertEquals(points, points2);
+        System.out.println();
+    }
+
+    @Test
+    public void testObjectOrderedSet() {
+        Json json = new Json();
+        ObjectOrderedSet<String> words = ObjectOrderedSet.with("Peanut", "Butter", "Jelly", "Time");
+        String data = json.toJson(words);
+        System.out.println(data);
+        ObjectOrderedSet<?> words2 = json.fromJson(ObjectOrderedSet.class, data);
+        for(Object word : words2) {
+            System.out.print(word);
+            System.out.print(", ");
+        }
+        Assert.assertEquals(words, words2);
+        System.out.println();
+        JsonRegistration.registerGridPoint2(json);
+        ObjectOrderedSet<GridPoint2> points = ObjectOrderedSet.with(new GridPoint2(42, 42), new GridPoint2(23, 23), new GridPoint2(666, 666));
+        data = json.toJson(points);
+        System.out.println(data);
+        ObjectOrderedSet<?> points2 = json.fromJson(ObjectOrderedSet.class, data);
+        for(Object point : points2) {
+            System.out.print(point);
+            System.out.print(", ");
+        }
+        Assert.assertEquals(points, points2);
+        System.out.println();
     }
 
     @Test
@@ -45,7 +101,7 @@ public class SerializationTest {
         TestUtils.makeGridGraph(data, 15);
         String text = json.toJson(data, UndirectedGraph.class);
         System.out.println(text);
-        UndirectedGraph next = json.fromJson(UndirectedGraph.class, text);
+        UndirectedGraph<?> next = json.fromJson(UndirectedGraph.class, text);
         System.out.println(json.toJson(next, UndirectedGraph.class));
         Assert.assertEquals(data, next);
     }
@@ -58,7 +114,7 @@ public class SerializationTest {
         TestUtils.makeGridGraph(data, 15);
         String text = json.toJson(data, DirectedGraph.class);
         System.out.println(text);
-        DirectedGraph next = json.fromJson(DirectedGraph.class, text);
+        DirectedGraph<?> next = json.fromJson(DirectedGraph.class, text);
         System.out.println(json.toJson(next, DirectedGraph.class));
         Assert.assertEquals(data, next);
     }
