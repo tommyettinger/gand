@@ -36,12 +36,20 @@ public class Vector2UndirectedGraph extends UndirectedGraph<Vector2> implements 
     public Vector2UndirectedGraph(boolean[][] validGrid, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
-        for (int x = 0; x < validGrid.length; x++) {
-            for (int y = 0; y < validGrid[x].length; y++) {
-                if(validGrid[x][y])
-                    addVertex(new Vector2(x, y));
-            }
-        }
+        initVertices(validGrid);
+    }
+
+    /**
+     * Given a 2D boolean array, adds a vertex where a cell in {@code validGrid} is true, or ignores it otherwise.
+     * This adds vertices and then edges, using {@link #initEdges(int, int, float, Heuristic, boolean)}.
+     * @param validGrid a 2D boolean array where true means to add that vertex; must be rectangular (not jagged)
+     * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
+     * @param heu used to calculate the weight for each edge; may be null to use {@link #getDefaultEdgeWeight()}
+     * @param permitDiagonal if false, this will use 4-way adjacency only; if true, it will use 8-way
+     */
+    public Vector2UndirectedGraph(boolean[][] validGrid, float defaultEdgeWeight, Heuristic<Vector2> heu, boolean permitDiagonal){
+        this(validGrid, defaultEdgeWeight);
+        initEdges(validGrid.length, validGrid[0].length, defaultEdgeWeight, heu, permitDiagonal);
     }
 
     /**
@@ -55,6 +63,81 @@ public class Vector2UndirectedGraph extends UndirectedGraph<Vector2> implements 
     public Vector2UndirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
+        initVertices(validGrid, validChar);
+    }
+
+    /**
+     * Given a 2D char array, adds a vertex where a cell in {@code validGrid} is equal to {@code validChar}, or ignores
+     * it otherwise.
+     * This adds vertices and then edges, using {@link #initEdges(int, int, float, Heuristic, boolean)}.
+     * @param validGrid a 2D char array where {@code validChar} means to add that vertex; must be rectangular (not jagged)
+     * @param validChar the char that, when found in {@code validGrid}, means a vertex will be added
+     * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
+     * @param heu used to calculate the weight for each edge; may be null to use {@link #getDefaultEdgeWeight()}
+     * @param permitDiagonal if false, this will use 4-way adjacency only; if true, it will use 8-way
+     */
+    public Vector2UndirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight, Heuristic<Vector2> heu, boolean permitDiagonal){
+        this(validGrid, validChar, defaultEdgeWeight);
+        initEdges(validGrid.length, validGrid[0].length, defaultEdgeWeight, heu, permitDiagonal);
+    }
+
+    /**
+     * Given a 2D float array, adds a vertex where a cell in {@code validGrid} has a value between
+     * {@code minimumThreshold} and {@code maximumThreshold}, both inclusive, or ignores it otherwise.
+     * This only adds vertices, not edges.
+     * @param validGrid a 2D float array; may be jagged, but this will just use its largest dimensions then
+     * @param minimumThreshold the minimum inclusive value in {@code validGrid} to allow as a vertex
+     * @param maximumThreshold the maximum inclusive value in {@code validGrid} to allow as a vertex
+     * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
+     */
+    public Vector2UndirectedGraph(float[][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
+        super();
+        setDefaultEdgeWeight(defaultEdgeWeight);
+        initVertices(validGrid, minimumThreshold, maximumThreshold);
+    }
+
+    /**
+     * Given a 2D float array, adds a vertex where a cell in {@code validGrid} has a value between
+     * {@code minimumThreshold} and {@code maximumThreshold}, both inclusive, or ignores it otherwise.
+     * This adds vertices and then edges, using {@link #initEdges(int, int, float, Heuristic, boolean)}.
+     * @param validGrid a 2D float array; must be rectangular (not jagged)
+     * @param minimumThreshold the minimum inclusive value in {@code validGrid} to allow as a vertex
+     * @param maximumThreshold the maximum inclusive value in {@code validGrid} to allow as a vertex
+     * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
+     * @param heu used to calculate the weight for each edge; may be null to use {@link #getDefaultEdgeWeight()}
+     * @param permitDiagonal if false, this will use 4-way adjacency only; if true, it will use 8-way
+     */
+    public Vector2UndirectedGraph(float[][] validGrid, float minimumThreshold, float maximumThreshold,
+                                  float defaultEdgeWeight, Heuristic<Vector2> heu, boolean permitDiagonal){
+        this(validGrid, minimumThreshold, maximumThreshold, defaultEdgeWeight);
+        initEdges(validGrid.length, validGrid[0].length, defaultEdgeWeight, heu, permitDiagonal);
+    }
+
+    @Override
+    public Vector2UndirectedGraph createNew() {
+        return new Vector2UndirectedGraph();
+    }
+
+
+    /**
+     * Adds a vertex for every x,y position in {@code validGrid} that is true.
+     * @param validGrid a 2D char array where {@code true} means to add that vertex; may be jagged, but this will just use its largest dimensions then
+     */
+    public void initVertices(boolean[][] validGrid){
+        for (int x = 0; x < validGrid.length; x++) {
+            for (int y = 0; y < validGrid[x].length; y++) {
+                if(validGrid[x][y])
+                    addVertex(new Vector2(x, y));
+            }
+        }
+    }
+
+    /**
+     * Adds a vertex for every x,y position in {@code validGrid} that is equal to {@code validChar}.
+     * @param validGrid a 2D char array where {@code validChar} means to add that vertex; may be jagged, but this will just use its largest dimensions then
+     * @param validChar the char that, when found in {@code validGrid}, means a vertex will be added
+     */
+    public void initVertices(char[][] validGrid, char validChar){
         for (int x = 0; x < validGrid.length; x++) {
             for (int y = 0; y < validGrid[x].length; y++) {
                 if(validGrid[x][y] == validChar)
@@ -64,21 +147,39 @@ public class Vector2UndirectedGraph extends UndirectedGraph<Vector2> implements 
     }
 
     /**
-     * Given a 2D char array, adds a vertex where a cell in {@code validGrid} is equal to {@code validChar}, or ignores
-     * it otherwise.
-     * This only adds vertices, not edges.
-     * @param validGrid a 2D char array where {@code validChar} means to add that vertex; may be jagged, but this will just use its largest dimensions then
-     * @param validChar the char that, when found in {@code validGrid}, means a vertex will be added
-     * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
+     * Given a 2D float array, adds a vertex where a cell in {@code validGrid} has a value between
+     * {@code minimumThreshold} and {@code maximumThreshold}, both inclusive, or ignores it otherwise.
+     * @param validGrid a 2D float array; may be jagged, but this will just use its largest dimensions then
+     * @param minimumThreshold the minimum inclusive value in {@code validGrid} to allow as a vertex
+     * @param maximumThreshold the maximum inclusive value in {@code validGrid} to allow as a vertex
      */
-    public Vector2UndirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight, Heuristic<Vector2> heu, boolean permitDiagonal){
-        this(validGrid, validChar, defaultEdgeWeight);
+    public void initVertices(float[][] validGrid, float minimumThreshold, float maximumThreshold){
+        for (int x = 0; x < validGrid.length; x++) {
+            for (int y = 0; y < validGrid[x].length; y++) {
+                if(validGrid[x][y] >= minimumThreshold && validGrid[x][y] <= maximumThreshold)
+                    addVertex(new Vector2(x, y));
+            }
+        }    }
+
+    /**
+     * Attempts to add edges to every Vector2D (with integer coordinates) from 0,0 (inclusive) to xSize,ySize
+     * (exclusive). This only connects adjacent Vector2D items; {@code permitDiagonal} determines whether adjacency is
+     * 4-way (rook movement in chess) or 8-way (queen movement in chess). The cost to enter a cell is determined by
+     * {@code heu}, or just {@code defaultEdgeWeight} if heu is null.
+     *
+     * @param xSize the width (x size) of the area to try to add edges to
+     * @param ySize the height (y size) of the area to try to add edges to
+     * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
+     * @param heu used to calculate the weight for each edge; may be null to use {@link #getDefaultEdgeWeight()}
+     * @param permitDiagonal if false, this will use 4-way adjacency only; if true, it will use 8-way
+     */
+    public void initEdges(int xSize, int ySize, float defaultEdgeWeight, Heuristic<Vector2> heu, boolean permitDiagonal) {
         if(heu == null) heu = (a, b) -> defaultEdgeWeight;
         Vector2 test = new Vector2(), next = new Vector2(), t;
         Node<Vector2> nmt, nmn;
-        for (int x = 0; x < validGrid.length; x++) {
+        for (int x = 0; x < xSize; x++) {
             test.x = x;
-            for (int y = 0; y < validGrid[x].length; y++) {
+            for (int y = 0; y < ySize; y++) {
                 test.y = y;
                 if((nmt = nodeMap.get(test)) != null){
                     t = nmt.getObject();
@@ -95,31 +196,6 @@ public class Vector2UndirectedGraph extends UndirectedGraph<Vector2> implements 
                 }
             }
         }
-    }
-
-    /**
-     * Given a 2D float array, adds a vertex where a cell in {@code validGrid} has a value between
-     * {@code minimumThreshold} and {@code maximumThreshold}, both inclusive, or ignores it otherwise.
-     * This only adds vertices, not edges.
-     * @param validGrid a 2D float array; may be jagged, but this will just use its largest dimensions then
-     * @param minimumThreshold the minimum inclusive value in {@code validGrid} to allow as a vertex
-     * @param maximumThreshold the maximum inclusive value in {@code validGrid} to allow as a vertex
-     * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
-     */
-    public Vector2UndirectedGraph(float[][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
-        super();
-        setDefaultEdgeWeight(defaultEdgeWeight);
-        for (int x = 0; x < validGrid.length; x++) {
-            for (int y = 0; y < validGrid[x].length; y++) {
-                if(validGrid[x][y] >= minimumThreshold && validGrid[x][y] <= maximumThreshold)
-                    addVertex(new Vector2(x, y));
-            }
-        }
-    }
-
-    @Override
-    public Vector2UndirectedGraph createNew() {
-        return new Vector2UndirectedGraph();
     }
 
     /**
