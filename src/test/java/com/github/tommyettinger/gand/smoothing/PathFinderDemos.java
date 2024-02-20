@@ -39,12 +39,9 @@ public class PathFinderDemos extends ApplicationAdapter {
 
 	public CollapsableWindow algorithmSelectionWindow;
 
-	// @formatter:off
 	PathFinderTestBase [] tests = {
 		new CaveAStarTest(this),
-//		new InterruptibleFlatTiledAStarTest(this),
 	};
-	// @formatter:on
 
 	Table testsTable;
 	PathFinderTestBase currentTest;

@@ -313,7 +313,12 @@ public class CaveAStarTest extends PathFinderTestBase {
 		int tileX = (int)(tmpUnprojection.x / width);
 		int tileY = (int)(tmpUnprojection.y / width);
 		if (forceUpdate || tileX != lastEndTileX || tileY != lastEndTileY) {
-			pathFinder = new Vector2UndirectedGraph(worldMap, '.', 1f, Vector2::dst, diagonal);
+			if(pathFinder == null) pathFinder = new Vector2UndirectedGraph(worldMap, '.', 1f, Vector2::dst, diagonal);
+			else {
+				pathFinder.removeAllVertices();
+				pathFinder.initVertices(worldMap, '.');
+				pathFinder.initEdges(worldMap.length, worldMap[0].length, 1f, Vector2::dst, diagonal);
+			}
 			Vector2 startVec = new Vector2(startTileX, startTileY), endVec = new Vector2(tileX, tileY);
 			char endNode = ' ';
 			if(tileX >= 0 && tileY >= 0 && tileX < worldMap.length && tileY < worldMap[tileX].length)
