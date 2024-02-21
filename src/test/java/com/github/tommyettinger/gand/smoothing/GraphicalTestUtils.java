@@ -43,6 +43,9 @@ public final class GraphicalTestUtils {
 	public static void launch (ApplicationListener test) {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setWindowedMode(960, 600);
+		config.useVsync(false);
+		config.setForegroundFPS(0);
+		config.disableAudio(true);
 		new Lwjgl3Application(test, config);
 	}
 }

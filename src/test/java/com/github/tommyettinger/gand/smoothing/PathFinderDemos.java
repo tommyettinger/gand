@@ -110,7 +110,7 @@ public class PathFinderDemos extends ApplicationAdapter {
 			algorithmNames[i] = tests[i].testName;
 		}
 
-		final List<String> algorithmList = new List<String>(skin);
+		final List<String> algorithmList = new List<>(skin);
 		algorithmList.setItems(algorithmNames);
 		algorithmList.addListener(new ClickListener() {
 			@Override

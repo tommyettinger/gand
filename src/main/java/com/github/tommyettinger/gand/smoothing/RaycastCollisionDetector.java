@@ -25,15 +25,27 @@ import com.badlogic.gdx.math.Vector;
  * @author davebaol */
 public interface RaycastCollisionDetector<T extends Vector<T>> {
 
-	/** Casts the given ray to test if it collides with any objects in the game world.
-	 * @param ray the ray to cast.
-	 * @return {@code true} in case of collision; {@code false} otherwise. */
-	public boolean collides (VectorPair<T> ray);
+	/**
+	 * Casts the given ray to test if it collides with any objects in the game world.
+	 *
+	 * @param ray the ray to cast; must not be modified
+	 * @return {@code true} in case of collision; {@code false} otherwise
+	 */
+	boolean collides(final VectorPair<T> ray);
 
-	/** Find the closest collision between the given input ray and the objects in the game world. In case of collision,
-	 * {@code outputCollision} will contain the collision point and the normal vector of the obstacle at the point of collision.
-	 * @param outputCollision the output collision.
-	 * @param inputRay the ray to cast.
-	 * @return {@code true} in case of collision; {@code false} otherwise. */
-	public boolean findCollision (VectorPair<T> outputCollision, VectorPair<T> inputRay);
+	/**
+	 * Find the closest collision between the given input ray and the objects in the game world. In case of collision,
+	 * {@code outputCollision} will contain the collision point and the normal vector of the obstacle at the point of
+	 * collision. The default implementation ignores {@code outputCollision} and calls {@link #collides(VectorPair)}
+	 * with {@code inputRay}. Classes that implement this and can provide some kind of information about the collision
+	 * are encouraged to change {@code outputCollision}, but {@code inputRay} should not be modified. If
+	 * {@code outputCollision} is null, implementors must ignore it.
+	 *
+	 * @param outputCollision the output collision; may be null, otherwise may be modified
+	 * @param inputRay the ray to cast; must not be modified
+	 * @return {@code true} in case of collision; {@code false} otherwise
+	 */
+	default boolean findCollision(VectorPair<T> outputCollision, final VectorPair<T> inputRay) {
+		return collides(inputRay);
+	}
 }

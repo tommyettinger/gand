@@ -64,7 +64,7 @@ public class PathSmoother<V extends Vector<V>> {
 		// Make sure the ray is instantiated
 		if (this.ray == null) {
 			V vec = path.getFirst();
-			this.ray = new VectorPair<V>(vec.cpy(), vec.cpy());
+			this.ray = new VectorPair<>(vec.cpy(), vec.cpy());
 		}
 
 		// Keep track of where we are in the smoothed path.
@@ -123,7 +123,7 @@ public class PathSmoother<V extends Vector<V>> {
 			// Make sure the ray is instantiated
 			if (this.ray == null) {
 				V vec = request.path.getFirst();
-				this.ray = new VectorPair<V>(vec.cpy(), vec.cpy());
+				this.ray = new VectorPair<>(vec.cpy(), vec.cpy());
 			}
 
 			// Keep track of where we are in the smoothed path.

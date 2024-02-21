@@ -19,18 +19,29 @@ package com.github.tommyettinger.gand.smoothing;
 import com.badlogic.gdx.math.Vector2;
 
 /** A raycast collision detector used for path smoothing against a simple 2D char array as a map.
+ * This treats diagonally-connected walkable cells as walkable. It uses Bresenham's line algorithm.
+ * <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">See Wikipedia</a> for more info.
  *
  * @author davebaol */
-public class BresenhamRaycastCollisionDetector implements RaycastCollisionDetector<Vector2> {
-	char[][] worldMap;
+public class CharBresenhamRaycastCollisionDetector implements RaycastCollisionDetector<Vector2> {
+	private final char[][] worldMap;
 
-	public BresenhamRaycastCollisionDetector(char[][] worldMap) {
+	public CharBresenhamRaycastCollisionDetector(char[][] worldMap) {
 		this.worldMap = worldMap;
 	}
 
-	// See http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+	/**
+	 * Draws a line using Bresenham's line algorithm to see if any cell in the world map is not {@code '.'}, which
+	 * indicates a floor or walkable cell; if any cell was not walkable, then this returns true (meaning there is a
+	 * collision).
+	 * <br>
+	 * <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">See Wikipedia</a> for more info.
+	 *
+	 * @param ray the ray to cast; will not be modified
+	 * @return true if any cell in the line is blocked (not {@code '.'})
+	 */
 	@Override
-	public boolean collides (VectorPair<Vector2> ray) {
+	public boolean collides (final VectorPair<Vector2> ray) {
 		int x0 = (int)ray.a.x;
 		int y0 = (int)ray.a.y;
 		int x1 = (int)ray.b.x;
@@ -82,10 +93,5 @@ public class BresenhamRaycastCollisionDetector implements RaycastCollisionDetect
 		}
 
 		return false;
-	}
-
-	@Override
-	public boolean findCollision (VectorPair<Vector2> outputCollision, VectorPair<Vector2> inputRay) {
-		throw new UnsupportedOperationException();
 	}
 }
