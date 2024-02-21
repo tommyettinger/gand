@@ -212,7 +212,8 @@ public class CaveAStarTest extends PathFinderTestBase {
 		lastEndTileX = caves.length-2;
 		lastEndTileY = caves[lastEndTileX].lastIndexOf('.');
 		updatePath(true);
-		pathSmoother = new PathSmoother<Vector2>(new BresenhamRaycastCollisionDetector(worldMap));
+		pathSmoother = new PathSmoother<>(new CharOrthoRaycastCollisionDetector(worldMap));
+//		pathSmoother = new PathSmoother<>(new CharBresenhamRaycastCollisionDetector(worldMap));
 
 		renderer = new ShapeRenderer();
 		inputProcessor = new TiledAStarInputProcessor(this);
