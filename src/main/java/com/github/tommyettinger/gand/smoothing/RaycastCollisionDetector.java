@@ -17,6 +17,7 @@
 package com.github.tommyettinger.gand.smoothing;
 
 import com.badlogic.gdx.math.Vector;
+import com.github.tommyettinger.gand.points.VectorPair;
 
 /** A {@code RaycastCollisionDetector} finds the closest intersection between a ray and any object in the game world.
  * 

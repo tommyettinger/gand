@@ -19,6 +19,7 @@ package com.github.tommyettinger.gand.smoothing;
 import com.badlogic.gdx.math.Vector;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.github.tommyettinger.gand.Path;
+import com.github.tommyettinger.gand.points.VectorPair;
 
 /** A {@code PathSmoother} takes a {@link Path} of Vector items and transforms it by linking directly the nodes that are in line of
  * sight. The smoothed path contains at most as many nodes as the original path. Also, the nodes in the smoothed path are unlikely

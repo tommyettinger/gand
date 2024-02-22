@@ -17,6 +17,7 @@
 package com.github.tommyettinger.gand.smoothing;
 
 import com.badlogic.gdx.math.Vector2;
+import com.github.tommyettinger.gand.points.VectorPair;
 
 /** A raycast collision detector used for path smoothing against a simple 2D char array as a map.
  * This treats diagonally-connected walkable cells as walkable. It uses Bresenham's line algorithm.

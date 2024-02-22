@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 
-package com.github.tommyettinger.gand.smoothing;
+package com.github.tommyettinger.gand.points;
 
 import com.badlogic.gdx.math.Vector;
 
