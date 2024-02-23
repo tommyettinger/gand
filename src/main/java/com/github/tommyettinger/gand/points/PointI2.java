@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import static com.badlogic.gdx.math.MathUtils.round;
 
 /**
- * The same as {@link GridPoint2}, just implementing {@link PointN}.
+ * The same as {@link GridPoint2}, just implementing {@link Point2} and {@link Json.Serializable}.
  */
 public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Serializable {
 
@@ -19,6 +19,10 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
 
     public PointI2(int x, int y) {
         super(x, y);
+    }
+
+    public PointI2(float x, float y) {
+        super(round(x), round(y));
     }
 
     public PointI2(GridPoint2 v) {
@@ -31,6 +35,10 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
 
     public PointI2(PointI2 v) {
         super(v);
+    }
+
+    public PointI2(Point2<? extends Point2<?>> v) {
+        this(v.x(), v.y());
     }
 
     /**
