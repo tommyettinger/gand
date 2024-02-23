@@ -1,8 +1,9 @@
 package com.github.tommyettinger.gand.points;
 
 import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
@@ -11,34 +12,34 @@ import static com.badlogic.gdx.math.MathUtils.round;
 /**
  * The same as {@link GridPoint2}, just implementing {@link Point2} and {@link Json.Serializable}.
  */
-public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Serializable {
+public class PointI3 extends GridPoint3 implements Point3<PointI3>, Json.Serializable {
 
-    public PointI2() {
+    public PointI3() {
         super();
     }
 
-    public PointI2(int x, int y) {
-        super(x, y);
+    public PointI3(int x, int y, int z) {
+        super(x, y, z);
     }
 
-    public PointI2(float x, float y) {
-        super(round(x), round(y));
+    public PointI3(float x, float y, float z) {
+        super(round(x), round(y), round(z));
     }
 
-    public PointI2(GridPoint2 v) {
+    public PointI3(GridPoint3 v) {
         super(v);
     }
 
-    public PointI2(Vector2 v) {
-        super(round(v.x), round(v.y));
+    public PointI3(Vector3 v) {
+        super(round(v.x), round(v.y), round(v.z));
     }
 
-    public PointI2(PointI2 v) {
+    public PointI3(PointI3 v) {
         super(v);
     }
 
-    public PointI2(Point2<? extends Point2<?>> v) {
-        this(v.x(), v.y());
+    public PointI3(Point3<? extends Point2<?>> v) {
+        this(v.x(), v.y(), v.z());
     }
 
     /**
@@ -53,73 +54,74 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
     }
 
     @Override
-    public PointI2 cpy() {
-        return new PointI2(this);
+    public PointI3 cpy() {
+        return new PointI3(this);
     }
 
     @Override
     public float len2() {
-        return x * x + y * y;
+        return x * x + y * y + z * z;
     }
 
     @Override
-    public PointI2 set(PointI2 point) {
+    public PointI3 set(PointI3 point) {
         super.set(point);
         return this;
     }
 
     @Override
-    public PointI2 sub(PointI2 point) {
+    public PointI3 sub(PointI3 point) {
         super.sub(point);
         return this;
     }
 
     @Override
-    public PointI2 add(PointI2 point) {
+    public PointI3 add(PointI3 point) {
         super.add(point);
         return this;
     }
 
     @Override
-    public PointI2 scl(PointI2 point) {
+    public PointI3 scl(PointI3 point) {
         x *= point.x;
         y *= point.y;
+        z *= point.z;
         return this;
     }
 
     @Override
-    public float dst(PointI2 point) {
+    public float dst(PointI3 point) {
         return super.dst(point);
     }
 
     @Override
-    public float dst2(PointI2 point) {
+    public float dst2(PointI3 point) {
         return super.dst2(point);
     }
 
     @Override
     public boolean isUnit() {
-        return (Math.abs(x) + Math.abs(y) == 1);
+        return (Math.abs(x) + Math.abs(y) + Math.abs(z) == 1);
     }
 
     @Override
     public boolean isUnit(float v) {
-        return MathUtils.isEqual(Math.abs(x) + Math.abs(y), 1, v);
+        return MathUtils.isEqual(Math.abs(x) + Math.abs(y) + Math.abs(z), 1, v);
     }
 
     @Override
     public boolean isZero() {
-        return (x | y) == 0;
+        return (x | y | z) == 0;
     }
 
     @Override
     public boolean isZero(float v) {
-        return MathUtils.isZero(x, v) && MathUtils.isZero(y, v);
+        return MathUtils.isZero(x, v) && MathUtils.isZero(y, v) && MathUtils.isZero(z, v);
     }
 
     @Override
-    public PointI2 setZero() {
-        set(0, 0);
+    public PointI3 setZero() {
+        set(0, 0, 0);
         return this;
     }
 
@@ -129,7 +131,7 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
     }
 
     @Override
-    public PointI2 x(float next) {
+    public PointI3 x(float next) {
         x = round(next);
         return this;
     }
@@ -140,14 +142,26 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
     }
 
     @Override
-    public PointI2 y(float next) {
+    public PointI3 y(float next) {
         y = round(next);
         return this;
     }
 
-    public PointI2 set(float x, float y){
+    @Override
+    public float z() {
+        return z;
+    }
+
+    @Override
+    public PointI3 z(float next) {
+        z = round(next);
+        return this;
+    }
+
+    public PointI3 set(float x, float y, float z){
         this.x = round(x);
         this.y = round(y);
+        this.z = round(z);
         return this;
     }
 
@@ -155,11 +169,13 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
     public void write(Json json) {
         json.writeValue("x", x, int.class);
         json.writeValue("y", y, int.class);
+        json.writeValue("z", z, int.class);
     }
 
     @Override
     public void read(Json json, JsonValue jsonData) {
         this.x = jsonData.getInt("x");
         this.y = jsonData.getInt("y");
+        this.z = jsonData.getInt("z");
     }
 }
