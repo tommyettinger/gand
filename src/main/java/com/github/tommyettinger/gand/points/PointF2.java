@@ -28,6 +28,27 @@ public class PointF2 extends Vector2 implements PointN<PointF2> {
         super(v);
     }
 
+    /**
+     * Gets how many components this type of point has; 2 here. This could also be called the dimensionality.
+     *
+     * @return how many components this type of point has (2)
+     */
+    @Override
+    public int rank() {
+        return 2;
+    }
+
+    /**
+     * Returns true if this type of point uses {@code float} or {@code double} for its components, or false otherwise.
+     * This always returns true.
+     *
+     * @return true
+     */
+    @Override
+    public boolean floatingPoint() {
+        return true;
+    }
+
     @Override
     public PointF2 cpy() {
         return new PointF2(this);
