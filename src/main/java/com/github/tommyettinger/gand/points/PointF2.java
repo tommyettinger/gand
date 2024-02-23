@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 /**
  * The same as {@link Vector2}, just implementing {@link PointN}.
  */
-public class PointF2 extends Vector2 implements PointN<PointF2> {
+public class PointF2 extends Vector2 implements Point2<PointF2> {
 
     public PointF2() {
         super();
@@ -26,16 +26,6 @@ public class PointF2 extends Vector2 implements PointN<PointF2> {
 
     public PointF2(PointF2 v) {
         super(v);
-    }
-
-    /**
-     * Gets how many components this type of point has; 2 here. This could also be called the dimensionality.
-     *
-     * @return how many components this type of point has (2)
-     */
-    @Override
-    public int rank() {
-        return 2;
     }
 
     /**
@@ -91,6 +81,34 @@ public class PointF2 extends Vector2 implements PointN<PointF2> {
     @Override
     public PointF2 setZero() {
         super.setZero();
+        return this;
+    }
+
+    @Override
+    public float x() {
+        return x;
+    }
+
+    @Override
+    public PointF2 x(float next) {
+        x = next;
+        return this;
+    }
+
+    @Override
+    public float y() {
+        return y;
+    }
+
+    @Override
+    public PointF2 y(float next) {
+        y = next;
+        return this;
+    }
+
+    public PointF2 set(float x, float y){
+        this.x = x;
+        this.y = y;
         return this;
     }
 }
