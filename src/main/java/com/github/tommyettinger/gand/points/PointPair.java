@@ -18,14 +18,14 @@ package com.github.tommyettinger.gand.points;
 
 import com.badlogic.gdx.math.Vector;
 
-/** A {@code VectorPair} is made up of two points in order. It can represent a ray, where {@code a} is the start and
+/** A {@code PointPair} is made up of two points in order. It can represent a ray, where {@code a} is the start and
  * {@code b} is the direction the ray points in. It can also represent a collision, where {@code a} is the collision
  * point and {@code b} is the normal vector.
  * 
  * @param <T> Type of vector, either 2D or 3D, implementing the {@link Vector} interface
  * 
  * @author davebaol */
-public class VectorPair<T extends Vector<T>> {
+public class PointPair<T extends PointN<T>> {
 
 	/** The starting point of a ray or the collision point of a collision. */
 	public T a;
@@ -33,10 +33,10 @@ public class VectorPair<T extends Vector<T>> {
 	/** The ending point of a ray or the normal vector of a collision. */
 	public T b;
 
-	/** Creates a {@code VectorPair} with the given {@code start} and {@code end} points.
+	/** Creates a {@code PointPair} with the given {@code start} and {@code end} points.
 	 * @param start the starting point of this ray
 	 * @param end the starting point of this ray */
-	public VectorPair(T start, T end) {
+	public PointPair(T start, T end) {
 		this.a = start;
 		this.b = end;
 	}
@@ -44,17 +44,17 @@ public class VectorPair<T extends Vector<T>> {
 	/** Sets this ray from the given ray.
 	 * @param ray The ray
 	 * @return this ray for chaining. */
-	public VectorPair<T> set (VectorPair<T> ray) {
+	public PointPair<T> set (PointPair<T> ray) {
 		a.set(ray.a);
 		b.set(ray.b);
 		return this;
 	}
 
-	/** Sets this VectorPair from the given start and end points.
+	/** Sets this PointPair from the given start and end points.
 	 * @param start the starting point of this ray
 	 * @param end the starting point of this ray
 	 * @return this ray for chaining. */
-	public VectorPair<T> set (T start, T end) {
+	public PointPair<T> set (T start, T end) {
 		this.a.set(start);
 		this.b.set(end);
 		return this;

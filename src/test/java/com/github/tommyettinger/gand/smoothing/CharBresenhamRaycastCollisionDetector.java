@@ -16,15 +16,15 @@
 
 package com.github.tommyettinger.gand.smoothing;
 
-import com.badlogic.gdx.math.Vector2;
-import com.github.tommyettinger.gand.points.VectorPair;
+import com.github.tommyettinger.gand.points.PointF2;
+import com.github.tommyettinger.gand.points.PointPair;
 
 /** A raycast collision detector used for path smoothing against a simple 2D char array as a map.
  * This treats diagonally-connected walkable cells as walkable. It uses Bresenham's line algorithm.
  * <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">See Wikipedia</a> for more info.
  *
  * @author davebaol */
-public class CharBresenhamRaycastCollisionDetector implements RaycastCollisionDetector<Vector2> {
+public class CharBresenhamRaycastCollisionDetector implements RaycastCollisionDetector<PointF2> {
 	private final char[][] worldMap;
 
 	public CharBresenhamRaycastCollisionDetector(char[][] worldMap) {
@@ -42,7 +42,7 @@ public class CharBresenhamRaycastCollisionDetector implements RaycastCollisionDe
 	 * @return true if any cell in the line is blocked (not {@code '.'})
 	 */
 	@Override
-	public boolean collides (final VectorPair<Vector2> ray) {
+	public boolean collides (final PointPair<PointF2> ray) {
 		int x0 = (int)ray.a.x;
 		int y0 = (int)ray.a.y;
 		int x1 = (int)ray.b.x;

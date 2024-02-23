@@ -19,7 +19,8 @@ package com.github.tommyettinger.gand.smoothing;
 import com.badlogic.gdx.math.Vector;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.github.tommyettinger.gand.Path;
-import com.github.tommyettinger.gand.points.VectorPair;
+import com.github.tommyettinger.gand.points.PointN;
+import com.github.tommyettinger.gand.points.PointPair;
 
 /** A {@code PathSmoother} takes a {@link Path} of Vector items and transforms it by linking directly the nodes that are in line of
  * sight. The smoothed path contains at most as many nodes as the original path. Also, the nodes in the smoothed path are unlikely
@@ -41,11 +42,11 @@ import com.github.tommyettinger.gand.points.VectorPair;
  * @param <V> Type of vector, either 2D or 3D, implementing the {@link Vector} interface
  * 
  * @author davebaol */
-public class PathSmoother<V extends Vector<V>> {
+public class PathSmoother<V extends PointN<V>> {
 	public static final long TIME_TOLERANCE = 100L;
 
 	RaycastCollisionDetector<V> raycastCollisionDetector;
-	VectorPair<V> ray;
+	PointPair<V> ray;
 
 	/** Creates a {@code PathSmoother} using the given {@link RaycastCollisionDetector}
 	 * @param raycastCollisionDetector the raycast collision detector */
@@ -65,7 +66,7 @@ public class PathSmoother<V extends Vector<V>> {
 		// Make sure the ray is instantiated
 		if (this.ray == null) {
 			V vec = path.getFirst();
-			this.ray = new VectorPair<>(vec.cpy(), vec.cpy());
+			this.ray = new PointPair<>(vec.cpy(), vec.cpy());
 		}
 
 		// Keep track of where we are in the smoothed path.
@@ -124,7 +125,7 @@ public class PathSmoother<V extends Vector<V>> {
 			// Make sure the ray is instantiated
 			if (this.ray == null) {
 				V vec = request.path.getFirst();
-				this.ray = new VectorPair<>(vec.cpy(), vec.cpy());
+				this.ray = new PointPair<>(vec.cpy(), vec.cpy());
 			}
 
 			// Keep track of where we are in the smoothed path.

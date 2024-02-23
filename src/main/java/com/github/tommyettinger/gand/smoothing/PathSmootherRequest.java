@@ -16,15 +16,15 @@
 
 package com.github.tommyettinger.gand.smoothing;
 
-import com.badlogic.gdx.math.Vector;
 import com.github.tommyettinger.gand.Path;
+import com.github.tommyettinger.gand.points.PointN;
 
 /** A request for interruptible path smoothing.
  * 
- * @param <V> Type of vector, either 2D or 3D, implementing the {@link Vector} interface
+ * @param <V> Type of vector, either 2D or 3D, implementing the {@link PointN} interface
  * 
  * @author davebaol */
-public class PathSmootherRequest<V extends Vector<V>> {
+public class PathSmootherRequest<V extends PointN<V>> {
 
 	public boolean isNew;
 	public int outputIndex;

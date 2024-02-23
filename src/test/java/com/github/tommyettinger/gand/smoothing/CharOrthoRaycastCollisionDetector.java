@@ -16,14 +16,14 @@
 
 package com.github.tommyettinger.gand.smoothing;
 
-import com.badlogic.gdx.math.Vector2;
-import com.github.tommyettinger.gand.points.VectorPair;
+import com.github.tommyettinger.gand.points.PointF2;
+import com.github.tommyettinger.gand.points.PointPair;
 
 /** A raycast collision detector used for path smoothing against a simple 2D char array as a map.
  * This only considers orthogonally-touching cells as connected.
  *
  * @author davebaol */
-public class CharOrthoRaycastCollisionDetector implements RaycastCollisionDetector<Vector2> {
+public class CharOrthoRaycastCollisionDetector implements RaycastCollisionDetector<PointF2> {
 	private final char[][] worldMap;
 
 	public CharOrthoRaycastCollisionDetector(char[][] worldMap) {
@@ -41,7 +41,7 @@ public class CharOrthoRaycastCollisionDetector implements RaycastCollisionDetect
      * @return true if any cell in the line is blocked (not {@code '.'})
 	 */
 	@Override
-	public boolean collides (final VectorPair<Vector2> ray) {
+	public boolean collides (final PointPair<PointF2> ray) {
 		int startX = (int)ray.a.x;
 		int startY = (int)ray.a.y;
 		int targetX = (int)ray.b.x;

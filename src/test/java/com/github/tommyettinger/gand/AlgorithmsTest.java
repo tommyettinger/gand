@@ -29,6 +29,7 @@ import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.NumberUtils;
+import com.github.tommyettinger.gand.points.PointF2;
 import com.github.tommyettinger.gand.utils.Heuristic;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 import org.junit.Test;
@@ -101,17 +102,19 @@ public class AlgorithmsTest {
     @Test
     public void shortestVector2PathShouldBeCorrect() {
         int n = 20;
-        Graph<Vector2> undirectedGraph = TestUtils.makeGridGraph(new Vector2UndirectedGraph(), n);
+        Graph<PointF2> undirectedGraph = TestUtils.makeGridGraphP(new Float2UndirectedGraph(), n);
         Graph<Vector2> diGraph = TestUtils.makeGridGraph(new Vector2DirectedGraph(), n);
 
+        PointF2 startP = new PointF2(0, 0), endP = new PointF2(n - 1, n - 1);
         Vector2 start = new Vector2(0, 0), end = new Vector2(n - 1, n - 1);
         Path<Vector2> path;
+        Path<PointF2> pathP;
 
         // without heuristic
-        path = undirectedGraph.algorithms().findShortestPath(start, end);
-        assertEquals("Shortest path is wrong size", 2*(n-1) + 1, path.size());
-        assertEquals("Shortest path has wrong starting point", start, path.get(0));
-        assertTrue("Shortest path is not connected", pathIsConnected(path, undirectedGraph));
+        pathP = undirectedGraph.algorithms().findShortestPath(startP, endP);
+        assertEquals("Shortest path is wrong size", 2*(n-1) + 1, pathP.size());
+        assertEquals("Shortest path has wrong starting point", startP, pathP.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(pathP, undirectedGraph));
 
         path = diGraph.algorithms().findShortestPath(start, end);
         assertEquals("Shortest path is wrong size", 2*(n-1) + 1, path.size());
@@ -120,11 +123,12 @@ public class AlgorithmsTest {
 
         // with heuristic
         Heuristic<Vector2> h = Vector2::dst;
+        Heuristic<PointF2> hP = PointF2::dst;
 
-        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
-        assertEquals("Shortest path is wrong size", 2*(n-1) + 1, path.size());
-        assertEquals("Shortest path has wrong starting point", start, path.get(0));
-        assertTrue("Shortest path is not connected", pathIsConnected(path, undirectedGraph));
+        pathP = undirectedGraph.algorithms().findShortestPath(startP, endP, hP);
+        assertEquals("Shortest path is wrong size", 2*(n-1) + 1, pathP.size());
+        assertEquals("Shortest path has wrong starting point", startP, pathP.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(pathP, undirectedGraph));
 
         path = diGraph.algorithms().findShortestPath(start, end, h);
         assertEquals("Shortest path is wrong size", 2*(n-1) + 1, path.size());
@@ -132,20 +136,20 @@ public class AlgorithmsTest {
         assertTrue("Shortest path is not connected", pathIsConnected(path, diGraph));
         assertTrue("Shortest path is not connected", diGraph.algorithms().isConnected(start, end));
 
-        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
-        assertEquals(2*(n-1) + 1, path.size());
-        assertEquals(start, path.get(0));
-        assertTrue("Shortest path is not connected", pathIsConnected(path, undirectedGraph));
-        assertTrue("Shortest path is not connected", undirectedGraph.algorithms().isConnected(start, end));
+        pathP = undirectedGraph.algorithms().findShortestPath(startP, endP, hP);
+        assertEquals(2*(n-1) + 1, pathP.size());
+        assertEquals(startP, pathP.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(pathP, undirectedGraph));
+        assertTrue("Shortest path is not connected", undirectedGraph.algorithms().isConnected(startP, endP));
 
 
         // no path exists
-        undirectedGraph.disconnect(end);
-        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
-        assertEquals(0, path.size());
-        path = undirectedGraph.algorithms().findShortestPath(start, end);
-        assertEquals(0, path.size());
-        assertFalse(undirectedGraph.algorithms().isConnected(start, end));
+        undirectedGraph.disconnect(endP);
+        pathP = undirectedGraph.algorithms().findShortestPath(startP, endP, hP);
+        assertEquals(0, pathP.size());
+        pathP = undirectedGraph.algorithms().findShortestPath(startP, endP);
+        assertEquals(0, pathP.size());
+        assertFalse(undirectedGraph.algorithms().isConnected(startP, endP));
 
         diGraph.disconnect(end);
         path = diGraph.algorithms().findShortestPath(start, end, h);

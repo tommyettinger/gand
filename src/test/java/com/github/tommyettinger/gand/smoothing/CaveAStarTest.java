@@ -22,18 +22,18 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.github.tommyettinger.gand.Float2UndirectedGraph;
 import com.github.tommyettinger.gand.Path;
-import com.github.tommyettinger.gand.Vector2UndirectedGraph;
 import com.github.tommyettinger.gand.algorithms.SearchStep;
+import com.github.tommyettinger.gand.points.PointF2;
 import com.github.tommyettinger.gand.utils.Heuristic;
 
-/** This test shows how a {@link Vector2UndirectedGraph} can be used on a grid-based map with no diagonal movement.
+/** This test shows how a {@link Float2UndirectedGraph} can be used on a grid-based map with no diagonal movement.
  *  It also shows how to use a {@link PathSmoother} on the found path to reduce the zigzag.
  * 
  * @author davebaol */
@@ -52,10 +52,10 @@ public class CaveAStarTest extends PathFinderTestBase {
 	int startTileY;
 
 	char[][] worldMap;
-	Path<Vector2> path;
-	Heuristic<Vector2> heuristic = (a, b) -> Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-	Vector2UndirectedGraph pathFinder;
-	PathSmoother<Vector2> pathSmoother;
+	Path<PointF2> path;
+	Heuristic<PointF2> heuristic = (a, b) -> Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+	Float2UndirectedGraph pathFinder;
+	PathSmoother<PointF2> pathSmoother;
 
 	boolean smooth = false;
 	boolean diagonal = false;
@@ -275,7 +275,7 @@ public class CaveAStarTest extends PathFinderTestBase {
 		renderer.setColor(Color.RED);
 		int nodeCount = path.size();
 		for (int i = 0; i < nodeCount; i++) {
-			Vector2 node = path.get(i);
+			PointF2 node = path.get(i);
 			renderer.rect(node.x * width, node.y * width, width, width);
 		}
 		if (smooth) {
@@ -283,9 +283,9 @@ public class CaveAStarTest extends PathFinderTestBase {
 			renderer.begin(ShapeType.Line);
 			float hw = width / 2f;
 			if (nodeCount > 0) {
-				Vector2 prevNode = path.getFirst();
+				PointF2 prevNode = path.getFirst();
 				for (int i = 1; i < nodeCount; i++) {
-					Vector2 node = path.get(i);
+					PointF2 node = path.get(i);
 					renderer.line(node.x * width + hw, node.y * width + hw, prevNode.x * width + hw, prevNode.y * width + hw);
 					prevNode = node;
 				}
@@ -314,13 +314,13 @@ public class CaveAStarTest extends PathFinderTestBase {
 		int tileX = (int)(tmpUnprojection.x / width);
 		int tileY = (int)(tmpUnprojection.y / width);
 		if (forceUpdate || tileX != lastEndTileX || tileY != lastEndTileY) {
-			if(pathFinder == null) pathFinder = new Vector2UndirectedGraph(worldMap, '.', 1f, Vector2::dst, diagonal);
+			if(pathFinder == null) pathFinder = new Float2UndirectedGraph(worldMap, '.', 1f, PointF2::dst, diagonal);
 			else {
 				pathFinder.removeAllVertices();
 				pathFinder.initVertices(worldMap, '.');
-				pathFinder.initEdges(worldMap.length, worldMap[0].length, 1f, Vector2::dst, diagonal);
+				pathFinder.initEdges(worldMap.length, worldMap[0].length, 1f, PointF2::dst, diagonal);
 			}
-			Vector2 startVec = new Vector2(startTileX, startTileY), endVec = new Vector2(tileX, tileY);
+			PointF2 startVec = new PointF2(startTileX, startTileY), endVec = new PointF2(tileX, tileY);
 			char endNode = ' ';
 			if(tileX >= 0 && tileY >= 0 && tileX < worldMap.length && tileY < worldMap[tileX].length)
 				endNode = worldMap[tileX][tileY];
