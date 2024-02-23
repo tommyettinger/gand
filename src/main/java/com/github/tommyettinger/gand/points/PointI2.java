@@ -3,11 +3,15 @@ package com.github.tommyettinger.gand.points;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
+
+import static com.badlogic.gdx.math.MathUtils.round;
 
 /**
  * The same as {@link GridPoint2}, just implementing {@link PointN}.
  */
-public class PointI2 extends GridPoint2 implements PointN<PointI2> {
+public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Serializable {
 
     public PointI2() {
         super();
@@ -22,21 +26,11 @@ public class PointI2 extends GridPoint2 implements PointN<PointI2> {
     }
 
     public PointI2(Vector2 v) {
-        super(MathUtils.round(v.x), MathUtils.round(v.y));
+        super(round(v.x), round(v.y));
     }
 
     public PointI2(PointI2 v) {
         super(v);
-    }
-
-    /**
-     * Gets how many components this type of point has; 2 here. This could also be called the dimensionality.
-     *
-     * @return how many components this type of point has (2)
-     */
-    @Override
-    public int rank() {
-        return 2;
     }
 
     /**
@@ -119,5 +113,45 @@ public class PointI2 extends GridPoint2 implements PointN<PointI2> {
     public PointI2 setZero() {
         set(0, 0);
         return this;
+    }
+
+    @Override
+    public float x() {
+        return x;
+    }
+
+    @Override
+    public PointI2 x(float next) {
+        x = round(next);
+        return this;
+    }
+
+    @Override
+    public float y() {
+        return y;
+    }
+
+    @Override
+    public PointI2 y(float next) {
+        y = round(next);
+        return this;
+    }
+
+    public PointI2 set(float x, float y){
+        this.x = round(x);
+        this.y = round(y);
+        return this;
+    }
+
+    @Override
+    public void write(Json json) {
+        json.writeValue("x", x, int.class);
+        json.writeValue("y", y, int.class);
+    }
+
+    @Override
+    public void read(Json json, JsonValue jsonData) {
+        this.x = jsonData.getInt("x");
+        this.y = jsonData.getInt("y");
     }
 }

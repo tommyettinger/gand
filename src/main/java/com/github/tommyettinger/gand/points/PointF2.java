@@ -2,11 +2,13 @@ package com.github.tommyettinger.gand.points;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 /**
  * The same as {@link Vector2}, just implementing {@link PointN}.
  */
-public class PointF2 extends Vector2 implements Point2<PointF2> {
+public class PointF2 extends Vector2 implements Point2<PointF2>, Json.Serializable {
 
     public PointF2() {
         super();
@@ -110,5 +112,17 @@ public class PointF2 extends Vector2 implements Point2<PointF2> {
         this.x = x;
         this.y = y;
         return this;
+    }
+
+    @Override
+    public void write(Json json) {
+        json.writeValue("x", x, float.class);
+        json.writeValue("y", y, float.class);
+    }
+
+    @Override
+    public void read(Json json, JsonValue jsonData) {
+        this.x = jsonData.getFloat("x");
+        this.y = jsonData.getFloat("y");
     }
 }
