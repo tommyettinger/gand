@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.Json;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
 import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
 import com.github.tommyettinger.gand.ds.ObjectSet;
+import com.github.tommyettinger.gand.points.PointF2;
 import com.github.tommyettinger.gand.utils.JsonRegistration;
 import org.junit.Assert;
 import org.junit.Test;
@@ -117,5 +118,23 @@ public class SerializationTest {
         DirectedGraph<?> next = json.fromJson(DirectedGraph.class, text);
         System.out.println(json.toJson(next, DirectedGraph.class));
         Assert.assertEquals(data, next);
+    }
+
+    public static void main(String[] args) {
+        int n = 10;
+        Json json = new Json();
+        Graph<PointF2> directedF = TestUtils.makeGridGraphP(new Float2DirectedGraph(), n);
+        Graph<PointF2> undirectedF = TestUtils.makeGridGraphP(new Float2UndirectedGraph(), n);
+        Graph<GridPoint2> directedI = TestUtils.makeGridGraphG(new Grid2DirectedGraph(), n);
+        Graph<GridPoint2> undirectedI = TestUtils.makeGridGraphG(new Grid2UndirectedGraph(), n);
+        String j;
+        System.out.println("directedF: " + (j = json.toJson(directedF)));
+        System.out.println("directedF length: " + j.length());
+        System.out.println("undirectedF: " + (j = json.toJson(undirectedF)));
+        System.out.println("undirectedF length: " + j.length());
+        System.out.println("directedI: " + (j = json.toJson(directedI)));
+        System.out.println("directedI length: " + j.length());
+        System.out.println("undirectedI: " + (j = json.toJson(undirectedI)));
+        System.out.println("undirectedI length: " + j.length());
     }
 }

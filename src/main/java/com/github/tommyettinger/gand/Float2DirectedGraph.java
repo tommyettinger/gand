@@ -1,28 +1,28 @@
 package com.github.tommyettinger.gand;
 
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.NumberUtils;
+import com.github.tommyettinger.gand.points.PointF2;
 
 import java.util.Collection;
 import java.util.Set;
 
-public class Vector2DirectedGraph extends DirectedGraph<Vector2> implements Json.Serializable {
+public class Float2DirectedGraph extends DirectedGraph<PointF2> implements Json.Serializable {
 
-    public Vector2DirectedGraph() {
+    public Float2DirectedGraph() {
         super();
     }
 
-    public Vector2DirectedGraph(Collection<Vector2> vertices) {
+    public Float2DirectedGraph(Collection<PointF2> vertices) {
         super(vertices);
     }
 
-    public Vector2DirectedGraph(Collection<Vector2> vertices, Collection<Edge<Vector2>> edges, float defaultEdgeWeight) {
+    public Float2DirectedGraph(Collection<PointF2> vertices, Collection<Edge<PointF2>> edges, float defaultEdgeWeight) {
         super(vertices, edges, defaultEdgeWeight);
     }
 
-    public Vector2DirectedGraph(Graph<Vector2> graph) {
+    public Float2DirectedGraph(Graph<PointF2> graph) {
         super(graph);
     }
 
@@ -32,13 +32,13 @@ public class Vector2DirectedGraph extends DirectedGraph<Vector2> implements Json
      * @param validGrid a 2D boolean array where true means to add that vertex; may be jagged, but this will just use its largest dimensions then
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Vector2DirectedGraph(boolean[][] validGrid, float defaultEdgeWeight){
+    public Float2DirectedGraph(boolean[][] validGrid, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
             for (int y = 0; y < validGrid[x].length; y++) {
                 if(validGrid[x][y])
-                    addVertex(new Vector2(x, y));
+                    addVertex(new PointF2(x, y));
             }
         }
     }
@@ -51,13 +51,13 @@ public class Vector2DirectedGraph extends DirectedGraph<Vector2> implements Json
      * @param validChar the char that, when found in {@code validGrid}, means a vertex will be added
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Vector2DirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight){
+    public Float2DirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
             for (int y = 0; y < validGrid[x].length; y++) {
                 if(validGrid[x][y] == validChar)
-                    addVertex(new Vector2(x, y));
+                    addVertex(new PointF2(x, y));
             }
         }
     }
@@ -71,37 +71,37 @@ public class Vector2DirectedGraph extends DirectedGraph<Vector2> implements Json
      * @param maximumThreshold the maximum inclusive value in {@code validGrid} to allow as a vertex
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Vector2DirectedGraph(float[][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
+    public Float2DirectedGraph(float[][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
             for (int y = 0; y < validGrid[x].length; y++) {
                 if(validGrid[x][y] >= minimumThreshold && validGrid[x][y] <= maximumThreshold)
-                    addVertex(new Vector2(x, y));
+                    addVertex(new PointF2(x, y));
             }
         }
     }
 
     @Override
-    public Vector2DirectedGraph createNew() {
-        return new Vector2DirectedGraph();
+    public Float2DirectedGraph createNew() {
+        return new Float2DirectedGraph();
     }
 
     /**
      * Get the hash used to calculate the index in the table at which the Node<V> associated with
      * v would be held. What this returns is also used in {@link Node#mapHash}.
      *
-     * @param gp a non-null Vector2 to hash
+     * @param gp a non-null PointF2 to hash
      */
     @Override
-    public int hash(Vector2 gp) {
+    public int hash(PointF2 gp) {
 //        // Harmonious numbers
         return (int)(NumberUtils.floatToIntBits(gp.x) * 0xC13FA9A902A6328FL + NumberUtils.floatToIntBits(gp.y) * 0x91E10DA5C79E7B1DL >>> 32);
     }
 
     @Override
     public String toString() {
-        return "Vector2DirectedGraph: { size=" + size() + " }";
+        return "Float2DirectedGraph: { size=" + size() + " }";
     }
 
     @Override
@@ -109,14 +109,14 @@ public class Vector2DirectedGraph extends DirectedGraph<Vector2> implements Json
         Set<?> vertices = getVertices();
         json.writeArrayStart("v");
         for(Object vertex : vertices) {
-            json.writeValue(vertex, Vector2.class);
+            json.writeValue(vertex, PointF2.class);
         }
         json.writeArrayEnd();
         Collection<? extends Edge<?>> edges = getEdges();
         json.writeArrayStart("e");
         for(Edge<?> edge : edges) {
-            json.writeValue(edge.getA(), Vector2.class);
-            json.writeValue(edge.getB(), Vector2.class);
+            json.writeValue(edge.getA(), PointF2.class);
+            json.writeValue(edge.getB(), PointF2.class);
             json.writeValue(edge.getWeight(), float.class);
         }
         json.writeArrayEnd();
@@ -127,11 +127,11 @@ public class Vector2DirectedGraph extends DirectedGraph<Vector2> implements Json
         this.removeAllVertices();
         JsonValue entry = jsonData.getChild("v");
         for (; entry != null; entry = entry.next) {
-            addVertex(json.readValue(Vector2.class, entry));
+            addVertex(json.readValue(PointF2.class, entry));
         }
         entry = jsonData.getChild("e");
         for (; entry != null; entry = entry.next) {
-            addEdge(json.readValue(Vector2.class, entry), json.readValue(Vector2.class, entry = entry.next), (entry = entry.next).asFloat());
+            addEdge(json.readValue(PointF2.class, entry), json.readValue(PointF2.class, entry = entry.next), (entry = entry.next).asFloat());
         }
     }
 }

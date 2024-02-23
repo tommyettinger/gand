@@ -212,7 +212,7 @@ public class Float2UndirectedGraph extends UndirectedGraph<PointF2> implements J
 
     @Override
     public String toString() {
-        return "PointF2DirectedGraph: { size=" + size() + " }";
+        return "Float2DirectedGraph: { size=" + size() + " }";
     }
 
     @Override

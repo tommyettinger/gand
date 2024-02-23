@@ -23,10 +23,7 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.RandomXS128;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.*;
 import com.github.tommyettinger.gand.points.PointF2;
 
 class TestUtils {
@@ -48,6 +45,31 @@ class TestUtils {
                 }
                 if (j<n-1) {
                     Vector2 v1 = new Vector2(i, j), v2 = new Vector2(i,j+1);
+                    graph.addEdge(v1, v2, v1.dst(v2));
+                    if (graph.isDirected()) graph.addEdge(v2, v1, v1.dst(v2));
+                }
+            }
+        }
+        return graph;
+    }
+    static Graph<GridPoint2> makeGridGraphG(Graph<GridPoint2> graph, int n) {
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                GridPoint2 v = new GridPoint2(i, j);
+                graph.addVertex(v);
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i<n-1) {
+                    GridPoint2 v1 = new GridPoint2(i, j), v2 = new GridPoint2(i+1,j);
+                    graph.addEdge(v1, v2, v1.dst(v2));
+                    if (graph.isDirected()) graph.addEdge(v2, v1, v1.dst(v2));
+                }
+                if (j<n-1) {
+                    GridPoint2 v1 = new GridPoint2(i, j), v2 = new GridPoint2(i,j+1);
                     graph.addEdge(v1, v2, v1.dst(v2));
                     if (graph.isDirected()) graph.addEdge(v2, v1, v1.dst(v2));
                 }
