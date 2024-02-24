@@ -25,6 +25,7 @@ package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.math.*;
 import com.github.tommyettinger.gand.points.PointF2;
+import com.github.tommyettinger.gand.points.PointI2;
 
 class TestUtils {
     static Graph<Vector2> makeGridGraph(Graph<Vector2> graph, int n) {
@@ -52,11 +53,11 @@ class TestUtils {
         }
         return graph;
     }
-    static Graph<GridPoint2> makeGridGraphG(Graph<GridPoint2> graph, int n) {
+    static Graph<PointI2> makeGridGraphI2(Graph<PointI2> graph, int n) {
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                GridPoint2 v = new GridPoint2(i, j);
+                PointI2 v = new PointI2(i, j);
                 graph.addVertex(v);
             }
         }
@@ -64,12 +65,12 @@ class TestUtils {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (i<n-1) {
-                    GridPoint2 v1 = new GridPoint2(i, j), v2 = new GridPoint2(i+1,j);
+                    PointI2 v1 = new PointI2(i, j), v2 = new PointI2(i+1,j);
                     graph.addEdge(v1, v2, v1.dst(v2));
                     if (graph.isDirected()) graph.addEdge(v2, v1, v1.dst(v2));
                 }
                 if (j<n-1) {
-                    GridPoint2 v1 = new GridPoint2(i, j), v2 = new GridPoint2(i,j+1);
+                    PointI2 v1 = new PointI2(i, j), v2 = new PointI2(i,j+1);
                     graph.addEdge(v1, v2, v1.dst(v2));
                     if (graph.isDirected()) graph.addEdge(v2, v1, v1.dst(v2));
                 }
@@ -77,7 +78,7 @@ class TestUtils {
         }
         return graph;
     }
-    static Graph<PointF2> makeGridGraphP(Graph<PointF2> graph, int n) {
+    static Graph<PointF2> makeGridGraphF2(Graph<PointF2> graph, int n) {
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {

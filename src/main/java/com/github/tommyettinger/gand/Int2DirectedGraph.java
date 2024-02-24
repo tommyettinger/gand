@@ -1,15 +1,15 @@
 package com.github.tommyettinger.gand;
 
-import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.github.tommyettinger.gand.points.PointI2;
 import com.github.tommyettinger.gand.utils.Heuristic;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
-public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Json.Serializable {
+public class Int2DirectedGraph extends DirectedGraph<PointI2> implements Json.Serializable {
 
     private int width = 0;
     private int height = 0;
@@ -20,7 +20,7 @@ public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Jso
      * @return true if the vertex was not already in the graph, false otherwise
      */
     @Override
-    public boolean addVertex(GridPoint2 gridPoint2) {
+    public boolean addVertex(PointI2 gridPoint2) {
         if(super.addVertex(gridPoint2))
         {
             width = Math.max(width, gridPoint2.x+1);
@@ -30,19 +30,19 @@ public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Jso
         return false;
     }
 
-    public Grid2DirectedGraph() {
+    public Int2DirectedGraph() {
         super();
     }
 
-    public Grid2DirectedGraph(Collection<GridPoint2> vertices) {
+    public Int2DirectedGraph(Collection<PointI2> vertices) {
         super(vertices);
     }
 
-    public Grid2DirectedGraph(Collection<GridPoint2> vertices, Collection<Edge<GridPoint2>> edges, float defaultEdgeWeight) {
+    public Int2DirectedGraph(Collection<PointI2> vertices, Collection<Edge<PointI2>> edges, float defaultEdgeWeight) {
         super(vertices, edges, defaultEdgeWeight);
     }
 
-    public Grid2DirectedGraph(Graph<GridPoint2> graph) {
+    public Int2DirectedGraph(Graph<PointI2> graph) {
         super(graph);
     }
 
@@ -52,13 +52,13 @@ public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Jso
      * @param validGrid a 2D boolean array where true means to add that vertex; may be jagged, but this will just use its largest dimensions then
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid2DirectedGraph(boolean[][] validGrid, float defaultEdgeWeight){
+    public Int2DirectedGraph(boolean[][] validGrid, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
             for (int y = 0; y < validGrid[x].length; y++) {
                 if(validGrid[x][y])
-                    addVertex(new GridPoint2(x, y));
+                    addVertex(new PointI2(x, y));
             }
         }
     }
@@ -71,13 +71,13 @@ public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Jso
      * @param validChar the char that, when found in {@code validGrid}, means a vertex will be added
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid2DirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight){
+    public Int2DirectedGraph(char[][] validGrid, char validChar, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
             for (int y = 0; y < validGrid[x].length; y++) {
                 if(validGrid[x][y] == validChar)
-                    addVertex(new GridPoint2(x, y));
+                    addVertex(new PointI2(x, y));
             }
         }
     }
@@ -91,13 +91,13 @@ public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Jso
      * @param maximumThreshold the maximum inclusive value in {@code validGrid} to allow as a vertex
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid2DirectedGraph(float[][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
+    public Int2DirectedGraph(float[][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int x = 0; x < validGrid.length; x++) {
             for (int y = 0; y < validGrid[x].length; y++) {
                 if(validGrid[x][y] >= minimumThreshold && validGrid[x][y] <= maximumThreshold)
-                    addVertex(new GridPoint2(x, y));
+                    addVertex(new PointI2(x, y));
             }
         }
     }
@@ -109,9 +109,9 @@ public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Jso
      * @param heu used to calculate the weight for each edge; may be null to use {@link #getDefaultEdgeWeight()}
      * @param permitDiagonal if false, this will use 4-way adjacency only; if true, it will use 8-way
      */
-    public void connectAdjacent(Heuristic<GridPoint2> heu, boolean permitDiagonal) {
-        GridPoint2 test = new GridPoint2(), next = new GridPoint2(), t;
-        Node<GridPoint2> nmt, nmn;
+    public void connectAdjacent(Heuristic<PointI2> heu, boolean permitDiagonal) {
+        PointI2 test = new PointI2(), next = new PointI2(), t;
+        Node<PointI2> nmt, nmn;
         if(heu == null) heu = (a, b) -> getDefaultEdgeWeight();
         for (int x = 0; x < width; x++) {
             test.x = x;
@@ -135,18 +135,18 @@ public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Jso
     }
 
     @Override
-    public Grid2DirectedGraph createNew() {
-        return new Grid2DirectedGraph();
+    public Int2DirectedGraph createNew() {
+        return new Int2DirectedGraph();
     }
 
     /**
      * Get the hash used to calculate the index in the table at which the Node<V> associated with
      * v would be held. What this returns is also used in {@link Node#mapHash}.
      *
-     * @param gp a non-null GridPoint2 to hash
+     * @param gp a non-null PointI2 to hash
      */
     @Override
-    public int hash(GridPoint2 gp) {
+    public int hash(PointI2 gp) {
 //        // Harmonious numbers
         return (int)(gp.x * 0xC13FA9A902A6328FL + gp.y * 0x91E10DA5C79E7B1DL >>> 32);
 //        // int-based
@@ -177,7 +177,7 @@ public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Jso
             cs[i] = (i + 1) % w5 == 0 ? '\n' : ' ';
         }
         final int rid = algorithms.lastRunID();
-        for (Node<GridPoint2> nc : nodeMap.nodeCollection) {
+        for (Node<PointI2> nc : nodeMap.nodeCollection) {
             if(nc == null || nc.getLastRunID() != rid || nc.getDistance() >= 9999.5)
                 continue;
             int d = (int) (nc.getDistance() + 0.5), x = nc.getObject().x * 5, y = nc.getObject().y;
@@ -193,7 +193,7 @@ public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Jso
 
     @Override
     public String toString() {
-        return "Grid2DirectedGraph: {\n" + String.valueOf(show()) + "\n}";
+        return "Int2DirectedGraph: {\n" + String.valueOf(show()) + "\n}";
     }
 
     @Override
@@ -201,14 +201,14 @@ public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Jso
         Set<?> vertices = getVertices();
         json.writeArrayStart("v");
         for(Object vertex : vertices) {
-            json.writeValue(vertex, GridPoint2.class);
+            json.writeValue(vertex, PointI2.class);
         }
         json.writeArrayEnd();
         Collection<? extends Edge<?>> edges = getEdges();
         json.writeArrayStart("e");
         for(Edge<?> edge : edges) {
-            json.writeValue(edge.getA(), GridPoint2.class);
-            json.writeValue(edge.getB(), GridPoint2.class);
+            json.writeValue(edge.getA(), PointI2.class);
+            json.writeValue(edge.getB(), PointI2.class);
             json.writeValue(edge.getWeight(), float.class);
         }
         json.writeArrayEnd();
@@ -219,11 +219,11 @@ public class Grid2DirectedGraph extends DirectedGraph<GridPoint2> implements Jso
         this.removeAllVertices();
         JsonValue entry = jsonData.getChild("v");
         for (; entry != null; entry = entry.next) {
-            addVertex(json.readValue(GridPoint2.class, entry));
+            addVertex(json.readValue(PointI2.class, entry));
         }
         entry = jsonData.getChild("e");
         for (; entry != null; entry = entry.next) {
-            addEdge(json.readValue(GridPoint2.class, entry), json.readValue(GridPoint2.class, entry = entry.next), (entry = entry.next).asFloat());
+            addEdge(json.readValue(PointI2.class, entry), json.readValue(PointI2.class, entry = entry.next), (entry = entry.next).asFloat());
         }
     }
 }

@@ -24,12 +24,12 @@ SOFTWARE.
 package com.github.tommyettinger.gand;
 
 
-import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.NumberUtils;
 import com.github.tommyettinger.gand.points.PointF2;
+import com.github.tommyettinger.gand.points.PointI2;
 import com.github.tommyettinger.gand.utils.Heuristic;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 import org.junit.Test;
@@ -102,8 +102,8 @@ public class AlgorithmsTest {
     @Test
     public void shortestFloat2PathShouldBeCorrect() {
         int n = 20;
-        Graph<PointF2> undirectedGraph = TestUtils.makeGridGraphP(new Float2UndirectedGraph(), n);
-        Graph<PointF2> diGraph = TestUtils.makeGridGraphP(new Float2DirectedGraph(), n);
+        Graph<PointF2> undirectedGraph = TestUtils.makeGridGraphF2(new Float2UndirectedGraph(), n);
+        Graph<PointF2> diGraph = TestUtils.makeGridGraphF2(new Float2DirectedGraph(), n);
 
         PointF2 start = new PointF2(0, 0), end = new PointF2(n - 1, n - 1);
         Path<PointF2> path;
@@ -159,13 +159,13 @@ public class AlgorithmsTest {
     @Test
     public void shortestGridPathShouldBeCorrect() {
         int n = 25;
-        Grid2UndirectedGraph undirectedGraph = new Grid2UndirectedGraph(TestUtils.DUNGEON, '.', 1f);
+        Int2UndirectedGraph undirectedGraph = new Int2UndirectedGraph(TestUtils.DUNGEON, '.', 1f);
         undirectedGraph.connectAdjacent(null, true);
-        Grid2DirectedGraph diGraph = new Grid2DirectedGraph(TestUtils.DUNGEON, '.', 1f);
+        Int2DirectedGraph diGraph = new Int2DirectedGraph(TestUtils.DUNGEON, '.', 1f);
         diGraph.connectAdjacent(null, true);
 
-        GridPoint2 start = new GridPoint2(1, 1), end = new GridPoint2(n - 2, n - 2);
-        Path<GridPoint2> path;
+        PointI2 start = new PointI2(1, 1), end = new PointI2(n - 2, n - 2);
+        Path<PointI2> path;
 
         // without heuristic
         path = undirectedGraph.algorithms().findShortestPath(start, end);
@@ -179,7 +179,7 @@ public class AlgorithmsTest {
         assertTrue("Shortest path is not connected", pathIsConnected(path, diGraph));
 
         // with heuristic
-        Heuristic<GridPoint2> h = GridPoint2::dst;
+        Heuristic<PointI2> h = PointI2::dst;
 
         path = undirectedGraph.algorithms().findShortestPath(start, end, h);
         assertNotEquals("Shortest path is wrong size", 0, path.size());

@@ -1,13 +1,12 @@
 package com.github.tommyettinger.gand;
 
-import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
 import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
 import com.github.tommyettinger.gand.ds.ObjectSet;
 import com.github.tommyettinger.gand.points.PointF2;
-import com.github.tommyettinger.gand.utils.JsonRegistration;
+import com.github.tommyettinger.gand.points.PointI2;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -55,8 +54,7 @@ public class SerializationTest {
         }
         Assert.assertEquals(words, words2);
         System.out.println();
-        JsonRegistration.registerGridPoint2(json);
-        ObjectSet<GridPoint2> points = ObjectSet.with(new GridPoint2(42, 42), new GridPoint2(23, 23), new GridPoint2(666, 666));
+        ObjectSet<PointI2> points = ObjectSet.with(new PointI2(42, 42), new PointI2(23, 23), new PointI2(666, 666));
         data = json.toJson(points);
         System.out.println(data);
         ObjectSet<?> points2 = json.fromJson(ObjectSet.class, data);
@@ -81,8 +79,7 @@ public class SerializationTest {
         }
         Assert.assertEquals(words, words2);
         System.out.println();
-        JsonRegistration.registerGridPoint2(json);
-        ObjectOrderedSet<GridPoint2> points = ObjectOrderedSet.with(new GridPoint2(42, 42), new GridPoint2(23, 23), new GridPoint2(666, 666));
+        ObjectOrderedSet<PointI2> points = ObjectOrderedSet.with(new PointI2(42, 42), new PointI2(23, 23), new PointI2(666, 666));
         data = json.toJson(points);
         System.out.println(data);
         ObjectOrderedSet<?> points2 = json.fromJson(ObjectOrderedSet.class, data);
@@ -99,7 +96,7 @@ public class SerializationTest {
         Json json = new Json();
         registerVector2(json);
         UndirectedGraph<Vector2> data = new UndirectedGraph<>();
-        TestUtils.makeGridGraph(data, 15);
+        TestUtils.makeGridGraph(data, 5);
         String text = json.toJson(data, UndirectedGraph.class);
         System.out.println(text);
         UndirectedGraph<?> next = json.fromJson(UndirectedGraph.class, text);
@@ -112,7 +109,7 @@ public class SerializationTest {
         Json json = new Json();
         registerVector2(json);
         DirectedGraph<Vector2> data = new DirectedGraph<>();
-        TestUtils.makeGridGraph(data, 15);
+        TestUtils.makeGridGraph(data, 5);
         String text = json.toJson(data, DirectedGraph.class);
         System.out.println(text);
         DirectedGraph<?> next = json.fromJson(DirectedGraph.class, text);
@@ -121,12 +118,12 @@ public class SerializationTest {
     }
 
     public static void main(String[] args) {
-        int n = 10;
+        int n = 5;
         Json json = new Json();
-        Graph<PointF2> directedF = TestUtils.makeGridGraphP(new Float2DirectedGraph(), n);
-        Graph<PointF2> undirectedF = TestUtils.makeGridGraphP(new Float2UndirectedGraph(), n);
-        Graph<GridPoint2> directedI = TestUtils.makeGridGraphG(new Grid2DirectedGraph(), n);
-        Graph<GridPoint2> undirectedI = TestUtils.makeGridGraphG(new Grid2UndirectedGraph(), n);
+        Graph<PointF2> directedF = TestUtils.makeGridGraphF2(new Float2DirectedGraph(), n);
+        Graph<PointF2> undirectedF = TestUtils.makeGridGraphF2(new Float2UndirectedGraph(), n);
+        Graph<PointI2> directedI = TestUtils.makeGridGraphI2(new Int2DirectedGraph(), n);
+        Graph<PointI2> undirectedI = TestUtils.makeGridGraphI2(new Int2UndirectedGraph(), n);
         String j;
         System.out.println("directedF: " + (j = json.toJson(directedF)));
         System.out.println("directedF length: " + j.length());

@@ -29,18 +29,7 @@ import static org.junit.Assert.assertEquals;
 
 public class GraphBuilderTest {
 
-    /*static class GridPoint {
-        final int i, j;
-        GridPoint(int i, int j) {
-            this.i = i;
-            this.j = j;
-        }
-        float dst (GridPoint v) {
-            int x_d = v.i - i, y_d = v.j - j;
-            return (float) Math.sqrt(x_d * x_d + y_d * y_d);
-        }
-    }
-
+    /*
     @Test
     public void testExample() {
         int n = 10;
