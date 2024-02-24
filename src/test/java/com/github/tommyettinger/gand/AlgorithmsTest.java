@@ -26,9 +26,9 @@ package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.NumberUtils;
 import com.github.tommyettinger.gand.points.PointF2;
+import com.github.tommyettinger.gand.points.PointF3;
 import com.github.tommyettinger.gand.points.PointI2;
 import com.github.tommyettinger.gand.utils.Heuristic;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
@@ -278,12 +278,12 @@ public class AlgorithmsTest {
     @Test
     public void shortestVector3PathShouldBeCorrect() {
         int n = 15;
-        Graph<Vector3> diGraph = TestUtils.makeGridGraph3(new Vector3DirectedGraph(), n);
-        Graph<Vector3> undirectedGraph = new Vector3UndirectedGraph(diGraph);
+        Graph<PointF3> diGraph = TestUtils.makeGridGraphF3(new Float3DirectedGraph(), n);
+        Graph<PointF3> undirectedGraph = new Float3UndirectedGraph(diGraph);
 
         diGraph.sortVertices((g, h) -> NumberUtils.floatToIntBits((h.z * 4 + h.y * 2 + h.x) - (g.z * 4 + g.y * 2 + g.x) + 0f));
-        Vector3 start = new Vector3(1, 1, 2), end = diGraph.getVertices().iterator().next();
-        Path<Vector3> path;
+        PointF3 start = new PointF3(1, 1, 2), end = diGraph.getVertices().iterator().next();
+        Path<PointF3> path;
 
         // without heuristic
         path = undirectedGraph.algorithms().findShortestPath(start, end);
@@ -297,7 +297,7 @@ public class AlgorithmsTest {
         assertTrue("Shortest path is not connected", pathIsConnected(path, diGraph));
 
         // with heuristic
-        Heuristic<Vector3> h = Vector3::dst;
+        Heuristic<PointF3> h = PointF3::dst;
 
         path = undirectedGraph.algorithms().findShortestPath(start, end, h);
         assertNotEquals("Shortest path is wrong size", 0, path.size());

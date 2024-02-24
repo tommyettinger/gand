@@ -25,6 +25,7 @@ package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.math.*;
 import com.github.tommyettinger.gand.points.PointF2;
+import com.github.tommyettinger.gand.points.PointF3;
 import com.github.tommyettinger.gand.points.PointI2;
 
 class TestUtils {
@@ -103,7 +104,7 @@ class TestUtils {
         }
         return graph;
     }
-    static Graph<Vector3> makeGridGraph3(Graph<Vector3> graph, int n) {
+    static Graph<PointF3> makeGridGraphF3(Graph<PointF3> graph, int n) {
 
         long newSeed = MathUtils.random.nextLong();
         MathUtils.random.setSeed(123456789L);
@@ -111,14 +112,14 @@ class TestUtils {
             for (int j = 0; j < n; j++) {
                 for (int k = 0; k < n; k++) {
                     if ((i & j & k & 1) == 0 || MathUtils.randomBoolean(0.3f)) {
-                        Vector3 v = new Vector3(i, j, k);
+                        PointF3 v = new PointF3(i, j, k);
                         graph.addVertex(v);
                     }
                 }
             }
         }
 
-        Vector3 v1 = new Vector3(), v2 = new Vector3();
+        PointF3 v1 = new PointF3(), v2 = new PointF3();
         for (int i = 0; i < n; i++) {
             v1.x = i;
             for (int j = 0; j < n; j++) {

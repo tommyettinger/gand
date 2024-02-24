@@ -16,27 +16,25 @@
 
 package com.github.tommyettinger.gand.points;
 
-import com.badlogic.gdx.math.Vector;
-
 /** A {@code PointPair} is made up of two points in order. It can represent a ray, where {@code a} is the start and
  * {@code b} is the direction the ray points in. It can also represent a collision, where {@code a} is the collision
  * point and {@code b} is the normal vector.
  * 
- * @param <T> Type of vector, either 2D or 3D, implementing the {@link Vector} interface
+ * @param <P> Type of point (can be 2D/3D, int-based/float-based), implementing the {@link PointN} interface
  * 
  * @author davebaol */
-public class PointPair<T extends PointN<T>> {
+public class PointPair<P extends PointN<P>> {
 
 	/** The starting point of a ray or the collision point of a collision. */
-	public T a;
+	public P a;
 
 	/** The ending point of a ray or the normal vector of a collision. */
-	public T b;
+	public P b;
 
 	/** Creates a {@code PointPair} with the given {@code start} and {@code end} points.
 	 * @param start the starting point of this ray
 	 * @param end the starting point of this ray */
-	public PointPair(T start, T end) {
+	public PointPair(P start, P end) {
 		this.a = start;
 		this.b = end;
 	}
@@ -44,7 +42,7 @@ public class PointPair<T extends PointN<T>> {
 	/** Sets this ray from the given ray.
 	 * @param ray The ray
 	 * @return this ray for chaining. */
-	public PointPair<T> set (PointPair<T> ray) {
+	public PointPair<P> set (PointPair<P> ray) {
 		a.set(ray.a);
 		b.set(ray.b);
 		return this;
@@ -54,7 +52,7 @@ public class PointPair<T extends PointN<T>> {
 	 * @param start the starting point of this ray
 	 * @param end the starting point of this ray
 	 * @return this ray for chaining. */
-	public PointPair<T> set (T start, T end) {
+	public PointPair<P> set (P start, P end) {
 		this.a.set(start);
 		this.b.set(end);
 		return this;
