@@ -1,15 +1,15 @@
 package com.github.tommyettinger.gand;
 
-import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.github.tommyettinger.gand.points.PointI3;
 import com.github.tommyettinger.gand.utils.Heuristic;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
-public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements Json.Serializable {
+public class Int3UndirectedGraph extends UndirectedGraph<PointI3> implements Json.Serializable {
 
     private int width = 0;
     private int height = 0;
@@ -21,7 +21,7 @@ public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements
      * @return true if the vertex was not already in the graph, false otherwise
      */
     @Override
-    public boolean addVertex(GridPoint3 gridPoint3) {
+    public boolean addVertex(PointI3 gridPoint3) {
         if(super.addVertex(gridPoint3))
         {
             width = Math.max(width, gridPoint3.x+1);
@@ -32,19 +32,19 @@ public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements
         return false;
     }
 
-    public Grid3UndirectedGraph() {
+    public Int3UndirectedGraph() {
         super();
     }
 
-    public Grid3UndirectedGraph(Collection<GridPoint3> vertices) {
+    public Int3UndirectedGraph(Collection<PointI3> vertices) {
         super(vertices);
     }
 
-    public Grid3UndirectedGraph(Collection<GridPoint3> vertices, Collection<Edge<GridPoint3>> edges, float defaultEdgeWeight) {
+    public Int3UndirectedGraph(Collection<PointI3> vertices, Collection<Edge<PointI3>> edges, float defaultEdgeWeight) {
         super(vertices, edges, defaultEdgeWeight);
     }
 
-    public Grid3UndirectedGraph(Graph<GridPoint3> graph) {
+    public Int3UndirectedGraph(Graph<PointI3> graph) {
         super(graph);
     }
 
@@ -54,14 +54,14 @@ public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements
      * @param validGrid a 3D boolean array where true means to add that vertex; may be jagged, but this will just use its largest dimensions then
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid3UndirectedGraph(boolean[][][] validGrid, float defaultEdgeWeight){
+    public Int3UndirectedGraph(boolean[][][] validGrid, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int z = 0; z < validGrid.length; z++) {
             for (int y = 0; y < validGrid[z].length; y++) {
                 for (int x = 0; x < validGrid[z][y].length; x++) {
                     if (validGrid[z][y][x])
-                        addVertex(new GridPoint3(x, y, z));
+                        addVertex(new PointI3(x, y, z));
                 }
             }
         }
@@ -75,14 +75,14 @@ public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements
      * @param validChar the char that, when found in {@code validGrid}, means a vertex will be added
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid3UndirectedGraph(char[][][] validGrid, char validChar, float defaultEdgeWeight){
+    public Int3UndirectedGraph(char[][][] validGrid, char validChar, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int z = 0; z < validGrid.length; z++) {
             for (int y = 0; y < validGrid[z].length; y++) {
                 for (int x = 0; x < validGrid[z][y].length; x++) {
                     if (validGrid[z][y][x] == validChar)
-                        addVertex(new GridPoint3(x, y, z));
+                        addVertex(new PointI3(x, y, z));
                 }
             }
         }
@@ -97,14 +97,14 @@ public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements
      * @param maximumThreshold the maximum inclusive value in {@code validGrid} to allow as a vertex
      * @param defaultEdgeWeight the default edge weight to use when a weight is unspecified
      */
-    public Grid3UndirectedGraph(float[][][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
+    public Int3UndirectedGraph(float[][][] validGrid, float minimumThreshold, float maximumThreshold, float defaultEdgeWeight){
         super();
         setDefaultEdgeWeight(defaultEdgeWeight);
         for (int z = 0; z < validGrid.length; z++) {
             for (int y = 0; y < validGrid[z].length; y++) {
                 for (int x = 0; x < validGrid[z][y].length; x++) {
                     if(validGrid[z][y][x] >= minimumThreshold && validGrid[z][y][x] <= maximumThreshold)
-                        addVertex(new GridPoint3(x, y, z));
+                        addVertex(new PointI3(x, y, z));
                 }
             }
         }
@@ -117,9 +117,9 @@ public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements
      * @param heu used to calculate the weight for each edge; may be null to use {@link #getDefaultEdgeWeight()}
      * @param permitDiagonal if false, this will use 6-way adjacency only; if true, it will use 26-way
      */
-    public void connectAdjacent(Heuristic<GridPoint3> heu, boolean permitDiagonal) {
-        GridPoint3 test = new GridPoint3(), next = new GridPoint3(), t;
-        Node<GridPoint3> nmt, nmn;
+    public void connectAdjacent(Heuristic<PointI3> heu, boolean permitDiagonal) {
+        PointI3 test = new PointI3(), next = new PointI3(), t;
+        Node<PointI3> nmt, nmn;
         if(heu == null) heu = (a, b) -> getDefaultEdgeWeight();
         for (int x = 0; x < width; x++) {
             test.x = x;
@@ -170,18 +170,18 @@ public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements
     }
 
     @Override
-    public Grid3UndirectedGraph createNew() {
-        return new Grid3UndirectedGraph();
+    public Int3UndirectedGraph createNew() {
+        return new Int3UndirectedGraph();
     }
 
     /**
      * Get the hash used to calculate the index in the table at which the Node<V> associated with
      * v would be held. What this returns is also used in {@link Node#mapHash}.
      *
-     * @param gp a non-null GridPoint3 to hash
+     * @param gp a non-null PointI3 to hash
      */
     @Override
-    public int hash(GridPoint3 gp) {
+    public int hash(PointI3 gp) {
 //        // Harmonious numbers
         return (int)(gp.x * 0xD1B54A32D192ED03L + gp.y * 0xABC98388FB8FAC03L + gp.z * 0x8CB92BA72F3D8DD7L >>> 32);
 //        // int-based
@@ -217,7 +217,7 @@ public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements
             System.arraycopy(cs, 0, cs, (hw+1) * i, hw+1);
         }
         final int rid = algorithms.lastRunID();
-        for (Node<GridPoint3> nc : nodeMap.nodeCollection) {
+        for (Node<PointI3> nc : nodeMap.nodeCollection) {
             if(nc == null || nc.getLastRunID() != rid || nc.getDistance() >= 9999.5)
                 continue;
             int d = (int) (nc.getDistance() + 0.5), x = nc.getObject().x * 5, y = nc.getObject().y, z = nc.getObject().z;
@@ -234,7 +234,7 @@ public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements
 
     @Override
     public String toString() {
-        return "Grid3UndirectedGraph: {\n" + String.valueOf(show()) + "\n}";
+        return "Int3UndirectedGraph: {\n" + String.valueOf(show()) + "\n}";
     }
 
     @Override
@@ -242,14 +242,14 @@ public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements
         Set<?> vertices = getVertices();
         json.writeArrayStart("v");
         for(Object vertex : vertices) {
-            json.writeValue(vertex, GridPoint3.class);
+            json.writeValue(vertex, PointI3.class);
         }
         json.writeArrayEnd();
         Collection<? extends Edge<?>> edges = getEdges();
         json.writeArrayStart("e");
         for(Edge<?> edge : edges) {
-            json.writeValue(edge.getA(), GridPoint3.class);
-            json.writeValue(edge.getB(), GridPoint3.class);
+            json.writeValue(edge.getA(), PointI3.class);
+            json.writeValue(edge.getB(), PointI3.class);
             json.writeValue(edge.getWeight(), float.class);
         }
         json.writeArrayEnd();
@@ -260,11 +260,11 @@ public class Grid3UndirectedGraph extends UndirectedGraph<GridPoint3> implements
         this.removeAllVertices();
         JsonValue entry = jsonData.getChild("v");
         for (; entry != null; entry = entry.next) {
-            addVertex(json.readValue(GridPoint3.class, entry));
+            addVertex(json.readValue(PointI3.class, entry));
         }
         entry = jsonData.getChild("e");
         for (; entry != null; entry = entry.next) {
-            addEdge(json.readValue(GridPoint3.class, entry), json.readValue(GridPoint3.class, entry = entry.next), (entry = entry.next).asFloat());
+            addEdge(json.readValue(PointI3.class, entry), json.readValue(PointI3.class, entry = entry.next), (entry = entry.next).asFloat());
         }
     }
 }

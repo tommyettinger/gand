@@ -24,12 +24,12 @@ SOFTWARE.
 package com.github.tommyettinger.gand;
 
 
-import com.badlogic.gdx.math.GridPoint3;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.NumberUtils;
 import com.github.tommyettinger.gand.points.PointF2;
 import com.github.tommyettinger.gand.points.PointF3;
 import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gand.points.PointI3;
 import com.github.tommyettinger.gand.utils.Heuristic;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 import org.junit.Test;
@@ -218,14 +218,14 @@ public class AlgorithmsTest {
     @Test
     public void shortestGrid3PathShouldBeCorrect() {
         int n = 25;
-        Grid3UndirectedGraph undirectedGraph = new Grid3UndirectedGraph(TestUtils.DUNGEON_3D, '.', 1f);
+        Int3UndirectedGraph undirectedGraph = new Int3UndirectedGraph(TestUtils.DUNGEON_3D, '.', 1f);
         undirectedGraph.connectAdjacent(null, true);
-        Grid3DirectedGraph diGraph = new Grid3DirectedGraph(TestUtils.DUNGEON_3D, '.', 1f);
+        Int3DirectedGraph diGraph = new Int3DirectedGraph(TestUtils.DUNGEON_3D, '.', 1f);
         diGraph.connectAdjacent(null, true);
 
         diGraph.sortVertices((g, h) -> (h.z * 4 + h.y * 2 + h.x) - (g.z * 4 + g.y * 2 + g.x));
-        GridPoint3 start = new GridPoint3(1, 1, 0), end = diGraph.getVertices().iterator().next();
-        Path<GridPoint3> path;
+        PointI3 start = new PointI3(1, 1, 0), end = diGraph.getVertices().iterator().next();
+        Path<PointI3> path;
 
         // without heuristic
         path = undirectedGraph.algorithms().findShortestPath(start, end);
@@ -239,7 +239,7 @@ public class AlgorithmsTest {
         assertTrue("Shortest path is not connected", pathIsConnected(path, diGraph));
 
         // with heuristic
-        Heuristic<GridPoint3> h = GridPoint3::dst;
+        Heuristic<PointI3> h = PointI3::dst;
 
         path = undirectedGraph.algorithms().findShortestPath(start, end, h);
         assertNotEquals("Shortest path is wrong size", 0, path.size());
