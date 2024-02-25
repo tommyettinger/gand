@@ -29,11 +29,22 @@ import com.github.tommyettinger.gand.utils.IntIntPredicate;
  * parameters and looks that up in a map or set. The former might look like:
  * {@code (x, y) -> x >= 0 && x < booleanWorld.length && y >= 0 && y < booleanWorld[x].length && booleanWorld[x][y]} .
  *
+ * @param <P> typically {@link com.github.tommyettinger.gand.points.PointI2} or {@link com.github.tommyettinger.gand.points.PointF2}
  * @author davebaol */
 public class Bresenham2DRaycastCollisionDetector<P extends Point2<P>> implements RaycastCollisionDetector<P> {
 	private final IntIntPredicate predicate;
 
-	public Bresenham2DRaycastCollisionDetector(IntIntPredicate predicate) {
+	/**
+	 * Creates a Bresenham2DRaycastCollisionDetector that uses the given {@code predicate} to determine if an x,y cell
+	 * is passable.
+	 * <br>
+	 * {@code predicate} is typically a lambda that either looks up a value in a 2D array (and should check the bounds
+	 * of the array against the indices given), or sets a {@link com.github.tommyettinger.gand.points.PointI2} with the
+	 * int parameters and looks that up in a map or set. The former might look like:
+	 * {@code (x, y) -> x >= 0 && x < booleanWorld.length && y >= 0 && y < booleanWorld[x].length && booleanWorld[x][y]} .
+	 * @param predicate should bounds-check an x,y point and return true if it is considered passable
+	 */
+	public Bresenham2DRaycastCollisionDetector(final IntIntPredicate predicate) {
 		this.predicate = predicate;
 	}
 
@@ -49,6 +60,20 @@ public class Bresenham2DRaycastCollisionDetector<P extends Point2<P>> implements
 	 */
 	@Override
 	public boolean collides (final PointPair<P> ray) {
+		return collides(ray, predicate);
+	}
+	/**
+	 * Draws a line using Bresenham's line algorithm to see if all cells in the line are passable; if any cell was not
+	 * passable, then this returns true (meaning there is a collision). If the point type this uses allows
+	 * floating-point values for coordinates, then this rounds coordinates to their nearest integers.
+	 * <br>
+	 * <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">See Wikipedia</a> for more info.
+	 *
+	 * @param ray the ray to cast; will not be modified
+	 * @param predicate should bounds-check an x,y point and return true if it is considered passable
+	 * @return true if any cell in the line is blocked, as per the given predicate
+	 */
+	public static<P extends Point2<P>> boolean collides (final PointPair<P> ray, final IntIntPredicate predicate) {
 		int x0 = (int)(ray.a.x() + 0.5f);
 		int y0 = (int)(ray.a.y() + 0.5f);
 		int x1 = (int)(ray.b.x() + 0.5f);
