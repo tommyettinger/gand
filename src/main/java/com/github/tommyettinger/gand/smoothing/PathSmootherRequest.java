@@ -21,7 +21,7 @@ import com.github.tommyettinger.gand.points.PointN;
 
 /** A request for interruptible path smoothing.
  * 
- * @param <V> Type of vector, either 2D or 3D, implementing the {@link PointN} interface
+ * @param <V> Type of point, either 2D or 3D, implementing the {@link PointN} interface
  * 
  * @author davebaol */
 public class PathSmootherRequest<V extends PointN<V>> {

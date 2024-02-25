@@ -16,13 +16,12 @@
 
 package com.github.tommyettinger.gand.smoothing;
 
-import com.badlogic.gdx.math.Vector;
 import com.github.tommyettinger.gand.points.PointN;
 import com.github.tommyettinger.gand.points.PointPair;
 
 /** A {@code RaycastCollisionDetector} finds the closest intersection between a ray and any object in the game world.
  * 
- * @param <T> Type of vector, either 2D or 3D, implementing the {@link Vector} interface
+ * @param <T> type of point, either 2D or 3D, implementing the {@link PointN} interface
  * 
  * @author davebaol */
 public interface RaycastCollisionDetector<T extends PointN<T>> {

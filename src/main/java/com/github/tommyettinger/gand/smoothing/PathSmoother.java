@@ -16,13 +16,12 @@
 
 package com.github.tommyettinger.gand.smoothing;
 
-import com.badlogic.gdx.math.Vector;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.github.tommyettinger.gand.Path;
 import com.github.tommyettinger.gand.points.PointN;
 import com.github.tommyettinger.gand.points.PointPair;
 
-/** A {@code PathSmoother} takes a {@link Path} of Vector items and transforms it by linking directly the nodes that are in line of
+/** A {@code PathSmoother} takes a {@link Path} of PointN items and transforms it by linking directly the nodes that are in line of
  * sight. The smoothed path contains at most as many nodes as the original path. Also, the nodes in the smoothed path are unlikely
  * to have any connections between them (if they were connected in the graph, the pathfinder would have found the smoothed route
  * directly, unless their connections had dramatically large costs).
@@ -39,7 +38,7 @@ import com.github.tommyettinger.gand.points.PointPair;
  * produces a smooth path, it doesn't search all possible smoothed paths to find the best one, but the final result is usually
  * much more satisfactory than the original path.
  * 
- * @param <V> Type of vector, either 2D or 3D, implementing the {@link Vector} interface
+ * @param <V> type of point, either 2D or 3D, implementing the {@link PointN} interface
  * 
  * @author davebaol */
 public class PathSmoother<V extends PointN<V>> {
@@ -105,7 +104,12 @@ public class PathSmoother<V extends PointN<V>> {
 		return inputIndex - outputIndex - 1;
 	}
 
-	/** Smoothes in place the path specified by the given request, possibly over multiple consecutive frames.
+	/**
+	 * Smooths in place the path specified by the given request, possibly over multiple consecutive frames.
+	 * <br>
+	 * Note that this specific method may need additional infrastructure not offered by this library.
+	 * See <a href="https://github.com/libgdx/gdx-ai/blob/1.8.2/gdx-ai/src/com/badlogic/gdx/ai/pfa/PathSmoother.java#L107-L175">the very similar method in gdx-ai</a>
+	 * and its usages for ways to use interruptible requests.
 	 * @param request the path smoothing request
 	 * @param timeToRun the time in nanoseconds that this call can use on the current frame
 	 * @return {@code true} if this operation has completed; {@code false} if more time is needed to complete. */
