@@ -319,7 +319,7 @@ public abstract class Graph<V> {
      * overridden by Graph subclasses that know more about their vertex type to use a more appropriate mixing algorithm.
      */
     public int hash(V v) {
-        // 0xABC98388FB8FAC03L is the first constant in Utilities#GOOD_MULTIPLIERS
+        // 0xABC98388FB8FAC03L is a harmonic-number constant; used in jdkgdxds.
         return (int)(v.hashCode() * 0xABC98388FB8FAC03L >>> 25);
 
         // The original mixer used here.
