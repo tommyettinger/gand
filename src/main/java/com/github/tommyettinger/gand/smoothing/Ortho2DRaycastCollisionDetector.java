@@ -21,8 +21,9 @@ import com.github.tommyettinger.gand.points.PointPair;
 import com.github.tommyettinger.gand.utils.IntIntPredicate;
 
 /** A raycast collision detector used for path smoothing in 2D, with cells considered passable if a predicate returns
- * true. This treats diagonally-connected passable cells as connected. It uses Bresenham's line algorithm.
- * <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">See Wikipedia</a> for more info.
+ * true. This only considers orthogonally-touching cells as connected.
+ * <br>
+ * The algorithm is from <a href="http://www.redblobgames.com/grids/line-drawing.html#stepping">Red Blob Games</a>.
  * <br>
  * This is typically used by passing in a lambda that either looks up a value in a 2D array (and should check the bounds
  * of the array against the indices given), or sets a {@link com.github.tommyettinger.gand.points.PointI2} with the int
@@ -30,12 +31,12 @@ import com.github.tommyettinger.gand.utils.IntIntPredicate;
  * {@code (x, y) -> x >= 0 && x < booleanWorld.length && y >= 0 && y < booleanWorld[x].length && booleanWorld[x][y]} .
  *
  * @param <P> typically {@link com.github.tommyettinger.gand.points.PointI2} or {@link com.github.tommyettinger.gand.points.PointF2}
- * @author davebaol */
-public class Bresenham2DRaycastCollisionDetector<P extends Point2<P>> implements RaycastCollisionDetector<P> {
+ */
+public class Ortho2DRaycastCollisionDetector<P extends Point2<P>> implements RaycastCollisionDetector<P> {
 	private final IntIntPredicate predicate;
 
 	/**
-	 * Creates a Bresenham2DRaycastCollisionDetector that uses the given {@code predicate} to determine if an x,y cell
+     * Creates a Ortho2DRaycastCollisionDetector that uses the given {@code predicate} to determine if an x,y cell
 	 * is passable.
 	 * <br>
 	 * {@code predicate} is typically a lambda that either looks up a value in a 2D array (and should check the bounds
@@ -44,16 +45,16 @@ public class Bresenham2DRaycastCollisionDetector<P extends Point2<P>> implements
 	 * {@code (x, y) -> x >= 0 && x < booleanWorld.length && y >= 0 && y < booleanWorld[x].length && booleanWorld[x][y]} .
 	 * @param predicate should bounds-check an x,y point and return true if it is considered passable
 	 */
-	public Bresenham2DRaycastCollisionDetector(final IntIntPredicate predicate) {
+	public Ortho2DRaycastCollisionDetector(final IntIntPredicate predicate) {
 		this.predicate = predicate;
 	}
 
 	/**
-	 * Draws a line using Bresenham's line algorithm to see if all cells in the line are passable; if any cell was not
-	 * passable, then this returns true (meaning there is a collision). If the point type this uses allows
+	 * Draws a line using a simple orthogonal line algorithm to see if all cells in the line are passable; if any cell
+	 * was not passable, then this returns true (meaning there is a collision). If the point type this uses allows
 	 * floating-point values for coordinates, then this rounds coordinates to their nearest integers.
 	 * <br>
-	 * <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">See Wikipedia</a> for more info.
+	 * The algorithm is from <a href="http://www.redblobgames.com/grids/line-drawing.html#stepping">Red Blob Games</a>.
 	 *
 	 * @param ray the ray to cast; will not be modified
 	 * @return true if any cell in the line is blocked, as per the given predicate
@@ -62,64 +63,47 @@ public class Bresenham2DRaycastCollisionDetector<P extends Point2<P>> implements
 	public boolean collides (final PointPair<P> ray) {
 		return collides(ray, predicate);
 	}
+
 	/**
-	 * Draws a line using Bresenham's line algorithm to see if all cells in the line are passable; if any cell was not
-	 * passable, then this returns true (meaning there is a collision). If the point type this uses allows
+	 * Draws a line using a simple orthogonal line algorithm to see if all cells in the line are passable; if any cell
+	 * was not passable, then this returns true (meaning there is a collision). If the point type this uses allows
 	 * floating-point values for coordinates, then this rounds coordinates to their nearest integers.
 	 * <br>
-	 * <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">See Wikipedia</a> for more info.
+	 * The algorithm is from <a href="http://www.redblobgames.com/grids/line-drawing.html#stepping">Red Blob Games</a>.
 	 *
 	 * @param ray the ray to cast; will not be modified
 	 * @param predicate should bounds-check an x,y point and return true if it is considered passable
 	 * @return true if any cell in the line is blocked, as per the given predicate
 	 */
 	public static<P extends Point2<P>> boolean collides (final PointPair<P> ray, final IntIntPredicate predicate) {
-		int x0 = (int)(ray.a.x() + 0.5f);
-		int y0 = (int)(ray.a.y() + 0.5f);
-		int x1 = (int)(ray.b.x() + 0.5f);
-		int y1 = (int)(ray.b.y() + 0.5f);
+		int startX = (int)(ray.a.x() + 0.5f);
+		int startY = (int)(ray.a.y() + 0.5f);
+		int targetX = (int)(ray.b.x() + 0.5f);
+		int targetY = (int)(ray.b.y() + 0.5f);
 
-		int tmp;
-		boolean steep = Math.abs(y1 - y0) > Math.abs(x1 - x0);
-		if (steep) {
-			// Swap x0 and y0
-			tmp = x0;
-			x0 = y0;
-			y0 = tmp;
-			// Swap x1 and y1
-			tmp = x1;
-			x1 = y1;
-			y1 = tmp;
-		}
-		if (x0 > x1) {
-			// Swap x0 and x1
-			tmp = x0;
-			x0 = x1;
-			x1 = tmp;
-			// Swap y0 and y1
-			tmp = y0;
-			y0 = y1;
-			y1 = tmp;
+		int dx = targetX - startX, dy = targetY - startY, nx = Math.abs(dx), ny = Math.abs(dy);
+		int signX = dx >> 31 | 1, signY = dy >> 31 | 1, x = startX, y = startY;
+
+		if(startX == targetX && startY == targetY) {
+			return false;
 		}
 
-		int deltax = x1 - x0;
-		int deltay = Math.abs(y1 - y0);
-		int error = 0;
-		int y = y0;
-		int ystep = (y0 < y1 ? 1 : -1);
-		for (int x = x0; x <= x1; x++) {
-			if(steep) {
-				if(!predicate.test(y, x)) return true;
+		for (int ix = 0, iy = 0; (ix <= nx || iy <= ny); ) {
+			if (x == targetX && y == targetY) {
+				return false;
+			}
+
+			if(!predicate.test(x, y))
+				return true;
+
+			if ((1 + ix + ix) * ny < (1 + iy + iy) * nx) {
+				x += signX;
+				ix++;
 			} else {
-				if(!predicate.test(x, y)) return true;
-			}
-			error += deltay;
-			if (error + error >= deltax) {
-				y += ystep;
-				error -= deltax;
+				y += signY;
+				iy++;
 			}
 		}
-
 		return false;
 	}
 }

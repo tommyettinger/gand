@@ -21,8 +21,9 @@ import com.github.tommyettinger.gand.points.PointPair;
 
 /** A raycast collision detector used for path smoothing against a simple 2D char array as a map.
  * This only considers orthogonally-touching cells as connected.
- *
- * @author davebaol */
+ * <br>
+ * The algorithm is from <a href="http://www.redblobgames.com/grids/line-drawing.html#stepping">Red Blob Games</a>.
+ */
 public class CharOrthoRaycastCollisionDetector implements RaycastCollisionDetector<PointF2> {
 	private final char[][] worldMap;
 
@@ -31,11 +32,11 @@ public class CharOrthoRaycastCollisionDetector implements RaycastCollisionDetect
 	}
 
 	/**
-     * Draws a line using Bresenham's line algorithm to see if any cell in the world map is not {@code '.'}, which
-	 * indicates a floor or walkable cell; if any cell was not walkable, then this returns true (meaning there is a
-	 * collision).
+     * Draws a line using a simple orthogonal line algorithm to see if any cell in the world map is not {@code '.'},
+	 * which indicates a floor or walkable cell; if any cell was not walkable, then this returns true (meaning there is
+	 * a collision).
 	 * <br>
-	 * <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">See Wikipedia</a> for more info.
+	 * The algorithm is from <a href="http://www.redblobgames.com/grids/line-drawing.html#stepping">Red Blob Games</a>.
 	 *
 	 * @param ray the ray to cast; will not be modified
      * @return true if any cell in the line is blocked (not {@code '.'})
