@@ -251,6 +251,10 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
         return "Int2UndirectedGraph: {\n" + String.valueOf(show()) + "\n}";
     }
 
+    public String toString(boolean showEdges) {
+        return "Int2UndirectedGraph: {\n" + String.valueOf(show(showEdges)) + "\n}";
+    }
+
     @Override
     public void write(Json json) {
         Set<?> vertices = getVertices();

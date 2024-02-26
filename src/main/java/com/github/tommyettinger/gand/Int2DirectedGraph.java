@@ -251,6 +251,10 @@ public class Int2DirectedGraph extends DirectedGraph<PointI2> implements Json.Se
         return "Int2DirectedGraph: {\n" + String.valueOf(show()) + "\n}";
     }
 
+    public String toString(boolean showEdges) {
+        return "Int2DirectedGraph: {\n" + String.valueOf(show(showEdges)) + "\n}";
+    }
+
     @Override
     public void write(Json json) {
         Set<?> vertices = getVertices();

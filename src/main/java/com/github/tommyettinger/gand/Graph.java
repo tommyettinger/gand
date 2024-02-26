@@ -501,12 +501,18 @@ public abstract class Graph<V> {
     }
 
     public int numberOfComponents() {
+        for(Node<V> node : getNodes())
+            node.setSeen(false);
         int[] visited = {0};
         int components = 0;
         Iterator<V> iter = getVertices().iterator();
         while (iter.hasNext() && visited[0] < size()) {
+            V n = iter.next();
+            if(nodeMap.get(n).isSeen()) continue;
             ++components;
-            algorithms().depthFirstSearch(iter.next(), v -> ++visited[0]);
+            algorithms().depthFirstSearch(n, v -> {
+                visited[0] += 1;
+            });
         }
         return components;
     }
@@ -517,14 +523,18 @@ public abstract class Graph<V> {
      * @return a new ArrayList of Graph items where each Graph is not connected to any other Graph
      */
     public ArrayList<Graph<V>> getComponents() {
+        for(Node<V> node : getNodes())
+            node.setSeen(false);
         int[] visited = {0};
         ArrayList<Graph<V>> components = new ArrayList<>(16);
         Iterator<V> iter = getVertices().iterator();
         while (iter.hasNext() && visited[0] < size()) {
+            V n = iter.next();
+            if(nodeMap.get(n).isSeen()) continue;
             final Graph<V> comp = createNew();
-            algorithms().depthFirstSearch(iter.next(), v -> {
+            algorithms().depthFirstSearch(n, v -> {
                 comp.addVertex(v.vertex());
-                comp.getEdges().addAll(v.neighbors());
+                comp.edgeSet.addAll(v.neighbors());
                 ++visited[0];
             });
             components.add(comp);
