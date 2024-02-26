@@ -80,6 +80,7 @@ dependencies {
 // Libraries that don't use libGDX directly can change the next line
 // from `api` to `testImplementation` .
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
+    testImplementation "com.github.tommyettinger:cringe:$cringeVersion"
     testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
     testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     testImplementation "junit:junit:4.13.2"
