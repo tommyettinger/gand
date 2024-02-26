@@ -167,12 +167,14 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
      * vertices in this Graph and their estimated costs, if this has done an estimate. Each estimate is rounded to the
      * nearest int and only printed if it is 4 digits or fewer; otherwise this puts '####' in the grid cell. This is a
      * building-block for toString() implementations that may have debugging uses as well.
+     * <br>
+     * This uses y-up positioning.
      * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
      */
     public char[] show() {
         if(width == 0 || height == 0) return new char[0];
-        final int w5 = width * 5;
-        final char[] cs = new char[w5 * height];
+        final int w5 = width * 5, len = w5 * height;
+        final char[] cs = new char[len];
         Arrays.fill(cs,  '#');
         for (int i = 4; i < cs.length; i += 5) {
             cs[i] = (i + 1) % w5 == 0 ? '\n' : ' ';
@@ -182,12 +184,10 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
             if(nc == null || nc.getLastRunID() != rid || nc.getDistance() >= 9999.5)
                 continue;
             int d = (int) (nc.getDistance() + 0.5), x = nc.getObject().x * 5, y = nc.getObject().y;
-//            if(y * w5 + x + 3 >= cs.length)
-//                System.out.printf("x: %d, y: %d", x, y);
-            cs[y * w5 + x    ] = (d >= 1000) ? (char) ('0' + d / 1000) : ' ';
-            cs[y * w5 + x + 1] = (d >= 100)  ? (char) ('0' + d / 100 % 10) : ' ';
-            cs[y * w5 + x + 2] = (d >= 10)   ? (char) ('0' + d / 10 % 10) : ' ';
-            cs[y * w5 + x + 3] = (char) ('0' + d % 10);
+            cs[len - w5 - y * w5 + x    ] = (d >= 1000) ? (char) ('0' + d / 1000) : ' ';
+            cs[len - w5 - y * w5 + x + 1] = (d >= 100)  ? (char) ('0' + d / 100 % 10) : ' ';
+            cs[len - w5 - y * w5 + x + 2] = (d >= 10)   ? (char) ('0' + d / 10 % 10) : ' ';
+            cs[len - w5 - y * w5 + x + 3] = (char) ('0' + d % 10);
         }
         return cs;
     }
@@ -198,6 +198,8 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
      * nearest int and only printed if it is 4 digits or fewer; otherwise this puts '####' in the grid cell. If
      * {@code showEdges} is true, edges are also shown with one-way arrows for each edge, pointing in the direction a
      * pathfinder can take. This is a building-block for toString() implementations that may also have debugging uses.
+     * <br>
+     * This uses y-up positioning.
      * @param showEdges true if edges should be shown as arrows; this uses about twice as many lines
      * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
      */
