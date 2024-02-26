@@ -23,14 +23,14 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gand.Connection.DirectedConnection;
 import com.github.tommyettinger.gand.algorithms.DirectedGraphAlgorithms;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 public class DirectedGraph<V> extends Graph<V> implements Json.Serializable {
 
