@@ -8,6 +8,7 @@ import com.github.tommyettinger.gand.utils.SearchProcessor;
 
 import java.util.ArrayList;
 
+@SuppressWarnings("unchecked")
 public class AStarSearch<V> extends Algorithm<V> {
 
     private Heuristic<V> heuristic;

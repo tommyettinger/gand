@@ -82,9 +82,9 @@ public abstract class Graph<V> {
     protected Graph(Graph<V> graph) {
         nodeMap = new NodeMap<>(this);
         this.setDefaultEdgeWeight(graph.getDefaultEdgeWeight());
-        Collection<Connection<V>> edges = graph.getEdges();
+        Set<Connection<V>> edges = graph.getEdges();
         edgeSet = new ObjectOrderedSet<>(edges.size());
-        Collection<V> vertices = graph.getVertices();
+        Set<V> vertices = graph.getVertices();
         for (V v : vertices) {
             addVertex(v);
         }
@@ -501,12 +501,35 @@ public abstract class Graph<V> {
     }
 
     public int numberOfComponents() {
-        int[] visited = {1}, components = {0};
-        while (visited[0] < size()) {
-            ++components[0];
-            algorithms().depthFirstSearch(getVertices().iterator().next(), v -> ++visited[0]);
+        int[] visited = {0};
+        int components = 0;
+        Iterator<V> iter = getVertices().iterator();
+        while (iter.hasNext() && visited[0] < size()) {
+            ++components;
+            algorithms().depthFirstSearch(iter.next(), v -> ++visited[0]);
         }
-        return components[0];
+        return components;
+    }
+
+    /**
+     * Gets a new ArrayList of Graph items (of the same class as this Graph), where each sub-graph only has connections
+     * to its own vertices. Each Graph in the returned list will have no connections to vertices in the other graphs.
+     * @return a new ArrayList of Graph items where each Graph is not connected to any other Graph
+     */
+    public ArrayList<Graph<V>> getComponents() {
+        int[] visited = {0};
+        ArrayList<Graph<V>> components = new ArrayList<>(16);
+        Iterator<V> iter = getVertices().iterator();
+        while (iter.hasNext() && visited[0] < size()) {
+            final Graph<V> comp = createNew();
+            algorithms().depthFirstSearch(iter.next(), v -> {
+                comp.addVertex(v.vertex());
+                comp.getEdges().addAll(v.neighbors());
+                ++visited[0];
+            });
+            components.add(comp);
+        }
+        return components;
     }
 
     //--------------------

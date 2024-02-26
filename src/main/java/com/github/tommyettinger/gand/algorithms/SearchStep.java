@@ -1,8 +1,11 @@
 package com.github.tommyettinger.gand.algorithms;
 
+import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Edge;
 import com.github.tommyettinger.gand.Node;
 import com.github.tommyettinger.gand.Path;
+
+import java.util.ArrayList;
 
 /**
  * An object representing a "step" in a search algorithm. Usually this corresponds to visiting or processing a vertex.
@@ -83,6 +86,14 @@ public class SearchStep<V> {
      */
     public int count() {
         return count;
+    }
+
+    /**
+     * Gets an ArrayList of every Connection between this processed V vertex and its neighbors.
+     * @return a direct reference to the ArrayList of Connection items to neighbors the current node stores
+     */
+    public ArrayList<Connection<V>> neighbors() {
+        return node.getOutEdges();
     }
 
     /**
