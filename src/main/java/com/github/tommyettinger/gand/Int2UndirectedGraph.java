@@ -170,6 +170,7 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
      * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
      */
     public char[] show() {
+        if(width == 0 || height == 0) return new char[0];
         final int w5 = width * 5;
         final char[] cs = new char[w5 * height];
         Arrays.fill(cs,  '#');
@@ -187,6 +188,58 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
             cs[y * w5 + x + 1] = (d >= 100)  ? (char) ('0' + d / 100 % 10) : ' ';
             cs[y * w5 + x + 2] = (d >= 10)   ? (char) ('0' + d / 10 % 10) : ' ';
             cs[y * w5 + x + 3] = (char) ('0' + d % 10);
+        }
+        return cs;
+    }
+
+    /**
+     * Creates a 1D char array (which can be passed to {@link String#valueOf(char[])}) filled with a grid made of the
+     * vertices in this Graph and their estimated costs, if this has done an estimate. Each estimate is rounded to the
+     * nearest int and only printed if it is 4 digits or fewer; otherwise this puts '####' in the grid cell. If
+     * {@code showEdges} is true, edges are also shown with one-way arrows for each edge, pointing in the direction a
+     * pathfinder can take. This is a building-block for toString() implementations that may also have debugging uses.
+     * @param showEdges true if edges should be shown as arrows; this uses about twice as many lines
+     * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
+     */
+    public char[] show(boolean showEdges) {
+        if(!showEdges) return show();
+        if(width == 0 || height == 0) return new char[0];
+        final int w6 = width * 6, len = w6 * height * 2 - w6;
+        final char[] cs = new char[len];
+        Arrays.fill(cs,  '#');
+        for (int i = 4; i < cs.length; i += 6) {
+            cs[i] = ' ';
+            cs[i+1] = (i + 2) % w6 == 0 ? '\n' : ' ';
+        }
+        final int rid = algorithms.lastRunID();
+        for (Node<PointI2> nc : nodeMap.nodeCollection) {
+            if(nc == null || nc.getLastRunID() != rid || nc.getDistance() >= 9999.5)
+                continue;
+            int d = (int) (nc.getDistance() + 0.5), x = nc.getObject().x * 6, y = nc.getObject().y * 2;
+            cs[len - w6 - y * w6 + x    ] = (d >= 1000) ? (char) ('0' + d / 1000) : ' ';
+            cs[len - w6 - y * w6 + x + 1] = (d >= 100)  ? (char) ('0' + d / 100 % 10) : ' ';
+            cs[len - w6 - y * w6 + x + 2] = (d >= 10)   ? (char) ('0' + d / 10 % 10) : ' ';
+            cs[len - w6 - y * w6 + x + 3] = (char) ('0' + d % 10);
+            for(Connection<PointI2> edge : nc.getOutEdges()){
+                PointI2 other = (edge.getA() == nc.getObject()) ? edge.getB() : edge.getA();
+                //←→↑↓↖↗↘↙
+                if(other.x < nc.getObject().x && other.y == nc.getObject().y)
+                    cs[len - w6 - y * w6 + x - 1] = '←';
+                else if(other.x > nc.getObject().x && other.y == nc.getObject().y)
+                    cs[len - w6 - y * w6 + x + 4] = '→';
+                else if(other.x == nc.getObject().x && other.y < nc.getObject().y)
+                    cs[len - y * w6 + x + 1] = '↓';
+                else if(other.x == nc.getObject().x && other.y > nc.getObject().y)
+                    cs[len - w6 - w6 - y * w6 + x + 2] = '↑';
+                else if(other.x < nc.getObject().x && other.y > nc.getObject().y)
+                    cs[len - w6 - w6 - y * w6 + x] = '↖';
+                else if(other.x > nc.getObject().x && other.y > nc.getObject().y)
+                    cs[len - w6 - w6 - y * w6 + x + 3] = '↗';
+                else if(other.x < nc.getObject().x && other.y < nc.getObject().y)
+                    cs[len - y * w6 + x - 1] = '↙';
+                else if(other.x > nc.getObject().x && other.y < nc.getObject().y)
+                    cs[len - y * w6 + x + 4] = '↘';
+            }
         }
         return cs;
     }

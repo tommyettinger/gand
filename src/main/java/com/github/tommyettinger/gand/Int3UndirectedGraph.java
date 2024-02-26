@@ -221,8 +221,6 @@ public class Int3UndirectedGraph extends UndirectedGraph<PointI3> implements Jso
             if(nc == null || nc.getLastRunID() != rid || nc.getDistance() >= 9999.5)
                 continue;
             int d = (int) (nc.getDistance() + 0.5), x = nc.getObject().x * 5, y = nc.getObject().y, z = nc.getObject().z;
-//            if(y * w5 + x + 3 >= cs.length)
-//                System.out.printf("x: %d, y: %d", x, y);
             int i = z * (hw + 1) + y * w5 + x;
             cs[i    ] = (d >= 1000) ? (char) ('0' + d / 1000) : ' ';
             cs[i + 1] = (d >= 100)  ? (char) ('0' + d / 100 % 10) : ' ';
