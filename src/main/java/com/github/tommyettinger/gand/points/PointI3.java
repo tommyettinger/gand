@@ -158,6 +158,11 @@ public class PointI3 extends GridPoint3 implements Point3<PointI3>, Json.Seriali
         return this;
     }
 
+    @Override
+    public int hashCode() {
+        return (int)(x * 0xD1B54A32D192ED03L + y * 0xABC98388FB8FAC03L + z * 0x8CB92BA72F3D8DD7L >>> 31);
+    }
+
     public PointI3 set(float x, float y, float z){
         this.x = round(x);
         this.y = round(y);

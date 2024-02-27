@@ -103,7 +103,7 @@ public class Float3UndirectedGraph extends UndirectedGraph<PointF3> implements J
 //        // Harmonious numbers
         return (int)(NumberUtils.floatToIntBits(gp.x) * 0xD1B54A32D192ED03L
                 + NumberUtils.floatToIntBits(gp.y) * 0xABC98388FB8FAC03L
-                + NumberUtils.floatToIntBits(gp.z) * 0x8CB92BA72F3D8DD7L >>> 32);
+                + NumberUtils.floatToIntBits(gp.z) * 0x8CB92BA72F3D8DD7L >>> 31);
     }
 
     @Override

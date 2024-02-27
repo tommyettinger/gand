@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.NumberUtils;
 
 /**
  * The same as {@link Vector2}, just implementing {@link Point2} and {@link Json.Serializable}.
@@ -116,6 +117,11 @@ public class PointF2 extends Vector2 implements Point2<PointF2>, Json.Serializab
         this.x = x;
         this.y = y;
         return this;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int)(NumberUtils.floatToIntBits(x) * 0xC13FA9A902A6328FL + NumberUtils.floatToIntBits(y) * 0x91E10DA5C79E7B1DL >>> 31);
     }
 
     @Override

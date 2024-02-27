@@ -96,7 +96,7 @@ public class Float2DirectedGraph extends DirectedGraph<PointF2> implements Json.
     @Override
     public int hash(PointF2 gp) {
 //        // Harmonious numbers
-        return (int)(NumberUtils.floatToIntBits(gp.x) * 0xC13FA9A902A6328FL + NumberUtils.floatToIntBits(gp.y) * 0x91E10DA5C79E7B1DL >>> 32);
+        return (int)(NumberUtils.floatToIntBits(gp.x) * 0xC13FA9A902A6328FL + NumberUtils.floatToIntBits(gp.y) * 0x91E10DA5C79E7B1DL >>> 31);
     }
 
     @Override

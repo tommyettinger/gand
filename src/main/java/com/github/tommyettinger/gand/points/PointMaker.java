@@ -2,9 +2,9 @@ package com.github.tommyettinger.gand.points;
 
 /**
  * Utility class for constructing the various {@link PointN} types using types inferred from the parameter types.
- * This is meant to be statically imported, so you can call {@code PointI2 grid = pt(1, 2);} or
- * {@code PointF3 = pt(1f, 2f, 3f);} . You can also create {@link PointPair} objects with this in the same way, just
- * using twice as many parameters.
+ * This is meant to be statically imported, so you can call {@link #pt} with {@code PointI2 grid = pt(1, 2);} or
+ * {@code PointF3 = pt(1f, 2f, 3f);} . You can also create {@link PointPair} objects with this in a similar way, just
+ * using twice as many parameters for {@link #pair}.
  */
 public final class PointMaker {
     private PointMaker() {

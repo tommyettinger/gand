@@ -152,6 +152,11 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
     }
 
     @Override
+    public int hashCode() {
+        return (int)(x * 0xC13FA9A902A6328FL + y * 0x91E10DA5C79E7B1DL >>> 31);
+    }
+
+    @Override
     public void write(Json json) {
         json.writeValue("x", x, int.class);
         json.writeValue("y", y, int.class);

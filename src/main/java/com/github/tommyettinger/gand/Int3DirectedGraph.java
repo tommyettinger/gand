@@ -188,7 +188,7 @@ public class Int3DirectedGraph extends DirectedGraph<PointI3> implements Json.Se
     @Override
     public int hash(PointI3 gp) {
 //        // Harmonious numbers
-        return (int)(gp.x * 0xD1B54A32D192ED03L + gp.y * 0xABC98388FB8FAC03L + gp.z * 0x8CB92BA72F3D8DD7L >>> 32);
+        return (int)(gp.x * 0xD1B54A32D192ED03L + gp.y * 0xABC98388FB8FAC03L + gp.z * 0x8CB92BA72F3D8DD7L >>> 31);
 //        // int-based
 //        return (gp.x * 0xC13FB ^ gp.y * 0x91E0F);
 //        return gp.x ^ gp.y * 107;
