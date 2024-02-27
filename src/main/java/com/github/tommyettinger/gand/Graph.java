@@ -542,6 +542,40 @@ public abstract class Graph<V> {
         return components;
     }
 
+
+    /**
+     * Gets the sub-graph that is the largest Graph (of the same class as this Graph) within this one, that only has
+     * connections to its own vertices. This acts like calling {@link #getComponents()} and finding the largest
+     * component Graph inside it, except that this can be faster by returning early when there is no possible larger
+     * sub-graph.
+     * @return a new Graph made from the largest connected area of vertices (and edges) from this
+     */
+    public Graph<V> largestComponent() {
+        for(Node<V> node : getNodes())
+            node.setSeen(false);
+        int[] visited = {0};
+        Iterator<V> iter = getVertices().iterator();
+        Graph<V> best = null;
+        while (iter.hasNext() && visited[0] < size()) {
+            V n = iter.next();
+            if(nodeMap.get(n).isSeen()) continue;
+            final Graph<V> work = createNew();
+            algorithms().depthFirstSearch(n, v -> {
+                work.addVertex(v.vertex());
+                work.edgeSet.addAll(v.neighbors());
+                ++visited[0];
+            });
+            if(best == null || work.size() > best.size()) {
+                if(work.size() >= size() - visited[0])
+                    return work;
+                best = work;
+            }
+        }
+        if(best == null)
+            best = createNew();
+        return best;
+    }
+
     //--------------------
     //  Internal Getters
     //--------------------

@@ -31,12 +31,16 @@ public class ShowTest {
         {
             Int2DirectedGraph graph = new Int2DirectedGraph(partial, '.', 1f);
             graph.connectAdjacent(null, false);
-//            System.out.println("Full graph has " + graph.numberOfComponents() + " components.");
             ArrayList<Graph<PointI2>> components = graph.getComponents();
             for(Graph<PointI2> comp : components) {
                 System.out.println(comp);
-//                System.out.println("Component graph has " + comp.getEdgeCount() + " edges.");
             }
+        }
+        System.out.println("\nLargest Component:");
+        {
+            Int2DirectedGraph graph = new Int2DirectedGraph(partial, '.', 1f);
+            graph.connectAdjacent(null, false);
+            System.out.println(graph.largestComponent());
         }
 
     }
