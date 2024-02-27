@@ -32,16 +32,17 @@ public class PointPair<P extends PointN<P>> {
 	public P b;
 
 	/** Creates a {@code PointPair} with the given {@code start} and {@code end} points.
-	 * @param start the starting point of this ray
-	 * @param end the starting point of this ray */
+	 * @param start the starting point or collision point of this PointPair
+	 * @param end the starting point or normal vector of this PointPair
+	 */
 	public PointPair(P start, P end) {
 		this.a = start;
 		this.b = end;
 	}
 
-	/** Sets this ray from the given ray.
-	 * @param ray The ray
-	 * @return this ray for chaining. */
+	/** Sets this PointPair from the given PointPair.
+	 * @param ray The PointPair
+	 * @return this PointPair for chaining. */
 	public PointPair<P> set (PointPair<P> ray) {
 		a.set(ray.a);
 		b.set(ray.b);
@@ -49,9 +50,9 @@ public class PointPair<P extends PointN<P>> {
 	}
 
 	/** Sets this PointPair from the given start and end points.
-	 * @param start the starting point of this ray
-	 * @param end the starting point of this ray
-	 * @return this ray for chaining. */
+	 * @param start the starting point or collision point of this PointPair
+	 * @param end the starting point or normal vector of this PointPair
+	 * @return this PointPair for chaining. */
 	public PointPair<P> set (P start, P end) {
 		this.a.set(start);
 		this.b.set(end);
