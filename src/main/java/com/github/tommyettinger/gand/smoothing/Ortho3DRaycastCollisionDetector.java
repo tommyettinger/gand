@@ -16,8 +16,8 @@
 
 package com.github.tommyettinger.gand.smoothing;
 
-import com.github.tommyettinger.gand.points.Point3;
-import com.github.tommyettinger.gand.points.PointPair;
+import com.github.tommyettinger.crux.Point3;
+import com.github.tommyettinger.crux.PointPair;
 import com.github.tommyettinger.gand.utils.IntIntIntPredicate;
 
 /** A raycast collision detector used for path smoothing in 3D, with cells considered passable if a predicate returns

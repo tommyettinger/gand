@@ -17,12 +17,14 @@
 package com.github.tommyettinger.gand.smoothing;
 
 import com.github.tommyettinger.gand.points.PointF2;
-import com.github.tommyettinger.gand.points.PointPair;
+import com.github.tommyettinger.crux.PointPair;
 
 /** A raycast collision detector used for path smoothing against a simple 2D char array as a map.
  * This only considers orthogonally-touching cells as connected.
  * <br>
  * The algorithm is from <a href="http://www.redblobgames.com/grids/line-drawing.html#stepping">Red Blob Games</a>.
+ *
+ * @see Ortho2DRaycastCollisionDetector You should probably prefer Ortho2DRaycastCollisionDetector .
  */
 public class CharOrthoRaycastCollisionDetector implements RaycastCollisionDetector<PointF2> {
 	private final char[][] worldMap;

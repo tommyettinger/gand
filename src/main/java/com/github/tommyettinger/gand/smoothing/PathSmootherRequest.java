@@ -17,7 +17,7 @@
 package com.github.tommyettinger.gand.smoothing;
 
 import com.github.tommyettinger.gand.Path;
-import com.github.tommyettinger.gand.points.PointN;
+import com.github.tommyettinger.crux.PointN;
 
 /** A request for interruptible path smoothing.
  * 

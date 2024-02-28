@@ -1,5 +1,8 @@
 package com.github.tommyettinger.gand.points;
 
+import com.github.tommyettinger.crux.PointN;
+import com.github.tommyettinger.crux.PointPair;
+
 /**
  * Utility class for constructing the various {@link PointN} types using types inferred from the parameter types.
  * This is meant to be statically imported, so you can call {@link #pt} with {@code PointI2 grid = pt(1, 2);} or

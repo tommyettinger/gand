@@ -16,8 +16,8 @@
 
 package com.github.tommyettinger.gand.smoothing;
 
-import com.github.tommyettinger.gand.points.PointN;
-import com.github.tommyettinger.gand.points.PointPair;
+import com.github.tommyettinger.crux.PointN;
+import com.github.tommyettinger.crux.PointPair;
 
 /** A {@code RaycastCollisionDetector} finds the closest intersection between a ray and any object in the game world.
  * 

@@ -17,12 +17,13 @@
 package com.github.tommyettinger.gand.smoothing;
 
 import com.github.tommyettinger.gand.points.PointF2;
-import com.github.tommyettinger.gand.points.PointPair;
+import com.github.tommyettinger.crux.PointPair;
 
 /** A raycast collision detector used for path smoothing against a simple 2D char array as a map.
  * This treats diagonally-connected walkable cells as walkable. It uses Bresenham's line algorithm.
  * <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">See Wikipedia</a> for more info.
  *
+ * @see Bresenham2DRaycastCollisionDetector You should probably prefer Bresenham2DRaycastCollisionDetector .
  * @author davebaol */
 public class CharBresenhamRaycastCollisionDetector implements RaycastCollisionDetector<PointF2> {
 	private final char[][] worldMap;

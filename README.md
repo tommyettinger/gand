@@ -21,26 +21,49 @@ The class used here is `ObjectDeque`, which is drawn from the jdkgdxds library; 
 one would prefer a List because it permits random-access of items by index in constant time, while also having
 constant-time removal from the head and tail. It can be sorted and reversed, also.
 
-The last major change is that `ObjectDeque`, its specialized subclass `Path`, `DirectedGraph`, and `UndirectedGraph`
+Another major change is that `ObjectDeque`, its specialized subclass `Path`, `DirectedGraph`, and `UndirectedGraph`
 all implement `Json.Serializable`, making them easy to feed into the libGDX Json class to read or write. These do
 need the vertex type to be serializable somehow, so our `JsonRegistration` class makes that easier and more concise
-for the common vertex types `Vector2`, `Vector3`, `Vector4`, `GridPoint2`, and `GridPoint3`.
+for the common vertex types `Vector2`, `Vector3`, `Vector4`, `GridPoint2`, and `GridPoint3`. However, you might not
+want to use those types for points, because...
 
-More changes are coming! I want to make the path smoothing algorithm from gdx-ai available here. I also want to make
-specialized `Graph` implementations that work only on `GridPoint2` or `Vector2`, since those are commonly used in
-games, and they're sometimes easier to describe with a 2D array.
+Version 0.1.0 adds the types `PointI2`, `PointF2`, `PointI3`, and `PointF3`, which have either int (for the "I"
+types) or float (for the "F" types) components, and can have 2 or 3 of each. These extend `GridPoint2`, `Vector2`,
+and so on, but also implement a common interface (all of them): `PointN`, from the new and tiny
+[crux](https://github.com/tommyettinger/crux) library. The 2D points, more specifically, implement `Point2`, while
+the 3D ones implement `Point3`. Having this generalization helps some code work with either int-based grid
+coordinates or float-based smooth coordinates. This is especially relevant for...
+
+The path smoothing algorithm from gdx-ai has been ported here. Interruptible pathfinding, not so much, but the
+first step, the `PathSmoother#smoothPath(Path)` method, works well. There are existing `RaycastCollisionDetector`
+implementations in 2D and 3D, providing Bresenham for when diagonals are considered adjacent and an orthogonal
+line algorithm for when only orthogonal connections are considered adjacent.
+
+Something that hasn't changed much from simple-graphs is the performance. This library is extremely competitive
+with simple-graphs for pathfinding speed, usually within 5% time taken per path (either more or less). This is
+a little surprising, because simple-graphs stripped out quite a few features from things like BinaryHeap and its
+Array class in order to maximize speed. Our ObjectDeque here has 981 SLoC, while the Array in simple-graphs has
+only 170, so you would expect ObjectDeque to slow things down a bit with added complexity. It actually does slow
+some things down, but none of them are done especially often. Plus, other code is a little faster, so it all
+essentially evens out.
 
 # Find It
 
-`implementation "com.github.tommyettinger:gand:0.0.1"`
+`implementation "com.github.tommyettinger:gand:0.1.0"`
 
 If you use GWT, then your GWT module needs to depend on:
 
-`implementation "com.github.tommyettinger:gand:0.0.1:sources"`
+```
+implementation "com.github.tommyettinger:gand:0.1.0:sources"
+implementation "com.github.tommyettinger:crux:0.0.1:sources"
+```
 
 GWT also needs this `inherits` line added to your `GdxDefinition.gwt.xml` file, with the other inherits lines:
 
-`<inherits name="com.github.tommyettinger.gand" />`
+```
+<inherits name="com.github.tommyettinger.crux" />
+<inherits name="com.github.tommyettinger.gand" />
+```
 
 This library always needs at least JDK 8 or a compatible version. It is designed to be compatible with RoboVM's
 partial implementation of JDK 8.

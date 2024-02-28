@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.NumberUtils;
+import com.github.tommyettinger.crux.Point3;
 
 /**
  * The same as {@link Vector3}, just implementing {@link Point3} and {@link Json.Serializable}.

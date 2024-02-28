@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.github.tommyettinger.crux.Point2;
 
 import static com.badlogic.gdx.math.MathUtils.round;
 
