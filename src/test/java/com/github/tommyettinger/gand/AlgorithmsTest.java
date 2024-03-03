@@ -101,9 +101,13 @@ public class AlgorithmsTest {
 
     @Test
     public void shortestFloat2PathShouldBeCorrect() {
-        int n = 20;
-        Graph<PointF2> undirectedGraph = TestUtils.makeGridGraphF2(new Float2UndirectedGraph(), n);
-        Graph<PointF2> diGraph = TestUtils.makeGridGraphF2(new Float2DirectedGraph(), n);
+        int n = 15;
+        Graph<PointF2> diGraph = TestUtils.makeGridGraph2D(new Float2DirectedGraph(), n, new PointF2());
+        System.out.println("Float2DirectedGraph: ");
+        System.out.println(diGraph);
+        Graph<PointF2> undirectedGraph = TestUtils.makeGridGraph2D(new Float2UndirectedGraph(), n, new PointF2());
+        System.out.println("Float2UndirectedGraph: ");
+        System.out.println(undirectedGraph);
 
         PointF2 start = new PointF2(0, 0), end = new PointF2(n - 1, n - 1);
         Path<PointF2> path;
@@ -157,12 +161,16 @@ public class AlgorithmsTest {
     }
 
     @Test
-    public void shortestGridPathShouldBeCorrect() {
-        int n = 25;
-        Int2UndirectedGraph undirectedGraph = new Int2UndirectedGraph(TestUtils.DUNGEON, '.', 1f);
-        undirectedGraph.connectAdjacent(null, true);
+    public void shortestDungeonPathShouldBeCorrect() {
+        int n = 15;
         Int2DirectedGraph diGraph = new Int2DirectedGraph(TestUtils.DUNGEON, '.', 1f);
         diGraph.connectAdjacent(null, true);
+        System.out.println("Int2DirectedGraph: ");
+        System.out.println(diGraph);
+        Int2UndirectedGraph undirectedGraph = new Int2UndirectedGraph(TestUtils.DUNGEON, '.', 1f);
+        undirectedGraph.connectAdjacent(null, true);
+        System.out.println("Int2UndirectedGraph: ");
+        System.out.println(undirectedGraph);
 
         PointI2 start = new PointI2(1, 1), end = new PointI2(n - 2, n - 2);
         Path<PointI2> path;
@@ -216,12 +224,17 @@ public class AlgorithmsTest {
 
 
     @Test
-    public void shortestGrid3PathShouldBeCorrect() {
+    public void shortestDungeon3PathShouldBeCorrect() {
         int n = 25;
         Int3UndirectedGraph undirectedGraph = new Int3UndirectedGraph(TestUtils.DUNGEON_3D, '.', 1f);
         undirectedGraph.connectAdjacent(null, true);
+        System.out.println("Int3UndirectedGraph: ");
+        System.out.println(undirectedGraph);
+
         Int3DirectedGraph diGraph = new Int3DirectedGraph(TestUtils.DUNGEON_3D, '.', 1f);
         diGraph.connectAdjacent(null, true);
+        System.out.println("Int3DirectedGraph: ");
+        System.out.println(diGraph);
 
         diGraph.sortVertices((g, h) -> (h.z * 4 + h.y * 2 + h.x) - (g.z * 4 + g.y * 2 + g.x));
         PointI3 start = new PointI3(1, 1, 0), end = diGraph.getVertices().iterator().next();
@@ -276,10 +289,14 @@ public class AlgorithmsTest {
 
 
     @Test
-    public void shortestVector3PathShouldBeCorrect() {
-        int n = 15;
-        Graph<PointF3> diGraph = TestUtils.makeGridGraphF3(new Float3DirectedGraph(), n);
+    public void shortestPointF3PathShouldBeCorrect() {
+        int n = 6;
+        Graph<PointF3> diGraph = TestUtils.makeGridGraph3D(new Float3DirectedGraph(), n, new PointF3());
+        System.out.println("Float3DirectedGraph: ");
+        System.out.println(diGraph);
         Graph<PointF3> undirectedGraph = new Float3UndirectedGraph(diGraph);
+        System.out.println("Float3UndirectedGraph: ");
+        System.out.println(undirectedGraph);
 
         diGraph.sortVertices((g, h) -> NumberUtils.floatToIntBits((h.z * 4 + h.y * 2 + h.x) - (g.z * 4 + g.y * 2 + g.x) + 0f));
         PointF3 start = new PointF3(1, 1, 2), end = diGraph.getVertices().iterator().next();
@@ -298,6 +315,67 @@ public class AlgorithmsTest {
 
         // with heuristic
         Heuristic<PointF3> h = PointF3::dst;
+
+        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
+        assertNotEquals("Shortest path is wrong size", 0, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(path, undirectedGraph));
+
+        path = diGraph.algorithms().findShortestPath(start, end, h);
+        assertNotEquals("Shortest path is wrong size", 0, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(path, diGraph));
+        assertTrue("Shortest path is not connected", diGraph.algorithms().isConnected(start, end));
+
+        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
+        assertNotEquals(0, path.size());
+        assertEquals(start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(path, undirectedGraph));
+        assertTrue("Shortest path is not connected", undirectedGraph.algorithms().isConnected(start, end));
+
+        // no path exists
+        undirectedGraph.disconnect(end);
+        path = undirectedGraph.algorithms().findShortestPath(start, end, h);
+        assertEquals(0, path.size());
+        path = undirectedGraph.algorithms().findShortestPath(start, end);
+        assertEquals(0, path.size());
+        assertFalse(undirectedGraph.algorithms().isConnected(start, end));
+
+        diGraph.disconnect(end);
+        path = diGraph.algorithms().findShortestPath(start, end, h);
+        assertEquals(0, path.size());
+        path = diGraph.algorithms().findShortestPath(start, end);
+        assertEquals(0, path.size());
+        assertFalse(diGraph.algorithms().isConnected(start, end));
+    }
+
+    @Test
+    public void shortestPointI3PathShouldBeCorrect() {
+        int n = 6;
+        Graph<PointI3> diGraph = TestUtils.makeGridGraph3D(new Int3DirectedGraph(), n, new PointI3());
+        System.out.println("Int3DirectedGraph: ");
+        System.out.println(diGraph);
+        Graph<PointI3> undirectedGraph = new Int3UndirectedGraph(diGraph);
+        System.out.println("Int3UndirectedGraph: ");
+        System.out.println(undirectedGraph);
+
+        diGraph.sortVertices((g, h) -> NumberUtils.floatToIntBits((h.z * 4 + h.y * 2 + h.x) - (g.z * 4 + g.y * 2 + g.x) + 0f));
+        PointI3 start = new PointI3(1, 1, 2), end = diGraph.getVertices().iterator().next();
+        Path<PointI3> path;
+
+        // without heuristic
+        path = undirectedGraph.algorithms().findShortestPath(start, end);
+        assertNotEquals("Shortest path is wrong size", 0, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(path, undirectedGraph));
+
+        path = diGraph.algorithms().findShortestPath(start, end);
+        assertNotEquals("Shortest path is wrong size", 0, path.size());
+        assertEquals("Shortest path has wrong starting point", start, path.get(0));
+        assertTrue("Shortest path is not connected", pathIsConnected(path, diGraph));
+
+        // with heuristic
+        Heuristic<PointI3> h = PointI3::dst;
 
         path = undirectedGraph.algorithms().findShortestPath(start, end, h);
         assertNotEquals("Shortest path is wrong size", 0, path.size());

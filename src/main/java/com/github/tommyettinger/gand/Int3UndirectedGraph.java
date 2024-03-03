@@ -7,6 +7,7 @@ import com.github.tommyettinger.gand.utils.Heuristic;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 public class Int3UndirectedGraph extends UndirectedGraph<PointI3> implements Json.Serializable {
@@ -37,15 +38,32 @@ public class Int3UndirectedGraph extends UndirectedGraph<PointI3> implements Jso
     }
 
     public Int3UndirectedGraph(Collection<PointI3> vertices) {
-        super(vertices);
+        this(vertices, Collections.emptyList(), 1f);
     }
 
     public Int3UndirectedGraph(Collection<PointI3> vertices, Collection<Edge<PointI3>> edges, float defaultEdgeWeight) {
-        super(vertices, edges, defaultEdgeWeight);
+        super();
+        this.setDefaultEdgeWeight(defaultEdgeWeight);
+        for (PointI3 v : vertices) {
+            addVertex(v);
+        }
+        for(Edge<PointI3> edge : edges) {
+            addEdge(edge);
+        }
     }
 
     public Int3UndirectedGraph(Graph<PointI3> graph) {
-        super(graph);
+        super();
+        this.setDefaultEdgeWeight(graph.getDefaultEdgeWeight());
+        Set<Connection<PointI3>> edges = graph.getEdges();
+        Set<PointI3> vertices = graph.getVertices();
+        for (PointI3 v : vertices) {
+            addVertex(v);
+        }
+        for(Edge<PointI3> edge : edges) {
+            // Each Edge is guaranteed to be valid here, so we don't need to re-add its vertices.
+            addEdge(edge.getA(), edge.getB(), edge.getWeight());
+        }
     }
 
     /**
