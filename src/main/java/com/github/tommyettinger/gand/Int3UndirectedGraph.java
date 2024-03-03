@@ -11,9 +11,9 @@ import java.util.Set;
 
 public class Int3UndirectedGraph extends UndirectedGraph<PointI3> implements Json.Serializable {
 
-    private int width = 0;
-    private int height = 0;
-    private int depth = 0;
+    private int maxX = Integer.MIN_VALUE;
+    private int maxY = Integer.MIN_VALUE;
+    private int maxZ = Integer.MIN_VALUE;
     /**
      * Adds a vertex to the graph.
      *
@@ -24,9 +24,9 @@ public class Int3UndirectedGraph extends UndirectedGraph<PointI3> implements Jso
     public boolean addVertex(PointI3 gridPoint3) {
         if(super.addVertex(gridPoint3))
         {
-            width = Math.max(width, gridPoint3.x+1);
-            height = Math.max(height, gridPoint3.y+1);
-            depth = Math.max(depth, gridPoint3.z+1);
+            maxX = Math.max(maxX, gridPoint3.x+1);
+            maxY = Math.max(maxY, gridPoint3.y+1);
+            maxZ = Math.max(maxZ, gridPoint3.z+1);
             return true;
         }
         return false;
@@ -121,11 +121,11 @@ public class Int3UndirectedGraph extends UndirectedGraph<PointI3> implements Jso
         PointI3 test = new PointI3(), next = new PointI3(), t;
         Node<PointI3> nmt, nmn;
         if(heu == null) heu = (a, b) -> getDefaultEdgeWeight();
-        for (int x = 0; x < width; x++) {
+        for (int x = 0; x < maxX; x++) {
             test.x = x;
-            for (int y = 0; y < height; y++) {
+            for (int y = 0; y < maxY; y++) {
                 test.y = y;
-                for (int z = 0; z < depth; z++) {
+                for (int z = 0; z < maxZ; z++) {
                     test.z = z;
                     if ((nmt = nodeMap.get(test)) != null) {
                         t = nmt.getObject();
@@ -174,6 +174,18 @@ public class Int3UndirectedGraph extends UndirectedGraph<PointI3> implements Jso
         return new Int3UndirectedGraph();
     }
 
+    public int getMaxX() {
+        return maxX;
+    }
+
+    public int getMaxY() {
+        return maxY;
+    }
+
+    public int getMaxZ() {
+        return maxZ;
+    }
+
     /**
      * Get the hash used to calculate the index in the table at which the Node<V> associated with
      * v would be held. What this returns is also used in {@link Node#mapHash}.
@@ -205,15 +217,15 @@ public class Int3UndirectedGraph extends UndirectedGraph<PointI3> implements Jso
      * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
      */
     public char[] show() {
-        final int w5 = width * 5;
-        final int hw = w5 * height;
-        final char[] cs = new char[(hw + 1) * depth];
+        final int w5 = maxX * 5;
+        final int hw = w5 * maxY;
+        final char[] cs = new char[(hw + 1) * maxZ];
         Arrays.fill(cs, '#');
         for (int i = 4; i < hw; i += 5) {
             cs[i] = (i + 1) % w5 == 0 ? '\n' : ' ';
         }
         cs[hw] = '\n';
-        for (int i = 1; i < depth; i++) {
+        for (int i = 1; i < maxZ; i++) {
             System.arraycopy(cs, 0, cs, (hw+1) * i, hw+1);
         }
         final int rid = algorithms.lastRunID();

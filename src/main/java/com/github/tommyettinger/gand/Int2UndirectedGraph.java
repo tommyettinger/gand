@@ -11,8 +11,8 @@ import java.util.Set;
 
 public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Json.Serializable {
 
-    private int width = 0;
-    private int height = 0;
+    private int maxX = Integer.MIN_VALUE;
+    private int maxY = Integer.MIN_VALUE;
     /**
      * Adds a vertex to the graph.
      *
@@ -23,8 +23,8 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
     public boolean addVertex(PointI2 gridPoint2) {
         if(super.addVertex(gridPoint2))
         {
-            width = Math.max(width, gridPoint2.x+1);
-            height = Math.max(height, gridPoint2.y+1);
+            maxX = Math.max(maxX, gridPoint2.x+1);
+            maxY = Math.max(maxY, gridPoint2.y+1);
             return true;
         }
         return false;
@@ -113,9 +113,9 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
         PointI2 test = new PointI2(), next = new PointI2(), t;
         Node<PointI2> nmt, nmn;
         if(heu == null) heu = (a, b) -> getDefaultEdgeWeight();
-        for (int x = 0; x < width; x++) {
+        for (int x = 0; x < maxX; x++) {
             test.x = x;
-            for (int y = 0; y < height; y++) {
+            for (int y = 0; y < maxY; y++) {
                 test.y = y;
                 if((nmt = nodeMap.get(test)) != null){
                     t = nmt.getObject();
@@ -162,6 +162,14 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
 //        return (max * max + max + gp.x - gp.y) * 0x9E373 ^ 0x7F4A7C15;
     }
 
+    public int getMaxX() {
+        return maxX;
+    }
+
+    public int getMaxY() {
+        return maxY;
+    }
+
     /**
      * Creates a 1D char array (which can be passed to {@link String#valueOf(char[])}) filled with a grid made of the
      * vertices in this Graph and their estimated costs, if this has done an estimate. Each estimate is rounded to the
@@ -172,8 +180,8 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
      * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
      */
     public char[] show() {
-        if(width == 0 || height == 0) return new char[0];
-        final int w5 = width * 5, len = w5 * height;
+        if(maxX == 0 || maxY == 0) return new char[0];
+        final int w5 = maxX * 5, len = w5 * maxY;
         final char[] cs = new char[len];
         Arrays.fill(cs,  '#');
         for (int i = 4; i < cs.length; i += 5) {
@@ -205,8 +213,8 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
      */
     public char[] show(boolean showEdges) {
         if(!showEdges) return show();
-        if(width == 0 || height == 0) return new char[0];
-        final int w6 = width * 6, len = w6 * height * 2 - w6;
+        if(maxX == 0 || maxY == 0) return new char[0];
+        final int w6 = maxX * 6, len = w6 * maxY * 2 - w6;
         final char[] cs = new char[len];
         Arrays.fill(cs,  '#');
         for (int i = 4; i < cs.length; i += 6) {
