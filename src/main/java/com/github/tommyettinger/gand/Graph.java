@@ -610,7 +610,7 @@ public abstract class Graph<V> {
 
         Graph<?> graph = (Graph<?>) o;
 
-        if (!nodeMap.equals(graph.nodeMap)) return false;
+        if (!nodeMap.vertexSet.equals(graph.nodeMap.vertexSet)) return false;
         return edgeSet.equals(graph.edgeSet);
     }
 
