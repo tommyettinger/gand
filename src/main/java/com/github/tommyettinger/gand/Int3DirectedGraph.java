@@ -240,6 +240,7 @@ public class Int3DirectedGraph extends DirectedGraph<PointI3> implements Json.Se
      * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
      */
     public char[] show() {
+        if(maxX == 0 || maxY == 0 || maxZ == 0) return new char[0];
         final int w5 = maxX * 5;
         final int hw = w5 * maxY;
         final char[] cs = new char[(hw + 1) * maxZ];
