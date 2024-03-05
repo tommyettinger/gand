@@ -235,7 +235,7 @@ public class Int3UndirectedGraph extends UndirectedGraph<PointI3> implements Jso
      * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
      */
     public char[] show() {
-        if(maxX == 0 || maxY == 0 || maxZ == 0) return new char[0];
+        if(maxX == Integer.MIN_VALUE || maxY == Integer.MIN_VALUE || maxZ == Integer.MIN_VALUE) return new char[0];
         final int w5 = maxX * 5;
         final int hw = w5 * maxY;
         final char[] cs = new char[(hw + 1) * maxZ];

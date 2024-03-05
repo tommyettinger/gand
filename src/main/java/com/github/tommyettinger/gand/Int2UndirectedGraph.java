@@ -198,7 +198,7 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
      * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
      */
     public char[] show() {
-        if(maxX == 0 || maxY == 0) return new char[0];
+        if(maxX == Integer.MIN_VALUE || maxY == Integer.MIN_VALUE) return new char[0];
         final int w5 = maxX * 5, len = w5 * maxY;
         final char[] cs = new char[len];
         Arrays.fill(cs,  '#');
@@ -231,7 +231,7 @@ public class Int2UndirectedGraph extends UndirectedGraph<PointI2> implements Jso
      */
     public char[] show(boolean showEdges) {
         if(!showEdges) return show();
-        if(maxX == 0 || maxY == 0) return new char[0];
+        if(maxX == Integer.MIN_VALUE || maxY == Integer.MIN_VALUE) return new char[0];
         final int w6 = maxX * 6, len = w6 * maxY * 2 - w6;
         final char[] cs = new char[len];
         Arrays.fill(cs,  '#');
