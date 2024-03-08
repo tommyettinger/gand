@@ -27,17 +27,12 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gand.Connection.DirectedConnection;
 import com.github.tommyettinger.gand.algorithms.DirectedGraphAlgorithms;
-import com.github.tommyettinger.gand.utils.GwtIncompatible;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
-public class DirectedGraph<V> extends Graph<V> implements Json.Serializable, Externalizable {
+public class DirectedGraph<V> extends Graph<V> implements Json.Serializable {
 
     protected transient final DirectedGraphAlgorithms<V> algorithms;
 
@@ -173,61 +168,6 @@ public class DirectedGraph<V> extends Graph<V> implements Json.Serializable, Ext
         entry = jsonData.getChild("e");
         for (; entry != null; entry = entry.next) {
             addEdge(json.readValue(null, entry), json.readValue(null, entry = entry.next), (entry = entry.next).asFloat());
-        }
-    }
-
-    /**
-     * The object implements the writeExternal method to save its contents
-     * by calling the methods of DataOutput for its primitive values or
-     * calling the writeObject method of ObjectOutput for objects, strings,
-     * and arrays.
-     *
-     * @param out the stream to write the object to
-     * @throws IOException Includes any I/O exceptions that may occur
-     * @serialData Overriding methods should use this tag to describe
-     * the data layout of this Externalizable object.
-     * List the sequence of element types and, if possible,
-     * relate the element to a public/protected field and/or
-     * method of this Externalizable class.
-     */
-    @GwtIncompatible
-    public void writeExternal(ObjectOutput out) throws IOException {
-        Set<?> vertices = getVertices();
-        out.writeInt(vertices.size());
-        for(Object vertex : vertices) {
-            out.writeObject(vertex);
-        }
-        Collection<? extends Edge<?>> edges = getEdges();
-        out.writeInt(edges.size());
-        for(Edge<?> edge : edges) {
-            out.writeObject(edge.getA());
-            out.writeObject(edge.getB());
-            out.writeFloat(edge.getWeight());
-        }
-    }
-
-    /**
-     * The object implements the readExternal method to restore its
-     * contents by calling the methods of DataInput for primitive
-     * types and readObject for objects, strings and arrays.  The
-     * readExternal method must read the values in the same sequence
-     * and with the same types as were written by writeExternal.
-     *
-     * @param in the stream to read data from in order to restore the object
-     * @throws IOException            if I/O errors occur
-     * @throws ClassNotFoundException If the class for an object being
-     *                                restored cannot be found.
-     */
-    @GwtIncompatible
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        this.removeAllVertices();
-        int count = in.readInt();
-        for (int i = 0; i < count; i++) {
-            addVertex((V) in.readObject());
-        }
-        count = in.readInt();
-        for (int i = 0; i < count; i++) {
-            addEdge((V) in.readObject(), (V) in.readObject(), in.readFloat());
         }
     }
 }
