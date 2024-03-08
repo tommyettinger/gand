@@ -287,6 +287,13 @@ public abstract class Graph<V> {
     }
 
     /**
+     * An alias for {@link #removeAllVertices()}, this removes all vertices and all edges from the graph.
+     */
+    public void clear() {
+        removeAllVertices();
+    }
+
+    /**
      * Sort the vertices using the provided comparator. This is reflected in the iteration order of the collection returned
      * by {@link #getVertices()}, as well as algorithms which involve iterating over all vertices.
      *
