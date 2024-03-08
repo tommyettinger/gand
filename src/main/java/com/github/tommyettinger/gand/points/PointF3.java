@@ -152,4 +152,27 @@ public class PointF3 extends Vector3 implements Point3<PointF3>, Json.Serializab
         this.y = jsonData.getFloat("y");
         this.z = jsonData.getFloat("z");
     }
+
+    /** Converts this {@code PointF3} to a string in the format {@code (x,y,z)}.
+     * @return a string representation of this object. */
+    @Override
+    public String toString () {
+        return "(" + x + "," + y + "," + z + ")";
+    }
+
+    /** Sets this {@code PointF3} to the value represented by the specified string according to the format of {@link #toString()}.
+     * @param v the string.
+     * @return this vector for chaining */
+    public PointF3 fromString (String v) {
+        int s0 = v.indexOf(',', 1);
+        int s1 = v.indexOf(',', s0 + 1);
+        if (s0 != -1 && s1 != -1 && v.charAt(0) == '(' && v.charAt(v.length() - 1) == ')') {
+                float x = Float.parseFloat(v.substring(1, s0));
+                float y = Float.parseFloat(v.substring(s0 + 1, s1));
+                float z = Float.parseFloat(v.substring(s1 + 1, v.length() - 1));
+                return this.set(x, y, z);
+        }
+        throw new IllegalArgumentException("Not a valid format for a PointF3: " + v);
+    }
+
 }

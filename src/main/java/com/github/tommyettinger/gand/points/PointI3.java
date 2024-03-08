@@ -172,6 +172,84 @@ public class PointI3 extends GridPoint3 implements Point3<PointI3>, Json.Seriali
         return this;
     }
 
+    /**
+     * Sets the coordinates of this point to that of another.
+     *
+     * @param point The 3D grid point (which may be a PointI3 or GridPoint3) to copy coordinates of.
+     * @return this PointI3 for chaining.
+     */
+    @Override
+    public PointI3 set(GridPoint3 point) {
+        super.set(point);
+        return this;
+    }
+
+    /**
+     * Sets the coordinates of this PointI3.
+     *
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param z Z coordinate
+     * @return this PointI3 for chaining.
+     */
+    @Override
+    public PointI3 set(int x, int y, int z) {
+        super.set(x, y, z);
+        return this;
+    }
+
+    /**
+     * Adds another point to this point.
+     *
+     * @param other The other point
+     * @return this PointI3 for chaining.
+     */
+    @Override
+    public PointI3 add(GridPoint3 other) {
+        super.add(other);
+        return this;
+    }
+
+    /**
+     * Adds another x,y,z point to this point.
+     *
+     * @param x The x-coordinate of the other point
+     * @param y The y-coordinate of the other point
+     * @param z The z-coordinate of the other point
+     * @return this PointI3 for chaining.
+     */
+    @Override
+    public PointI3 add(int x, int y, int z) {
+        super.add(x, y, z);
+        return this;
+    }
+
+    /**
+     * Subtracts another point from this point.
+     *
+     * @param other The other point
+     * @return this PointI3 for chaining.
+     */
+    @Override
+    public PointI3 sub(GridPoint3 other) {
+        super.sub(other);
+        return this;
+    }
+
+    /**
+     * Subtracts another x,y,z point from this point.
+     *
+     * @param x The x-coordinate of the other point
+     * @param y The y-coordinate of the other point
+     * @param z The z-coordinate of the other point
+     * @return this PointI3 for chaining.
+     */
+    @Override
+    public PointI3 sub(int x, int y, int z) {
+        super.sub(x, y, z);
+        return this;
+    }
+
     @Override
     public void write(Json json) {
         json.writeValue("x", x, int.class);
@@ -184,5 +262,27 @@ public class PointI3 extends GridPoint3 implements Point3<PointI3>, Json.Seriali
         this.x = jsonData.getInt("x");
         this.y = jsonData.getInt("y");
         this.z = jsonData.getInt("z");
+    }
+
+    /** Converts this {@code PointI3} to a string in the format {@code (x,y,z)}.
+     * @return a string representation of this object. */
+    @Override
+    public String toString () {
+        return "(" + x + "," + y + "," + z + ")";
+    }
+
+    /** Sets this {@code PointI3} to the value represented by the specified string according to the format of {@link #toString()}.
+     * @param v the string.
+     * @return this vector for chaining */
+    public PointI3 fromString (String v) {
+        int s0 = v.indexOf(',', 1);
+        int s1 = v.indexOf(',', s0 + 1);
+        if (s0 != -1 && s1 != -1 && v.charAt(0) == '(' && v.charAt(v.length() - 1) == ')') {
+            int x = Integer.parseInt(v.substring(1, s0));
+            int y = Integer.parseInt(v.substring(s0 + 1, s1));
+            int z = Integer.parseInt(v.substring(s1 + 1, v.length() - 1));
+            return this.set(x, y, z);
+        }
+        throw new IllegalArgumentException("Not a valid format for a PointI3: " + v);
     }
 }

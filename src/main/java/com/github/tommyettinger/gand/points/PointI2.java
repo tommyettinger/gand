@@ -152,6 +152,81 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
         return this;
     }
 
+    /**
+     * Sets the coordinates of this point to that of another.
+     *
+     * @param point The 2D grid point (which may be a PointI2 or GridPoint2) to copy coordinates of.
+     * @return this PointI2 for chaining.
+     */
+    @Override
+    public PointI2 set(GridPoint2 point) {
+        super.set(point);
+        return this;
+    }
+
+    /**
+     * Sets the coordinates of this PointI2.
+     *
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @return this PointI2 for chaining.
+     */
+    @Override
+    public PointI2 set(int x, int y) {
+        super.set(x, y);
+        return this;
+    }
+
+    /**
+     * Adds another point to this point.
+     *
+     * @param other The other point
+     * @return this PointI2 for chaining.
+     */
+    @Override
+    public PointI2 add(GridPoint2 other) {
+        super.add(other);
+        return this;
+    }
+
+    /**
+     * Adds another x,y,z point to this point.
+     *
+     * @param x The x-coordinate of the other point
+     * @param y The y-coordinate of the other point
+     * @return this PointI2 for chaining.
+     */
+    @Override
+    public PointI2 add(int x, int y) {
+        super.add(x, y);
+        return this;
+    }
+
+    /**
+     * Subtracts another point from this point.
+     *
+     * @param other The other point
+     * @return this PointI2 for chaining.
+     */
+    @Override
+    public PointI2 sub(GridPoint2 other) {
+        super.sub(other);
+        return this;
+    }
+
+    /**
+     * Subtracts another x,y,z point from this point.
+     *
+     * @param x The x-coordinate of the other point
+     * @param y The y-coordinate of the other point
+     * @return this PointI2 for chaining.
+     */
+    @Override
+    public PointI2 sub(int x, int y) {
+        super.sub(x, y);
+        return this;
+    }
+
     @Override
     public int hashCode() {
         return (int)(x * 0xC13FA9A902A6328FL + y * 0x91E10DA5C79E7B1DL >>> 31);
@@ -167,5 +242,25 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
     public void read(Json json, JsonValue jsonData) {
         this.x = jsonData.getInt("x");
         this.y = jsonData.getInt("y");
+    }
+
+    /** Converts this {@code PointI2} to a string in the format {@code (x,y,z)}.
+     * @return a string representation of this object. */
+    @Override
+    public String toString () {
+        return "(" + x + "," + y + ")";
+    }
+
+    /** Sets this {@code PointI2} to the value represented by the specified string according to the format of {@link #toString()}.
+     * @param v the string.
+     * @return this vector for chaining */
+    public PointI2 fromString (String v) {
+        int s0 = v.indexOf(',', 1);
+        if (s0 != -1 && v.charAt(0) == '(' && v.charAt(v.length() - 1) == ')') {
+            int x = Integer.parseInt(v.substring(1, s0));
+            int y = Integer.parseInt(v.substring(s0 + 1, v.length() - 1));
+            return this.set(x, y);
+        }
+        throw new IllegalArgumentException("Not a valid format for a PointI2: " + v);
     }
 }
