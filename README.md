@@ -47,6 +47,20 @@ only 170, so you would expect ObjectDeque to slow things down a bit with added c
 some things down, but none of them are done especially often. Plus, other code is a little faster, so it all
 essentially evens out.
 
+A small change in 0.1.1 makes the Graph types (all of them) `Externalizable`, which enables
+[Fury](https://fury.apache.org) to serialize them without needing any extra work in your code. Only the Graph
+types actually needed this; everything else exposed to users can be handled by Fury already. Fury is in
+"incubating" status in the Apache project, but it's already faster than Kryo (both in their benchmarks and with
+a more modest gain in my benchmarks), and is substantially easier to use, for me. The other reason you might want
+to prefer Fury over Kryo for a binary serializer is that...
+
+There appears to be some kind of bug or other issue in Kryo 5.x that makes one class from this library shred
+serialized Kryo files while it's being written. Writing `PointI3` values to the end of a Kryo `Output` somehow
+changes the bytes at the beginning of the `Output`, making them invalid. Any classes that use `PointI3` seem to
+always have this happen, and classes that don't use `PointI3` won't notice it. The one consolation prize here
+is that `PointI3` is still `Json.Serializable`, and with gand depending on libGDX, that point type can be
+written as JSON and then sent to Kryo. It's far from optimal, but it should work.
+
 # Find It
 
 `implementation "com.github.tommyettinger:gand:0.1.0"`

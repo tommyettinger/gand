@@ -20,14 +20,9 @@ package com.github.tommyettinger.gand.fury;
 import com.badlogic.gdx.math.Vector2;
 import com.github.tommyettinger.crux.Point2;
 import com.github.tommyettinger.crux.Point3;
-import com.github.tommyettinger.gand.DirectedGraph;
-import com.github.tommyettinger.gand.Float2DirectedGraph;
-import com.github.tommyettinger.gand.Graph;
-import com.github.tommyettinger.gand.Int2DirectedGraph;
-import com.github.tommyettinger.gand.Int3DirectedGraph;
-import com.github.tommyettinger.gand.Path;
-import com.github.tommyettinger.gand.UndirectedGraph;
+import com.github.tommyettinger.gand.*;
 import com.github.tommyettinger.gand.points.PointF2;
+import com.github.tommyettinger.gand.points.PointF3;
 import com.github.tommyettinger.gand.points.PointI2;
 import com.github.tommyettinger.gand.points.PointI3;
 import io.fury.Fury;
@@ -40,6 +35,12 @@ import java.util.stream.Collectors;
 
 import static com.github.tommyettinger.gand.points.PointMaker.pt;
 
+/**
+ * Testing for serialization and deserialization with <a href="https://fury.apache.org">Fury</a>.
+ * Because Graph implements Externalizable, all of its concrete subclasses can be correctly written by Fury without
+ * needing to register a Serializer for each type of Graph. Other classes can already be written without any issues,
+ * such as {@link Path} and all point types.
+ */
 public class FuryTest {
     public static Graph<Vector2> makeGridGraph(Graph<Vector2> graph, int sideLength) {
 
@@ -178,14 +179,14 @@ public class FuryTest {
 
 
     @Test
-    public void testDirectedGraphAgain() {
+    public void testDirectedGraph3D() {
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(DirectedGraph.class);
         fury.register(PointI3.class);
 
         int n = 5;
-        DirectedGraph<PointI3> data = new DirectedGraph<>();
-        makeGridGraph3D(data, n, new PointI3());
+        Graph<PointI3> data = makeGridGraph3D(new DirectedGraph<>(), n, new PointI3());
+
         System.out.println("Initial graph with length " + data.getVertices().size() + ", edge count " + data.getEdgeCount() + ": ");
         byte[] bytes = fury.serializeJavaObject(data);
         System.out.println("DirectedGraph byte length: " + bytes.length);
@@ -208,8 +209,7 @@ public class FuryTest {
         fury.register(PointI2.class);
 
         int n = 5;
-        Int2DirectedGraph data = new Int2DirectedGraph();
-        makeGridGraph2D(data, n, new PointI2());
+        Graph<PointI2> data = makeGridGraph2D(new Int2DirectedGraph(), n, new PointI2());
         System.out.println("Initial graph with length " + data.getVertices().size() + ": ");
         System.out.println(data.getVertices());
         System.out.println(data);
@@ -226,7 +226,32 @@ public class FuryTest {
         Assert.assertEquals(data.getEdges().stream().map(Object::toString).collect(Collectors.toList()),
                 data2.getEdges().stream().map(Object::toString).collect(Collectors.toList()));
         Assert.assertEquals(data, data2);
+    }
 
+    @Test
+    public void testInt2UndirectedGraph() {
+        Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
+        fury.register(Int2UndirectedGraph.class);
+        fury.register(PointI2.class);
+
+        int n = 5;
+        Graph<PointI2> data = makeGridGraph2D(new Int2UndirectedGraph(), n, new PointI2());
+        System.out.println("Initial graph with length " + data.getVertices().size() + ": ");
+        System.out.println(data.getVertices());
+        System.out.println(data);
+        byte[] bytes = fury.serializeJavaObject(data);
+        System.out.println("Int2UndirectedGraph byte length: " + bytes.length);
+
+        Int2UndirectedGraph data2 = fury.deserializeJavaObject(bytes, Int2UndirectedGraph.class);
+        System.out.println("Read back in with length " + data2.getVertices().size() + ": ");
+        System.out.println(data2.getVertices());
+        System.out.println(data2);
+        Assert.assertEquals(data.numberOfComponents(), data2.numberOfComponents());
+        Assert.assertEquals(data.getEdgeCount(), data2.getEdgeCount());
+        Assert.assertEquals(new ArrayList<>(data.getVertices()), new ArrayList<>(data2.getVertices()));
+        Assert.assertEquals(data.getEdges().stream().map(Object::toString).collect(Collectors.toList()),
+                data2.getEdges().stream().map(Object::toString).collect(Collectors.toList()));
+        Assert.assertEquals(data, data2);
     }
 
     @Test
@@ -248,7 +273,27 @@ public class FuryTest {
         Assert.assertEquals(data.getEdges().stream().map(Object::toString).collect(Collectors.toList()),
                 data2.getEdges().stream().map(Object::toString).collect(Collectors.toList()));
         Assert.assertEquals(data, data2);
+    }
 
+    @Test
+    public void testFloat2UndirectedGraph() {
+        Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
+        fury.register(Float2UndirectedGraph.class);
+        fury.register(PointF2.class);
+
+        int n = 5;
+        Graph<PointF2> data = makeGridGraph2D(new Float2UndirectedGraph(), n, new PointF2());
+
+        byte[] bytes = fury.serializeJavaObject(data);
+        System.out.println("Float2UndirectedGraph byte length: " + bytes.length);
+
+        Float2UndirectedGraph data2 = fury.deserializeJavaObject(bytes, Float2UndirectedGraph.class);
+        Assert.assertEquals(data.numberOfComponents(), data2.numberOfComponents());
+        Assert.assertEquals(data.getEdgeCount(), data2.getEdgeCount());
+        Assert.assertEquals(new ArrayList<>(data.getVertices()), new ArrayList<>(data2.getVertices()));
+        Assert.assertEquals(data.getEdges().stream().map(Object::toString).collect(Collectors.toList()),
+                data2.getEdges().stream().map(Object::toString).collect(Collectors.toList()));
+        Assert.assertEquals(data, data2);
     }
 
     @Test
@@ -258,8 +303,8 @@ public class FuryTest {
         fury.register(PointI3.class);
 
         int n = 5;
-        Int3DirectedGraph data = new Int3DirectedGraph();
-        makeGridGraph3D(data, n, new PointI3());
+        Graph<PointI3> data = makeGridGraph3D(new Int3DirectedGraph(), n, new PointI3());
+
         System.out.println("Initial graph with length " + data.getVertices().size() + ", edge count " + data.getEdgeCount() + ": ");
         System.out.println(data.getVertices());
         System.out.println(data);
@@ -267,6 +312,87 @@ public class FuryTest {
         System.out.println("Int3DirectedGraph byte length: " + bytes.length);
 
         Int3DirectedGraph data2 = fury.deserializeJavaObject(bytes, Int3DirectedGraph.class);
+        System.out.println("Read back in with length " + data2.getVertices().size() + ", edge count " + data2.getEdgeCount() + ": ");
+        System.out.println(data2.getVertices());
+        System.out.println(data2);
+        Assert.assertEquals(data.numberOfComponents(), data2.numberOfComponents());
+        Assert.assertEquals(data.getEdgeCount(), data2.getEdgeCount());
+        Assert.assertEquals(new ArrayList<>(data.getVertices()), new ArrayList<>(data2.getVertices()));
+        Assert.assertEquals(data.getEdges().stream().map(Object::toString).collect(Collectors.toList()),
+                data2.getEdges().stream().map(Object::toString).collect(Collectors.toList()));
+        Assert.assertEquals(data, data2);
+    }
+
+    @Test
+    public void testInt3UndirectedGraph() {
+        Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
+        fury.register(Int3UndirectedGraph.class);
+        fury.register(PointI3.class);
+
+        int n = 5;
+        Graph<PointI3> data = makeGridGraph3D(new Int3UndirectedGraph(), n, new PointI3());
+
+        System.out.println("Initial graph with length " + data.getVertices().size() + ", edge count " + data.getEdgeCount() + ": ");
+        System.out.println(data.getVertices());
+        System.out.println(data);
+        byte[] bytes = fury.serializeJavaObject(data);
+        System.out.println("Int3UndirectedGraph byte length: " + bytes.length);
+
+        Int3UndirectedGraph data2 = fury.deserializeJavaObject(bytes, Int3UndirectedGraph.class);
+        System.out.println("Read back in with length " + data2.getVertices().size() + ", edge count " + data2.getEdgeCount() + ": ");
+        System.out.println(data2.getVertices());
+        System.out.println(data2);
+        Assert.assertEquals(data.numberOfComponents(), data2.numberOfComponents());
+        Assert.assertEquals(data.getEdgeCount(), data2.getEdgeCount());
+        Assert.assertEquals(new ArrayList<>(data.getVertices()), new ArrayList<>(data2.getVertices()));
+        Assert.assertEquals(data.getEdges().stream().map(Object::toString).collect(Collectors.toList()),
+                data2.getEdges().stream().map(Object::toString).collect(Collectors.toList()));
+        Assert.assertEquals(data, data2);
+    }
+    
+    @Test
+    public void testFloat3DirectedGraph() {
+        Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
+        fury.register(Float3DirectedGraph.class);
+        fury.register(PointF3.class);
+
+        int n = 5;
+        Graph<PointF3> data = makeGridGraph3D(new Float3DirectedGraph(), n, new PointF3());
+
+        System.out.println("Initial graph with length " + data.getVertices().size() + ", edge count " + data.getEdgeCount() + ": ");
+        System.out.println(data.getVertices());
+        System.out.println(data);
+        byte[] bytes = fury.serializeJavaObject(data);
+        System.out.println("Float3DirectedGraph byte length: " + bytes.length);
+
+        Float3DirectedGraph data2 = fury.deserializeJavaObject(bytes, Float3DirectedGraph.class);
+        System.out.println("Read back in with length " + data2.getVertices().size() + ", edge count " + data2.getEdgeCount() + ": ");
+        System.out.println(data2.getVertices());
+        System.out.println(data2);
+        Assert.assertEquals(data.numberOfComponents(), data2.numberOfComponents());
+        Assert.assertEquals(data.getEdgeCount(), data2.getEdgeCount());
+        Assert.assertEquals(new ArrayList<>(data.getVertices()), new ArrayList<>(data2.getVertices()));
+        Assert.assertEquals(data.getEdges().stream().map(Object::toString).collect(Collectors.toList()),
+                data2.getEdges().stream().map(Object::toString).collect(Collectors.toList()));
+        Assert.assertEquals(data, data2);
+    }
+
+    @Test
+    public void testFloat3UndirectedGraph() {
+        Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
+        fury.register(Float3UndirectedGraph.class);
+        fury.register(PointF3.class);
+
+        int n = 5;
+        Graph<PointF3> data = makeGridGraph3D(new Float3UndirectedGraph(), n, new PointF3());
+
+        System.out.println("Initial graph with length " + data.getVertices().size() + ", edge count " + data.getEdgeCount() + ": ");
+        System.out.println(data.getVertices());
+        System.out.println(data);
+        byte[] bytes = fury.serializeJavaObject(data);
+        System.out.println("Float3UndirectedGraph byte length: " + bytes.length);
+
+        Float3UndirectedGraph data2 = fury.deserializeJavaObject(bytes, Float3UndirectedGraph.class);
         System.out.println("Read back in with length " + data2.getVertices().size() + ", edge count " + data2.getEdgeCount() + ": ");
         System.out.println(data2.getVertices());
         System.out.println(data2);
