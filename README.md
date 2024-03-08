@@ -5,7 +5,11 @@
 This library helps with pathfinding and other graph algorithms.
 It is very closely based upon [simple-graphs](https://github.com/earlygrey/simple-graphs), but
 changes some features to make serializing graphs easier, and integrates more closely into
-[libGDX](https://github.com/libgdx/libgdx), which this has as its only dependency.
+[libGDX](https://github.com/libgdx/libgdx), which this has as one of two dependencies. The
+other dependency is a tiny library of mostly interfaces, [crux](https://github.com/tommyettinger/crux).
+Crux generalizes the point types used by libGDX and other libraries so they can share an API in subclasses.
+You can optionally depend on [Fury](https://fury.apache.org) for binary serialization, or you can
+simply use the JSON serialization built into libGDX.
 
 # What's Different?
 
@@ -54,21 +58,21 @@ types actually needed this; everything else exposed to users can be handled by F
 a more modest gain in my benchmarks), and is substantially easier to use, for me. The other reason you might want
 to prefer Fury over Kryo for a binary serializer is that...
 
-There appears to be some kind of bug or other issue in Kryo 5.x that makes one class from this library shred
+There appears to be some kind of bug or other issue in Kryo 5.x that makes one class from this library wreck
 serialized Kryo files while it's being written. Writing `PointI3` values to the end of a Kryo `Output` somehow
 changes the bytes at the beginning of the `Output`, making them invalid. Any classes that use `PointI3` seem to
-always have this happen, and classes that don't use `PointI3` won't notice it. The one consolation prize here
-is that `PointI3` is still `Json.Serializable`, and with gand depending on libGDX, that point type can be
-written as JSON and then sent to Kryo. It's far from optimal, but it should work.
+always have this happen, and classes that don't use `PointI3` won't notice it. Even serializing a `PointI3` by
+writing a `String` with Kryo incurs this issue, so it's like the class name is what causes the problem. All in
+all, it is very strange, and Fury is not affected by this bug.
 
 # Find It
 
-`implementation "com.github.tommyettinger:gand:0.1.0"`
+`implementation "com.github.tommyettinger:gand:0.1.1"`
 
 If you use GWT, then your GWT module needs to depend on:
 
 ```
-implementation "com.github.tommyettinger:gand:0.1.0:sources"
+implementation "com.github.tommyettinger:gand:0.1.1:sources"
 implementation "com.github.tommyettinger:crux:0.0.1:sources"
 ```
 
