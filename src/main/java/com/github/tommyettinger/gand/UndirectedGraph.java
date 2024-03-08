@@ -33,7 +33,7 @@ import java.util.Set;
 
 public class UndirectedGraph<V> extends Graph<V> implements Json.Serializable {
 
-    UndirectedGraphAlgorithms<V> algorithms;
+    protected transient final UndirectedGraphAlgorithms<V> algorithms;
 
     //================================================================================
     // Constructors

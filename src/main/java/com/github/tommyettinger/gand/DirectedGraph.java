@@ -34,7 +34,7 @@ import java.util.Set;
 
 public class DirectedGraph<V> extends Graph<V> implements Json.Serializable {
 
-    final DirectedGraphAlgorithms<V> algorithms;
+    protected transient final DirectedGraphAlgorithms<V> algorithms;
 
     //================================================================================
     // Constructors

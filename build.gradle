@@ -81,6 +81,7 @@ dependencies {
 // from `api` to `testImplementation` .
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
     api "com.github.tommyettinger:crux:$cruxVersion"
+    testImplementation "org.furyio:fury-core:$furyVersion"
     testImplementation "com.github.tommyettinger:cringe:$cringeVersion"
     testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
     testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"

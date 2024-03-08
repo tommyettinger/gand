@@ -32,8 +32,8 @@ import com.github.tommyettinger.gand.utils.SearchProcessor;
 
 public abstract class Algorithms<V> {
 
-    protected final Graph<V> graph;
-    private final int[] runID = {-1};
+    protected final transient Graph<V> graph;
+    private final transient int[] runID = {-1};
 
     Algorithms(Graph<V> graph) {
         this.graph = graph;

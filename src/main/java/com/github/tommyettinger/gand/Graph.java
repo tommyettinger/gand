@@ -46,9 +46,9 @@ public abstract class Graph<V> {
      */
     protected final ObjectOrderedSet<Connection<V>> edgeSet;
 
-    protected final Internals<V> internals = new Internals<>(this);
+    protected transient final Internals<V> internals = new Internals<>(this);
 
-    private float defaultEdgeWeight = 1;
+    protected float defaultEdgeWeight = 1;
 
 
     //================================================================================

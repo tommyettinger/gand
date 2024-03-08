@@ -30,7 +30,7 @@ import java.util.Collection;
 
 public final class Internals<V> {
 
-    final Graph<V> graph;
+    transient final Graph<V> graph;
 
     Internals(Graph<V> graph) {
         this.graph = graph;
