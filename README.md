@@ -11,6 +11,8 @@ Crux generalizes the point types used by libGDX and other libraries so they can 
 You can optionally depend on [Fury](https://fury.apache.org) for binary serialization, or you can
 simply use the JSON serialization built into libGDX.
 
+**[JavaDocs are here.](https://tommyettinger.github.io/gand/apidocs/)**
+
 # What's Different?
 
 The main change here is actual a feature elimination rather than an addition. In simple-graphs, each edge between
@@ -64,6 +66,10 @@ changes the bytes at the beginning of the `Output`, making them invalid. Any cla
 always have this happen, and classes that don't use `PointI3` won't notice it. Even serializing a `PointI3` by
 writing a `String` with Kryo incurs this issue, so it's like the class name is what causes the problem. All in
 all, it is very strange, and Fury is not affected by this bug.
+
+tl;dr [Fury](https://fury.apache.org) is a great library and should be considered if you want binary serialization.
+
+Kryo is still good, it just seems to have a rare (but serious) bug with this library...
 
 # Find It
 
