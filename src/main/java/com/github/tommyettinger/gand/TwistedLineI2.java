@@ -27,46 +27,67 @@ import java.util.Random;
  * This generates orthogonally-connected paths of {@link PointI2} that meander through an area;
  * this won't ever generate paths that cross themselves.
  * <br>
- * This randomly generates a fully-connected graph for a given rectangular area, then solves it with
+ * This randomly generates a graph with only some valid edges actually connected, then solves it with
  * {@link com.github.tommyettinger.gand.algorithms.DirectedGraphAlgorithms#findShortestPath(Object, Object)}.
+ * The "twisted-ness" of the path can be decreased by setting {@code relaxation} to a value greater than 0.
  */
 public class TwistedLineI2 {
    
-    public Random rng;
+    public Random random;
    
-    public final Int2UndirectedGraph graph;
+    public Int2UndirectedGraph graph;
    
-    public final Path<PointI2> lastPath;
+    public transient final Path<PointI2> lastPath;
 
-    private final PointI2[] dirs = new PointI2[]{
+    private transient final PointI2[] dirs = new PointI2[]{
             new PointI2(1, 0), new PointI2(0, 1), new PointI2(-1, 0), new PointI2(0, -1)
     };
 
-    private final OrderedSet<PointI2> deck = new OrderedSet<>();
+    private transient final OrderedSet<PointI2> deck = new OrderedSet<>();
     /**
-     * You probably don't want this constructor; use {@link #TwistedLineI2(Random, PointI2[])} instead.
+     * You probably don't want this constructor; use {@link #TwistedLineI2(Random, PointI2[], float)} instead.
      */
     public TwistedLineI2() {
-        this(null, new PointI2[]{new PointI2(0, 0), new PointI2(1, 0)});
+        this(null, new PointI2[]{new PointI2(0, 0), new PointI2(1, 0)}, 0f);
     }
 
-    public TwistedLineI2(Random rng, PointI2[] traversable) {
+    /**
+     * Builds a TwistedLineI2 and calls {@link #reinitialize(PointI2[], float)} using the given traversable points.
+     * You can get a line between two points using {@link #line(PointI2, PointI2)} after this.
+     * @param random any Random or subclass; if null, this will create a new {@link RandomXS128}
+     * @param traversable an array of points that this line is permitted to travel through
+     */
+    public TwistedLineI2(Random random, PointI2[] traversable) {
+        this(random, traversable, 0f);
+    }
+
+    /**
+     * Builds a TwistedLineI2 and calls {@link #reinitialize(PointI2[], float)} using the given traversable points.
+     * You can get a line between two points using {@link #line(PointI2, PointI2)} after this. How "twisty" the line
+     * will be can be configured by changing {@code relaxation}.
+     * @param random any Random or subclass; if null, this will create a new {@link RandomXS128}
+     * @param traversable an array of points that this line is permitted to travel through
+     * @param relaxation between 0.0 and 1.0, with lower values being very "twisty" and higher values being closer to straight lines
+     */
+    public TwistedLineI2(Random random, PointI2[] traversable, float relaxation) {
         graph = new Int2UndirectedGraph();
-        this.rng = rng == null ? new RandomXS128() : rng;
+        this.random = random == null ? new RandomXS128() : random;
         lastPath = new Path<>();
-        reinitialize(traversable);
+        reinitialize(traversable, relaxation);
     }
 
     /**
      * This sets up a random maze as a {@link Int2UndirectedGraph} so a path can be found, using the given array of PointI2
      * to represent which cells on a 2D grid can actually be traversed (and so can be used in a random path).
      * You can call this after construction to change the paths this can find.
+     * @param traversable an array of PointI2 points that are valid vertices this can travel through
+     * @param relaxation between 0.0 and 1.0, with lower values being very "twisty" and higher values being closer to straight lines
      */
-    public void reinitialize(PointI2[] traversable) {
+    public void reinitialize(PointI2[] traversable, float relaxation) {
         graph.removeAllVertices();
         graph.addVertices(traversable);
 
-        PointI2 start = traversable[rng.nextInt(traversable.length)];
+        PointI2 start = traversable[random.nextInt(traversable.length)];
 
         deck.clear();
         deck.add(start);
@@ -84,7 +105,8 @@ public class TwistedLineI2 {
                     Collection<Edge<PointI2>> edges = graph.getEdges(v);
                     if (edges != null && edges.isEmpty() && deck.add(v)) {
                         graph.addEdge(p, v);
-                        continue OUTER;
+                        if(random.nextFloat() >= relaxation)
+                            continue OUTER;
                     }
                 }
             }
@@ -96,8 +118,9 @@ public class TwistedLineI2 {
     /**
      * This sets up a random maze as an {@link Int2UndirectedGraph} so a path can be
      * found. You can call this after construction to change the paths this can find.
+     * @param relaxation between 0.0 and 1.0, with lower values being very "twisty" and higher values being closer to straight lines
      */
-    public void randomize() {
+    public void randomize(float relaxation) {
         if(graph.getVertices().isEmpty()) return;
         graph.removeAllEdges();
 
@@ -117,7 +140,8 @@ public class TwistedLineI2 {
                     Collection<Edge<PointI2>> edges = graph.getEdges(v);
                     if (edges != null && edges.isEmpty() && deck.add(v)) {
                         graph.addEdge(p, v);
-                        continue OUTER;
+                        if(random.nextFloat() >= relaxation)
+                            continue OUTER;
                     }
                 }
             }
@@ -133,12 +157,12 @@ public class TwistedLineI2 {
         return lastPath;
     }
 
-    public Random getRng() {
-        return rng;
+    public Random getRandom() {
+        return random;
     }
 
-    public void setRng(Random rng) {
-        this.rng = rng == null ? new RandomXS128() : rng;
+    public void setRandom(Random random) {
+        this.random = random == null ? new RandomXS128() : random;
     }
 
     /**
@@ -156,7 +180,7 @@ public class TwistedLineI2 {
         int offset = 0;
         int length = items.length;
         for (int i = offset + length - 1; i > offset; i--) {
-            int ii = offset + rng.nextInt(i + 1 - offset);
+            int ii = offset + random.nextInt(i + 1 - offset);
             T temp = items[i];
             items[i] = items[ii];
             items[ii] = temp;

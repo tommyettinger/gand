@@ -51,12 +51,13 @@ public class ShowTest {
         }
         System.out.println("\nTwistedLineI2:");
         {
-            RandomAce320 random = new RandomAce320(1234567890L);
+            RandomAce320 random = new RandomAce320(123456789L);
             Int2UndirectedGraph graph = new Int2UndirectedGraph(partial, '.', 1f);
             graph.connectAdjacent(null, false);
             PointI2[] arr = graph.largestComponent().getVertices().toArray(new PointI2[0]);
-            TwistedLineI2 twist = new TwistedLineI2(random, arr);
-            Path<PointI2> path = twist.line(random.randomElement(arr), random.randomElement(arr));
+            PointI2 start = random.randomElement(arr), end = random.randomElement(arr);
+            TwistedLineI2 twist = new TwistedLineI2(random, arr, 0.4f);
+            Path<PointI2> path = twist.line(start, end);
             char[][] grid = new char[20][20];
             for (int x = 0; x < 20; x++) {
                 System.arraycopy(TestUtils.DUNGEON[x + 10], 2, grid[x], 0, 20);
