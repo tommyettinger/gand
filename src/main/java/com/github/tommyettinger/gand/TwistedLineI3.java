@@ -19,12 +19,12 @@ package com.github.tommyettinger.gand;
 import com.badlogic.gdx.math.RandomXS128;
 import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
 import com.github.tommyettinger.gand.ds.ObjectSet;
-import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gand.points.PointI3;
 
 import java.util.Random;
 
 /**
- * This generates orthogonally-connected paths of {@link PointI2} that meander through an area;
+ * This generates orthogonally-connected paths of {@link PointI3} that meander through an area;
  * this won't ever generate paths that cross themselves.
  * <br>
  * This randomly generates a graph with only some valid edges actually connected, then solves it with
@@ -33,77 +33,78 @@ import java.util.Random;
  * The relaxation only needs to be increased a little above 0 to start having an effect; most values greater than 0.5
  * will look the same as 1.0 (mostly optimal paths, and not very "twisty").
  */
-public class TwistedLineI2 {
+public class TwistedLineI3 {
    
     public Random random;
    
-    public Int2UndirectedGraph graph;
+    public Int3UndirectedGraph graph;
    
-    public transient final Path<PointI2> lastPath;
+    public transient final Path<PointI3> lastPath;
 
-    private transient final PointI2[] dirs = new PointI2[]{
-            new PointI2(1, 0), new PointI2(0, 1), new PointI2(-1, 0), new PointI2(0, -1)
+    private transient final PointI3[] dirs = new PointI3[]{
+            new PointI3(1, 0, 0), new PointI3(0, 1, 0), new PointI3(0, 0, 1),
+            new PointI3(-1, 0, 0), new PointI3(0, -1, 0), new PointI3(0, 0, -1)
     };
 
-    private transient final ObjectOrderedSet<PointI2> frontier = new ObjectOrderedSet<>();
-    private transient final ObjectSet<PointI2> done = new ObjectSet<>();
+    private transient final ObjectOrderedSet<PointI3> frontier = new ObjectOrderedSet<>();
+    private transient final ObjectSet<PointI3> done = new ObjectSet<>();
     /**
-     * You probably don't want this constructor; use {@link #TwistedLineI2(Random, PointI2[], float)} instead.
+     * You probably don't want this constructor; use {@link #TwistedLineI3(Random, PointI3[], float)} instead.
      */
-    public TwistedLineI2() {
-        this(null, new PointI2[]{new PointI2(0, 0), new PointI2(1, 0)}, 0f);
+    public TwistedLineI3() {
+        this(null, new PointI3[]{new PointI3(0, 0, 0), new PointI3(1, 0, 0)}, 0f);
     }
 
     /**
-     * Builds a TwistedLineI2 and calls {@link #reinitialize(PointI2[], float)} using the given traversable points.
-     * You can get a line between two points using {@link #line(PointI2, PointI2)} after this.
+     * Builds a TwistedLineI3 and calls {@link #reinitialize(PointI3[], float)} using the given traversable points.
+     * You can get a line between two points using {@link #line(PointI3, PointI3)} after this.
      * @param random any Random or subclass; if null, this will create a new {@link RandomXS128}
      * @param traversable an array of points that this line is permitted to travel through
      */
-    public TwistedLineI2(Random random, PointI2[] traversable) {
+    public TwistedLineI3(Random random, PointI3[] traversable) {
         this(random, traversable, 0f);
     }
 
     /**
-     * Builds a TwistedLineI2 and calls {@link #reinitialize(PointI2[], float)} using the given traversable points.
-     * You can get a line between two points using {@link #line(PointI2, PointI2)} after this. How "twisty" the line
+     * Builds a TwistedLineI3 and calls {@link #reinitialize(PointI3[], float)} using the given traversable points.
+     * You can get a line between two points using {@link #line(PointI3, PointI3)} after this. How "twisty" the line
      * will be can be configured by changing {@code relaxation}.
      * @param random any Random or subclass; if null, this will create a new {@link RandomXS128}
      * @param traversable an array of points that this line is permitted to travel through
      * @param relaxation between 0.0 and 1.0, with lower values being very "twisty" and higher values being closer to straight lines
      */
-    public TwistedLineI2(Random random, PointI2[] traversable, float relaxation) {
-        graph = new Int2UndirectedGraph();
+    public TwistedLineI3(Random random, PointI3[] traversable, float relaxation) {
+        graph = new Int3UndirectedGraph();
         this.random = random == null ? new RandomXS128() : random;
         lastPath = new Path<>();
         reinitialize(traversable, relaxation);
     }
 
     /**
-     * This sets up a random maze as a {@link Int2UndirectedGraph} so a path can be found, using the given array of PointI2
-     * to represent which cells on a 2D grid can actually be traversed (and so can be used in a random path).
+     * This sets up a random maze as a {@link Int3UndirectedGraph} so a path can be found, using the given array of PointI3
+     * to represent which cells on a 3D grid can actually be traversed (and so can be used in a random path).
      * You can call this after construction to change the paths this can find.
-     * @param traversable an array of PointI2 points that are valid vertices this can travel through
+     * @param traversable an array of PointI3 points that are valid vertices this can travel through
      * @param relaxation between 0.0 and 1.0, with lower values being very "twisty" and higher values being closer to straight lines
      */
-    public void reinitialize(PointI2[] traversable, float relaxation) {
+    public void reinitialize(PointI3[] traversable, float relaxation) {
         graph.removeAllVertices();
         graph.addVertices(traversable);
 
-        PointI2 start = traversable[random.nextInt(traversable.length)];
+        PointI3 start = traversable[random.nextInt(traversable.length)];
 
         frontier.clear();
         done.clear();
         frontier.add(start);
 
-        PointI2 c = new PointI2(), v;
+        PointI3 c = new PointI3(), v;
         OUTER:
         while (!frontier.isEmpty()) {
-            PointI2 p = frontier.getAt(frontier.size() - 1);
+            PointI3 p = frontier.getAt(frontier.size() - 1);
             if(random.nextFloat() >= relaxation) {
                 shuffle(dirs);
                 for (int j = 0; j < dirs.length; j++) {
-                    PointI2 dir = dirs[j];
+                    PointI3 dir = dirs[j];
                     c.set(p).add(dir);
                     if ((v = graph.getStoredVertex(c)) != null) {
                         if (!done.contains(v) && frontier.add(v)) {
@@ -114,7 +115,7 @@ public class TwistedLineI2 {
                 }
             } else {
                 for (int j = 0; j < dirs.length; j++) {
-                    PointI2 dir = dirs[j];
+                    PointI3 dir = dirs[j];
                     c.set(p).add(dir);
                     if ((v = graph.getStoredVertex(c)) != null) {
                         if (!done.contains(v)) {
@@ -131,7 +132,7 @@ public class TwistedLineI2 {
 
 
     /**
-     * This sets up a random maze as an {@link Int2UndirectedGraph} so a path can be
+     * This sets up a random maze as an {@link Int3UndirectedGraph} so a path can be
      * found. You can call this after construction to change the paths this can find.
      * @param relaxation between 0.0 and 1.0, with lower values being very "twisty" and higher values being closer to straight lines
      */
@@ -143,14 +144,14 @@ public class TwistedLineI2 {
         done.clear();
         frontier.add(graph.getVertices().iterator().next());
 
-        PointI2 c = new PointI2(), v;
+        PointI3 c = new PointI3(), v;
         OUTER:
         while (!frontier.isEmpty()) {
-            PointI2 p = frontier.getAt(frontier.size() - 1);
+            PointI3 p = frontier.getAt(frontier.size() - 1);
             if(random.nextFloat() >= relaxation) {
                 shuffle(dirs);
                 for (int j = 0; j < dirs.length; j++) {
-                    PointI2 dir = dirs[j];
+                    PointI3 dir = dirs[j];
                     c.set(p).add(dir);
                     if ((v = graph.getStoredVertex(c)) != null) {
                         if (!done.contains(v) && frontier.add(v)) {
@@ -161,7 +162,7 @@ public class TwistedLineI2 {
                 }
             } else {
                 for (int j = 0; j < dirs.length; j++) {
-                    PointI2 dir = dirs[j];
+                    PointI3 dir = dirs[j];
                     c.set(p).add(dir);
                     if ((v = graph.getStoredVertex(c)) != null) {
                         if (!done.contains(v)) {
@@ -176,9 +177,9 @@ public class TwistedLineI2 {
         }
     }
 
-    public Path<PointI2> line(PointI2 start, PointI2 end) {
+    public Path<PointI3> line(PointI3 start, PointI3 end) {
         lastPath.clear();
-        lastPath.addAll(graph.algorithms.findShortestPath(start, end, PointI2::dst));
+        lastPath.addAll(graph.algorithms.findShortestPath(start, end, PointI3::dst));
         return lastPath;
     }
 
@@ -194,10 +195,9 @@ public class TwistedLineI2 {
      * Gets the last path this found, which may be empty. This returns the same reference to any path this produces,
      * and the path is cleared when a new twisted line is requested. You probably want to copy the contents of this path
      * into another list if you want to keep its contents.
-     * @return the most recent path of PointI2, as a Path (essentially an ObjectDeque), this found.
+     * @return the most recent path of PointI3, as a Path (essentially an ObjectDeque), this found.
      */
-   
-    public Path<PointI2> getLastPath() {
+    public Path<PointI3> getLastPath() {
         return lastPath;
     }
 
