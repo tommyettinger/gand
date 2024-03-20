@@ -56,7 +56,7 @@ public class ShowTest {
             graph.connectAdjacent(null, false);
             PointI2[] arr = graph.largestComponent().getVertices().toArray(new PointI2[0]);
             PointI2 start = random.randomElement(arr), end = random.randomElement(arr);
-            TwistedLineI2 twist = new TwistedLineI2(random, arr, 0.4f);
+            TwistedLineI2 twist = new TwistedLineI2(random, arr, 0.16f);
             Path<PointI2> path = twist.line(start, end);
             char[][] grid = new char[20][20];
             for (int x = 0; x < 20; x++) {

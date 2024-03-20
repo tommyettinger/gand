@@ -17,10 +17,10 @@
 package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.math.RandomXS128;
+import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.OrderedSet;
 import com.github.tommyettinger.gand.points.PointI2;
 
-import java.util.Collection;
 import java.util.Random;
 
 /**
@@ -30,6 +30,8 @@ import java.util.Random;
  * This randomly generates a graph with only some valid edges actually connected, then solves it with
  * {@link com.github.tommyettinger.gand.algorithms.DirectedGraphAlgorithms#findShortestPath(Object, Object)}.
  * The "twisted-ness" of the path can be decreased by setting {@code relaxation} to a value greater than 0.
+ * The relaxation only needs to be increased a little above 0 to start having an effect; most values greater than 0.5
+ * will look the same as 1.0 (mostly optimal paths, and not very "twisty").
  */
 public class TwistedLineI2 {
    
@@ -43,7 +45,8 @@ public class TwistedLineI2 {
             new PointI2(1, 0), new PointI2(0, 1), new PointI2(-1, 0), new PointI2(0, -1)
     };
 
-    private transient final OrderedSet<PointI2> deck = new OrderedSet<>();
+    private transient final OrderedSet<PointI2> frontier = new OrderedSet<>();
+    private transient final ObjectSet<PointI2> done = new ObjectSet<>();
     /**
      * You probably don't want this constructor; use {@link #TwistedLineI2(Random, PointI2[], float)} instead.
      */
@@ -89,28 +92,40 @@ public class TwistedLineI2 {
 
         PointI2 start = traversable[random.nextInt(traversable.length)];
 
-        deck.clear();
-        deck.add(start);
+        frontier.clear();
+        done.clear();
+        frontier.add(start);
 
         PointI2 c = new PointI2(), v;
         OUTER:
-        while (!deck.isEmpty()) {
-            PointI2 p = deck.orderedItems().peek();
-            shuffle(dirs);
-
-            for (int j = 0; j < dirs.length; j++) {
-                PointI2 dir = dirs[j];
-                c.set(p).add(dir);
-                if ((v = graph.getStoredVertex(c)) != null) {
-                    Collection<Edge<PointI2>> edges = graph.getEdges(v);
-                    if (edges != null && edges.isEmpty() && deck.add(v)) {
-                        graph.addEdge(p, v);
-                        if(random.nextFloat() >= relaxation)
+        while (!frontier.isEmpty()) {
+            PointI2 p = frontier.orderedItems().peek();
+            if(random.nextFloat() >= relaxation) {
+                shuffle(dirs);
+                for (int j = 0; j < dirs.length; j++) {
+                    PointI2 dir = dirs[j];
+                    c.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(c)) != null) {
+                        if (!done.contains(v) && frontier.add(v)) {
+                            graph.addEdge(p, v);
                             continue OUTER;
+                        }
+                    }
+                }
+            } else {
+                for (int j = 0; j < dirs.length; j++) {
+                    PointI2 dir = dirs[j];
+                    c.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(c)) != null) {
+                        if (!done.contains(v)) {
+                            frontier.add(v);
+                            graph.addEdge(p, v);
+                        }
                     }
                 }
             }
-            deck.remove(p);
+            done.add(p);
+            frontier.remove(p);
         }
     }
 
@@ -124,31 +139,41 @@ public class TwistedLineI2 {
         if(graph.getVertices().isEmpty()) return;
         graph.removeAllEdges();
 
-        deck.clear();
-        deck.add(graph.getVertices().iterator().next());
+        frontier.clear();
+        done.clear();
+        frontier.add(graph.getVertices().iterator().next());
 
         PointI2 c = new PointI2(), v;
         OUTER:
-        while (!deck.isEmpty()) {
-            PointI2 p = deck.orderedItems().peek();
-            shuffle(dirs);
-
-            for (int j = 0; j < dirs.length; j++) {
-                PointI2 dir = dirs[j];
-                c.set(p).add(dir);
-                if ((v = graph.getStoredVertex(c)) != null) {
-                    Collection<Edge<PointI2>> edges = graph.getEdges(v);
-                    if (edges != null && edges.isEmpty() && deck.add(v)) {
-                        graph.addEdge(p, v);
-                        if(random.nextFloat() >= relaxation)
+        while (!frontier.isEmpty()) {
+            PointI2 p = frontier.orderedItems().peek();
+            if(random.nextFloat() >= relaxation) {
+                shuffle(dirs);
+                for (int j = 0; j < dirs.length; j++) {
+                    PointI2 dir = dirs[j];
+                    c.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(c)) != null) {
+                        if (!done.contains(v) && frontier.add(v)) {
+                            graph.addEdge(p, v);
                             continue OUTER;
+                        }
+                    }
+                }
+            } else {
+                for (int j = 0; j < dirs.length; j++) {
+                    PointI2 dir = dirs[j];
+                    c.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(c)) != null) {
+                        if (!done.contains(v)) {
+                            frontier.add(v);
+                            graph.addEdge(p, v);
+                        }
                     }
                 }
             }
-
-            deck.remove(p);
+            done.add(p);
+            frontier.remove(p);
         }
-
     }
 
     public Path<PointI2> line(PointI2 start, PointI2 end) {
