@@ -38,6 +38,11 @@ public class TwistedLineI2 {
    
     public final Path<PointI2> lastPath;
 
+    private final PointI2[] dirs = new PointI2[]{
+            new PointI2(1, 0), new PointI2(0, 1), new PointI2(-1, 0), new PointI2(0, -1)
+    };
+
+    private final OrderedSet<PointI2> deck = new OrderedSet<>();
     /**
      * You probably don't want this constructor; use {@link #TwistedLineI2(Random, PointI2[])} instead.
      */
@@ -63,11 +68,10 @@ public class TwistedLineI2 {
 
         PointI2 start = traversable[rng.nextInt(traversable.length)];
 
-        OrderedSet<PointI2> deck = new OrderedSet<>();
+        deck.clear();
         deck.add(start);
 
-        PointI2[] dirs = new PointI2[]{new PointI2(1, 0), new PointI2(0, 1), new PointI2(-1, 0), new PointI2(0, -1)};
-        PointI2 c = new PointI2();
+        PointI2 c = new PointI2(), v;
         OUTER:
         while (!deck.isEmpty()) {
             PointI2 p = deck.orderedItems().peek();
@@ -76,10 +80,10 @@ public class TwistedLineI2 {
             for (int j = 0; j < dirs.length; j++) {
                 PointI2 dir = dirs[j];
                 c.set(p).add(dir);
-                if (graph.contains(c)) {
-                    Collection<Edge<PointI2>> edges = graph.getEdges(c);
-                    if (edges != null && edges.isEmpty() && deck.add(c)) {
-                        graph.addEdge(p, c);
+                if ((v = graph.getStoredVertex(c)) != null) {
+                    Collection<Edge<PointI2>> edges = graph.getEdges(v);
+                    if (edges != null && edges.isEmpty() && deck.add(v)) {
+                        graph.addEdge(p, v);
                         continue OUTER;
                     }
                 }
@@ -97,11 +101,10 @@ public class TwistedLineI2 {
         if(graph.getVertices().isEmpty()) return;
         graph.removeAllEdges();
 
-        OrderedSet<PointI2> deck = new OrderedSet<>();
+        deck.clear();
         deck.add(graph.getVertices().iterator().next());
 
-        PointI2[] dirs = new PointI2[]{new PointI2(1, 0), new PointI2(0, 1), new PointI2(-1, 0), new PointI2(0, -1)};
-        PointI2 c = new PointI2();
+        PointI2 c = new PointI2(), v;
         OUTER:
         while (!deck.isEmpty()) {
             PointI2 p = deck.orderedItems().peek();
@@ -110,10 +113,10 @@ public class TwistedLineI2 {
             for (int j = 0; j < dirs.length; j++) {
                 PointI2 dir = dirs[j];
                 c.set(p).add(dir);
-                if (graph.contains(c)) {
-                    Collection<Edge<PointI2>> edges = graph.getEdges(c);
-                    if (edges != null && edges.isEmpty() && deck.add(c)) {
-                        graph.addEdge(p, c);
+                if ((v = graph.getStoredVertex(c)) != null) {
+                    Collection<Edge<PointI2>> edges = graph.getEdges(v);
+                    if (edges != null && edges.isEmpty() && deck.add(v)) {
+                        graph.addEdge(p, v);
                         continue OUTER;
                     }
                 }

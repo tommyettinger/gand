@@ -24,11 +24,11 @@ SOFTWARE.
 package com.github.tommyettinger.gand;
 
 import com.github.tommyettinger.gand.algorithms.Algorithms;
+import com.github.tommyettinger.gand.ds.ObjectDeque;
 import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
 import com.github.tommyettinger.gand.utils.Errors;
 import com.github.tommyettinger.gand.utils.GwtIncompatible;
 import com.github.tommyettinger.gand.utils.ObjectPredicate;
-import com.github.tommyettinger.gand.ds.ObjectDeque;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -454,6 +454,20 @@ public abstract class Graph<V> implements Externalizable {
         return nodeMap.vertexSet;
     }
 
+    /**
+     * Given a V {@code vertex} that may be equivalent (but not necessarily identical by reference) to a vertex in this
+     * Graph, this gets and returns a vertex that is considered equivalent if one is present, or returns null otherwise.
+     * This can be helpful if you have a {@code V} that can be modified, which can be used to check the presence of
+     * vertices in the Graph but cannot be actually placed into the Graph (because vertices in a Graph cannot be
+     * modified).
+     * @param vertex a {@code V} that is used to check if an equivalent vertex is present in the Graph
+     * @return an equivalent vertex to {@code vertex}, if one was present, or null otherwise
+     */
+    public V getStoredVertex(V vertex) {
+        Node<V> node = getNode(vertex);
+        if(node == null) return null;
+        return node.getObject();
+    }
 
     /**
      * Check if the graph is directed, that is whether the edges form an ordered pair or a set.
