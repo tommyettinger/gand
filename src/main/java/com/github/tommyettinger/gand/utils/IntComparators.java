@@ -17,8 +17,6 @@
 
 package com.github.tommyettinger.gand.utils;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -276,7 +274,7 @@ public final class IntComparators {
 	 * @param items the int array to be sorted
 	 * @param c     a IntComparator to alter the sort order; if null, the natural order will be used
 	 */
-	public static void sort (int[] items, final @Nullable IntComparator c) {
+	public static void sort (int[] items, final IntComparator c) {
 		sort(items, 0, items.length, c);
 	}
 
@@ -298,7 +296,7 @@ public final class IntComparators {
 	 * @param to    the index of the last element (exclusive) to be sorted.
 	 * @param c     a IntComparator to alter the sort order; if null, the natural order will be used
 	 */
-	public static void sort (int[] items, final int from, final int to, final @Nullable IntComparator c) {
+	public static void sort (int[] items, final int from, final int to, final IntComparator c) {
 		if (to <= 0) {
 			return;
 		}

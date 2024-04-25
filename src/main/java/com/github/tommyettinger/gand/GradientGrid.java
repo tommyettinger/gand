@@ -16,11 +16,13 @@
 
 package com.github.tommyettinger.gand;
 
-import com.badlogic.gdx.utils.IntArray;
+import com.github.tommyettinger.crux.PointPair;
 import com.github.tommyettinger.gand.ds.IntDeque;
+import com.github.tommyettinger.gand.ds.IntList;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
 import com.github.tommyettinger.gand.ds.ObjectSet;
 import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gand.smoothing.Ortho2DRaycastCollisionDetector;
 import com.github.tommyettinger.gand.utils.Direction;
 import com.github.tommyettinger.gand.utils.FlowRandom;
 import com.github.tommyettinger.gand.utils.GridMetric;
@@ -48,7 +50,7 @@ import java.util.Random;
  * player's position is unchanged (and no obstacles are added/moved), you can get the path by calling
  * {@link #findPathPreScanned(PointI2)} and giving it the mouse position as a PointI2. If various parts of the path can
  * change instead of just one (such as other NPCs moving around), then you should set a goal or goals and call
- * {@link #findPath(int, Collection, Collection, PointI2, PointI2...)}. The parameters for this are used in various methods
+ * {@link #findPath(int, Collection, Collection, PointI2, Collection)}. The parameters for this are used in various methods
  * in this class with only slight differences: length is the length of path that can be moved "in one go," so 1 for most
  * roguelikes and more for most strategy games, impassable used for enemies and solid moving obstacles, onlyPassable can
  * be null in most roguelikes but in strategy games should contain ally positions that can be moved through as long as
@@ -135,7 +137,7 @@ public class GradientGrid {
     /**
      * Goals that pathfinding will seek out. Each item is an encoded point, as done by {@link #encode(int, int)}.
      */
-    protected IntArray goals = new IntArray(256);
+    protected IntList goals = new IntList(256);
     /**
      * Working data used during scanning, this tracks the perimeter of the scanned area so far. This is a member
      * variable and not a local one to avoid reallocating the data structure. Each item is an encoded point, as done by
@@ -159,11 +161,13 @@ public class GradientGrid {
 
     private int blockingRequirement = 2;
 
-    private float cachedLongerPaths = 1.2f;
-    private final ObjectSet<PointI2> cachedImpassable = new ObjectSet<PointI2>(32);
-    private PointI2[] cachedFearSources;
-    private float[][] cachedFleeMap;
-    private int cachedSize = 1;
+    private transient float cachedLongerPaths = 1.2f;
+    private transient final ObjectSet<PointI2> cachedImpassable = new ObjectSet<PointI2>(32);
+    private transient PointI2[] cachedFearSources;
+    private transient float[][] cachedFleeMap;
+
+    private transient final PointI2 workPt = new PointI2();
+    private transient final PointPair<PointI2> workRay = new PointPair<>(new PointI2(), new PointI2());
 
     /**
      * Construct a GradientGrid without a level to actually scan. If you use this constructor, you must call an
@@ -508,7 +512,7 @@ public class GradientGrid {
     public void clearGoals() {
         if (!initialized)
             return;
-        int sz = goals.size, t;
+        int sz = goals.size(), t;
         for (int i = 0; i < sz; i++) {
             resetCell(decodeX(t = goals.pop()), decodeY(t));
         }
@@ -981,7 +985,7 @@ public class GradientGrid {
     public void scan(final PointI2 start, final Iterable<PointI2> impassable, final int size) {
 
         if (!initialized) return;
-        float[][] gradientClone = ArrayTools.copy(gradientMap);
+        float[][] gradientClone = copy(gradientMap);
         if (impassable != null) {
             for (PointI2 pt : impassable) {
                 if (pt != null && isWithin(pt, width, height))
@@ -1160,7 +1164,7 @@ public class GradientGrid {
     public void partialScan(final int limit, final PointI2 start, final Iterable<PointI2> impassable, final int size) {
 
         if (!initialized || limit <= 0) return;
-        float[][] gradientClone = ArrayTools.copy(gradientMap);
+        float[][] gradientClone = copy(gradientMap);
         if (impassable != null) {
             for (PointI2 pt : impassable) {
                 if (pt != null && isWithin(pt, width, height))
@@ -1283,7 +1287,7 @@ public class GradientGrid {
      * scenarios), it will recalculate a move so that it does not pass into that cell. The keys in impassable should
      * be the positions of enemies and obstacles that cannot be moved  through, and will be ignored if there is a goal
      * overlapping one. This overload always scans the whole map; use
-     * {@link #findPath(int, int, Collection, Collection, PointI2, PointI2...)} to scan a smaller area for performance reasons.
+     * {@link #findPath(int, int, Collection, Collection, PointI2, Collection)} to scan a smaller area for performance reasons.
      * <br>
      * This caches its result in a member field, path, which can be fetched after finding a path and will change with
      * each call to a pathfinding method.
@@ -1296,7 +1300,7 @@ public class GradientGrid {
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
     public ObjectDeque<PointI2> findPath(int length, Collection<PointI2> impassable,
-                                       Collection<PointI2> onlyPassable, PointI2 start, PointI2... targets) {
+                                       Collection<PointI2> onlyPassable, PointI2 start, Collection<PointI2> targets) {
         return findPath(length, -1, impassable, onlyPassable, start, targets);
     }
 
@@ -1326,7 +1330,7 @@ public class GradientGrid {
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
     public ObjectDeque<PointI2> findPath(int length, int scanLimit, Collection<PointI2> impassable,
-                                       Collection<PointI2> onlyPassable, PointI2 start, PointI2... targets) {
+                                       Collection<PointI2> onlyPassable, PointI2 start, Collection<PointI2> targets) {
         return findPath(null, length, scanLimit, impassable, onlyPassable, start, targets);
     }
 
@@ -1359,7 +1363,7 @@ public class GradientGrid {
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
     public ObjectDeque<PointI2> findPath(ObjectDeque<PointI2> buffer, int length, int scanLimit, Collection<PointI2> impassable,
-                                       Collection<PointI2> onlyPassable, PointI2 start, PointI2... targets) {
+                                       Collection<PointI2> onlyPassable, PointI2 start, Collection<PointI2> targets) {
         path.clear();
         if (!initialized || length <= 0) {
             cutShort = true;
@@ -1392,9 +1396,9 @@ public class GradientGrid {
             scan(start, impassable2);
         else
             partialScan(start, scanLimit, impassable2);
-        PointI2 currentPos = start;
+        PointI2 currentPos = workPt.set(start);
         float paidLength = 0f;
-        rng.setState(start.hashCode(), targets.length);
+        rng.setState(start.hashCode(), targets.size());
         while (true) {
             if (frustration > 500) {
                 path.clear();
@@ -1417,10 +1421,10 @@ public class GradientGrid {
                             >= blockingRequirement)
                         continue;
                 }
-                PointI2 pt = PointI2.get(adjX, adjY);
-                if (gradientMap[adjX][adjY] < best && !impassable2.contains(pt)) {
-                    if (dirs[choice] == Direction.NONE || !path.contains(pt)) {
-                        best = gradientMap[pt.x][pt.y];
+                workPt.set(adjX, adjY);
+                if (gradientMap[adjX][adjY] < best && !impassable2.contains(workPt)) {
+                    if (dirs[choice] == Direction.NONE || !path.contains(workPt)) {
+                        best = gradientMap[adjX][adjY];
                         choice = d;
                     }
                 }
@@ -1436,7 +1440,7 @@ public class GradientGrid {
                     return buffer;
                 }
             }
-            currentPos = currentPos.translate(dirs[choice].deltaX, dirs[choice].deltaY);
+            currentPos = currentPos.add(dirs[choice].deltaX, dirs[choice].deltaY);
             path.add(currentPos);
             paidLength++;
             if (paidLength > length - 1f) {
@@ -1477,16 +1481,15 @@ public class GradientGrid {
      *
      * @param moveLength     the length of the path to calculate
      * @param preferredRange the distance this unit will try to keep from a target
-     * @param los            a BresenhamLine, OrthoLine, or other LineDrawer if the preferredRange should try to stay in line of sight, or null if LoS
-     *                       should be disregarded.
      * @param impassable     a Set of impassable PointI2 positions that may change (not constant like walls); can be null
      * @param onlyPassable   a Set of PointI2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start          the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param targets        a vararg or array of PointI2 that this will try to pathfind toward
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
-    public ObjectDeque<PointI2> findAttackPath(int moveLength, int preferredRange, LineDrawer los, Collection<PointI2> impassable,
-                                             Collection<PointI2> onlyPassable, PointI2 start, PointI2... targets) {
+    public ObjectDeque<PointI2> findAttackPath(int moveLength, int preferredRange, Collection<PointI2> impassable,
+                                             boolean los,
+                                             Collection<PointI2> onlyPassable, PointI2 start, Collection<PointI2> targets) {
         return findAttackPath(moveLength, preferredRange, preferredRange, los, impassable, onlyPassable, start, targets);
     }
 
@@ -1508,16 +1511,15 @@ public class GradientGrid {
      * @param moveLength        the length of the path to calculate
      * @param minPreferredRange the (inclusive) lower bound of the distance this unit will try to keep from a target
      * @param maxPreferredRange the (inclusive) upper bound of the distance this unit will try to keep from a target
-     * @param los               a BresenhamLine, OrthoLine, or other LineDrawer if the preferredRange should try to stay in line of sight, or null if LoS
-     *                          should be disregarded.
      * @param impassable        a Set of impassable PointI2 positions that may change (not constant like walls); can be null
      * @param onlyPassable      a Set of PointI2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start             the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param targets           a vararg or array of PointI2 that this will try to pathfind toward
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
-    public ObjectDeque<PointI2> findAttackPath(int moveLength, int minPreferredRange, int maxPreferredRange, LineDrawer los,
-                                             Collection<PointI2> impassable, Collection<PointI2> onlyPassable, PointI2 start, PointI2... targets) {
+    public ObjectDeque<PointI2> findAttackPath(int moveLength, int minPreferredRange, int maxPreferredRange, boolean los,
+                                               Collection<PointI2> impassable, Collection<PointI2> onlyPassable,
+                                               PointI2 start, Collection<PointI2> targets) {
         return findAttackPath(null, moveLength, minPreferredRange, maxPreferredRange, los, impassable, onlyPassable, start, targets);
     }
 
@@ -1546,16 +1548,17 @@ public class GradientGrid {
      * @param moveLength        the length of the path to calculate; almost always, the pathfinder will try to use this length in full to obtain the best range
      * @param minPreferredRange the (inclusive) lower bound of the distance this unit will try to keep from a target
      * @param maxPreferredRange the (inclusive) upper bound of the distance this unit will try to keep from a target
-     * @param los               a BresenhamLine, OrthoLine, or other LineDrawer if the preferredRange should try to stay in line of sight, or null if LoS
-     *                          should be disregarded.
+     * @param los               if true, this will only try to move toward cells with an unobstructed line-of-sight to the target
      * @param impassable        a Set of impassable PointI2 positions that may change (not constant like walls); can be null
      * @param onlyPassable      a Set of PointI2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start             the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param targets           a vararg or array of PointI2 that this will try to pathfind toward
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
-    public ObjectDeque<PointI2> findAttackPath(ObjectDeque<PointI2> buffer, int moveLength, int minPreferredRange, int maxPreferredRange, LineDrawer los,
-                                             Collection<PointI2> impassable, Collection<PointI2> onlyPassable, PointI2 start, PointI2... targets) {
+    public ObjectDeque<PointI2> findAttackPath(ObjectDeque<PointI2> buffer, int moveLength,
+                                               int minPreferredRange, int maxPreferredRange, boolean los,
+                                               Collection<PointI2> impassable, Collection<PointI2> onlyPassable,
+                                               PointI2 start, Collection<PointI2> targets) {
         if (!initialized || moveLength <= 0) {
             cutShort = true;
             if (buffer == null)
@@ -1567,13 +1570,6 @@ public class GradientGrid {
         if (minPreferredRange < 0) minPreferredRange = 0;
         if (maxPreferredRange < minPreferredRange) maxPreferredRange = minPreferredRange;
         float[][] resMap = new float[width][height];
-        if (los != null) {
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    resMap[x][y] = (physicalMap[x][y] == WALL) ? 1f : 0f;
-                }
-            }
-        }
         path.clear();
         if (impassable == null)
             impassable2.clear();
@@ -1617,9 +1613,10 @@ public class GradientGrid {
                 if (gradientMap[x][y] == WALL || gradientMap[x][y] == DARK)
                     continue;
                 if (gradientMap[x][y] >= minPreferredRange && gradientMap[x][y] <= maxPreferredRange) {
-
+                    workRay.a.set(x, y);
                     for (PointI2 goal : targets) {
-                        if (los == null || los.isReachable(x, y, goal.x, goal.y, resMap)) {
+                        if (!los || !Ortho2DRaycastCollisionDetector.collides(
+                                workRay.set(workRay.a, workRay.b.set(goal)), this::wallQuery)) {
                             setGoal(x, y);
                             gradientMap[x][y] = 0;
                             continue CELL;
@@ -1651,9 +1648,9 @@ public class GradientGrid {
             }
 
         }
-        PointI2 currentPos = start;
+        PointI2 currentPos = workPt.set(start);
         float paidLength = 0f;
-        rng.setState(start.hashCode(), targets.length);
+        rng.setState(start.hashCode(), targets.size());
         while (true) {
             if (frustration > 500) {
                 path.clear();
@@ -1676,10 +1673,10 @@ public class GradientGrid {
                             >= blockingRequirement)
                         continue;
                 }
-                PointI2 pt = PointI2.get(adjX, adjY);
-                if (gradientMap[pt.x][pt.y] < best && !impassable2.contains(pt)) {
-                    if (dirs[choice] == Direction.NONE || !path.contains(pt)) {
-                        best = gradientMap[pt.x][pt.y];
+                workPt.set(adjX, adjY);
+                if (gradientMap[adjX][adjY] < best && !impassable2.contains(workPt)) {
+                    if (dirs[choice] == Direction.NONE || !path.contains(workPt)) {
+                        best = gradientMap[adjX][adjY];
                         choice = d;
                     }
                 }
@@ -1695,8 +1692,8 @@ public class GradientGrid {
                     return buffer;
                 }
             }
-            currentPos = currentPos.translate(dirs[choice].deltaX, dirs[choice].deltaY);
-            path.add(PointI2.get(currentPos.x, currentPos.y));
+            currentPos.add(dirs[choice].deltaX, dirs[choice].deltaY);
+            path.add(currentPos.cpy());
             paidLength++;
             if (paidLength > moveLength - 1f) {
                 if (onlyPassable != null && onlyPassable.contains(currentPos)) {
@@ -1852,7 +1849,7 @@ public class GradientGrid {
         }
         if (onlyPassable != null && length == 1)
             impassable2.addAll(onlyPassable);
-        if (cachedSize == 1 && preferLongerPaths == cachedLongerPaths && impassable2.equals(cachedImpassable) &&
+        if (preferLongerPaths == cachedLongerPaths && impassable2.equals(cachedImpassable) &&
                 Arrays.equals(fearSources, cachedFearSources)) {
             gradientMap = cachedFleeMap;
         } else {
@@ -1861,7 +1858,6 @@ public class GradientGrid {
             cachedImpassable.addAll(impassable2);
             cachedFearSources = new PointI2[fearSources.length];
             System.arraycopy(fearSources, 0, cachedFearSources, 0, fearSources.length);
-            cachedSize = 1;
             resetMap();
             setGoals(fearSources);
             if (goals.isEmpty()) {
@@ -1898,7 +1894,7 @@ public class GradientGrid {
             } else
                 cachedFleeMap = partialScan(scanLimit, impassable2);
         }
-        PointI2 currentPos = start;
+        PointI2 currentPos = workPt.set(start);
         float paidLength = 0f;
         rng.setState(start.hashCode(), fearSources.length);
 
@@ -1924,10 +1920,10 @@ public class GradientGrid {
                             >= blockingRequirement)
                         continue;
                 }
-                PointI2 pt = PointI2.get(adjX, adjY);
-                if (gradientMap[pt.x][pt.y] < best && !impassable2.contains(pt)) {
-                    if (dirs[choice] == Direction.NONE || !path.contains(pt)) {
-                        best = gradientMap[pt.x][pt.y];
+                workPt.set(adjX, adjY);
+                if (gradientMap[adjX][adjY] < best && !impassable2.contains(workPt)) {
+                    if (dirs[choice] == Direction.NONE || !path.contains(workPt)) {
+                        best = gradientMap[adjX][adjY];
                         choice = d;
                     }
                 }
@@ -1942,7 +1938,7 @@ public class GradientGrid {
                     return buffer;
                 }
             }
-            currentPos = currentPos.translate(dirs[choice].deltaX, dirs[choice].deltaY);
+            currentPos.add(dirs[choice].deltaX, dirs[choice].deltaY);
             if (!path.isEmpty()) {
                 PointI2 last = path.peekLast();
                 if (gradientMap[last.x][last.y] <= gradientMap[currentPos.x][currentPos.y])
@@ -2039,10 +2035,10 @@ public class GradientGrid {
                             >= blockingRequirement)
                         continue;
                 }
-                PointI2 pt = PointI2.get(adjX, adjY);
-                if (gradientMap[pt.x][pt.y] < best) {
-                    if (dirs[choice] == Direction.NONE || !path.contains(pt)) {
-                        best = gradientMap[pt.x][pt.y];
+                workPt.set(adjX, adjY);
+                if (gradientMap[adjX][adjY] < best && !impassable2.contains(workPt)) {
+                    if (dirs[choice] == Direction.NONE || !path.contains(workPt)) {
+                        best = gradientMap[adjX][adjY];
                         choice = d;
                     }
                 }
@@ -2057,8 +2053,8 @@ public class GradientGrid {
                     return buffer;
                 }
             }
-            currentPos = currentPos.translate(dirs[choice].deltaX, dirs[choice].deltaY);
-            path.addFirst(currentPos);
+            currentPos.add(dirs[choice].deltaX, dirs[choice].deltaY);
+            path.addFirst(currentPos.cpy());
 
         } while (gradientMap[currentPos.x][currentPos.y] != 0);
         cutShort = false;
@@ -2069,40 +2065,6 @@ public class GradientGrid {
             return buffer;
         }
 
-    }
-
-    /**
-     * A simple limited flood-fill that returns a OrderedMap of PointI2 keys to the float values in the GradientGrid, only
-     * calculating out to a number of steps determined by limit. This can be useful if you need many flood-fills and
-     * don't need a large area for each, or if you want to have an effect spread to a certain number of cells away.
-     *
-     * @param radius the number of steps to take outward from each starting position.
-     * @param starts a vararg group of Points to step outward from; this often will only need to be one PointI2.
-     * @return An ObjectFloatOrderedMap, with PointI2 keys and float values; the starts are included in this with the value 0f .
-     */
-    public CoordFloatOrderedMap floodFill(int radius, PointI2... starts) {
-        if (!initialized) return null;
-        CoordFloatOrderedMap fill = new CoordFloatOrderedMap();
-
-        resetMap();
-        for (PointI2 goal : starts) {
-            setGoal(goal.x, goal.y);
-        }
-        if (goals.isEmpty())
-            return fill;
-
-        partialScan(radius, null);
-        float temp;
-        for (int x = 1; x < width - 1; x++) {
-            for (int y = 1; y < height - 1; y++) {
-                temp = gradientMap[x][y];
-                if (temp < FLOOR) {
-                    fill.put(PointI2.get(x, y), temp);
-                }
-            }
-        }
-        goals.clear();
-        return fill;
     }
 
     public int getMappedCount() {
@@ -2168,6 +2130,10 @@ public class GradientGrid {
         dirs[n] = Direction.NONE;
     }
 
+    public static boolean isWithin(int x, int y, int width, int height) {
+        return x >= 0 && x < width && y >= 0 && y < height;
+    }
+
     public static boolean isWithin(PointI2 pt, int width, int height) {
         return pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height;
     }
@@ -2194,4 +2160,7 @@ public class GradientGrid {
         return target;
     }
 
+    private boolean wallQuery(int gx, int gy) {
+        return isWithin(gx, gy, width, height) && physicalMap[gx][gy] == WALL;
+    }
 }
