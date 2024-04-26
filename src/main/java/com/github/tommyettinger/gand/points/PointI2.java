@@ -177,6 +177,11 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
         return this;
     }
 
+    public PointI2 set(Point2<?> pt) {
+        x = round(pt.x());
+        y = round(pt.y());
+        return this;
+    }
     /**
      * Adds another point to this point.
      *

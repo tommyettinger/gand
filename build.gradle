@@ -83,6 +83,11 @@ dependencies {
     api "com.github.tommyettinger:crux:$cruxVersion"
     testImplementation "org.furyio:fury-core:$furyVersion"
     testImplementation "com.github.tommyettinger:cringe:$cringeVersion"
+    testImplementation "com.github.yellowstonegames.squidsquad:squidcore:$squidSquadVersion"
+    testImplementation "com.github.yellowstonegames.squidsquad:squidgrid:$squidSquadVersion"
+    testImplementation "com.github.yellowstonegames.squidsquad:squidglyph:$squidSquadVersion"
+    testImplementation "com.github.yellowstonegames.squidsquad:squidplace:$squidSquadVersion"
+
     testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
     testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     testImplementation "junit:junit:4.13.2"

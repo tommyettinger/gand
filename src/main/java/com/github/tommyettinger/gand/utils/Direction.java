@@ -17,7 +17,7 @@
 package com.github.tommyettinger.gand.utils;
 
 import com.badlogic.gdx.math.MathUtils;
-import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.crux.Point2;
 
 /**
  * Represents the eight grid directions and the deltaX, deltaY values associated
@@ -82,8 +82,8 @@ public enum Direction {
      * @param y the y position relative to the origin (0,0)
      * @return the closest matching Direction enum, which may be {@link #NONE}
      */
-    public static Direction getDirection(int x, int y) {
-        if ((x | y) == 0) return NONE;
+    public static Direction getDirection(float x, float y) {
+        if (x == 0 && y == 0) return NONE;
         return COUNTERCLOCKWISE[(int)(MathUtils.atan2Deg360(y, x) * (1f/45f) + 6.5f) & 7];
     }
 
@@ -114,8 +114,8 @@ public enum Direction {
 	 * @return The direction to follow to go from {@code from} to {@code to}. It
 	 *         can be cardinal or diagonal.
 	 */
-	public static Direction toGoTo(PointI2 from, PointI2 to) {
-		return getDirection(to.x - from.x, to.y - from.y);
+	public static Direction toGoTo(Point2<?> from, Point2<?> to) {
+		return getDirection(to.x() - from.x(), to.y() - from.y());
 	}
 
     /**
