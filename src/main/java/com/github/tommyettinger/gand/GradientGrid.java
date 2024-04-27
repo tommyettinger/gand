@@ -1436,7 +1436,7 @@ public class GradientGrid {
                 }
             }
             currentPos = currentPos.add(dirs[choice].deltaX, dirs[choice].deltaY);
-            path.add(currentPos);
+            path.add(currentPos.cpy());
             paidLength++;
             if (paidLength > length - 1f) {
                 if (onlyPassable != null && onlyPassable.contains(currentPos)) {
@@ -1939,7 +1939,7 @@ public class GradientGrid {
                 if (gradientMap[last.x][last.y] <= gradientMap[currentPos.x][currentPos.y])
                     break;
             }
-            path.add(currentPos);
+            path.add(currentPos.cpy());
             paidLength++;
             if (paidLength > length - 1f) {
                 if (onlyPassable != null && onlyPassable.contains(currentPos)) {
@@ -2003,7 +2003,7 @@ public class GradientGrid {
         }
         PointI2 currentPos = new PointI2(target);
         if (gradientMap[currentPos.x][currentPos.y] <= FLOOR)
-            path.add(currentPos);
+            path.add(currentPos.cpy());
         else {
             if (buffer == null)
                 return new ObjectDeque<>();

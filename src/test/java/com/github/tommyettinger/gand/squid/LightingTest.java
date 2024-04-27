@@ -285,7 +285,7 @@ public class LightingTest extends ApplicationAdapter {
         lighting.draw(gg.backgrounds);
         for (int i = 0; i < toCursor.size(); i++) {
             PointI2 curr = toCursor.get(i);
-            if(inView.contains(curr))
+            if(inView.contains(curr.x, curr.y))
                 gg.backgrounds[curr.x][curr.y] = DescriptiveColorRgb.hsb2rgb(modifiedTime * 0.25f - i * 0.0625f, 0.9f, 1f, 1f);
         }
     }
