@@ -1424,6 +1424,7 @@ public class GradientGrid {
                 path.clear();
                 break;
             }
+            currentPos = currentPos.cpy();
             float best = gradientMap[currentPos.x][currentPos.y];
             appendDirToShuffle(rng);
             int choice = 0;
@@ -1461,7 +1462,7 @@ public class GradientGrid {
                 }
             }
             currentPos = currentPos.add(dirs[choice].deltaX, dirs[choice].deltaY);
-            path.add(currentPos.cpy());
+            path.add(currentPos);
             paidLength++;
             if (paidLength > length - 1f) {
                 if (onlyPassable != null && onlyPassable.contains(currentPos)) {
@@ -1675,6 +1676,7 @@ public class GradientGrid {
                 path.clear();
                 break;
             }
+            currentPos = currentPos.cpy();
             float best = gradientMap[currentPos.x][currentPos.y];
             appendDirToShuffle(rng);
             int choice = 0;
@@ -1712,7 +1714,7 @@ public class GradientGrid {
                 }
             }
             currentPos.add(dirs[choice].deltaX, dirs[choice].deltaY);
-            path.add(currentPos.cpy());
+            path.add(currentPos);
             paidLength++;
             if (paidLength > moveLength - 1f) {
                 if (onlyPassable != null && onlyPassable.contains(currentPos)) {
@@ -1929,6 +1931,8 @@ public class GradientGrid {
                 path.clear();
                 break;
             }
+            currentPos = currentPos.cpy();
+
             float best = gradientMap[currentPos.x][currentPos.y];
             appendDirToShuffle(rng);
             int choice = 0;
@@ -1970,7 +1974,7 @@ public class GradientGrid {
                 if (gradientMap[last.x][last.y] <= gradientMap[currentPos.x][currentPos.y])
                     break;
             }
-            path.add(currentPos.cpy());
+            path.add(currentPos);
             paidLength++;
             if (paidLength > length - 1f) {
                 if (onlyPassable != null && onlyPassable.contains(currentPos)) {
@@ -2034,7 +2038,7 @@ public class GradientGrid {
         }
         PointI2 currentPos = new PointI2(target);
         if (gradientMap[currentPos.x][currentPos.y] <= FLOOR)
-            path.add(currentPos.cpy());
+            path.add(currentPos);
         else {
             if (buffer == null)
                 return new ObjectDeque<>();
@@ -2044,6 +2048,7 @@ public class GradientGrid {
         }
         rng.setState(target.hashCode(), 0x9E3779B97F4A7C15L);
         do {
+            currentPos = currentPos.cpy();
             float best = gradientMap[currentPos.x][currentPos.y];
             appendDirToShuffle(rng);
             int choice = 0;
@@ -2080,7 +2085,7 @@ public class GradientGrid {
                 }
             }
             currentPos.add(dirs[choice].deltaX, dirs[choice].deltaY);
-            path.addFirst(currentPos.cpy());
+            path.addFirst(currentPos);
 
         } while (gradientMap[currentPos.x][currentPos.y] != 0);
         cutShort = false;
@@ -2142,18 +2147,48 @@ public class GradientGrid {
     }
 
     private void appendDirToShuffle(Random rng) {
-        final Direction[] src = measurement == GridMetric.MANHATTAN
-                ? Direction.CARDINALS : Direction.OUTWARDS;
-        final int n = measurement.directionCount();
-        System.arraycopy(src, 0, dirs, 0, n);
-        for (int i = n - 1; i > 0; i--) {
-            // equivalent to rng.nextInt(i+1), but here it can omit an unnecessary check and be inlined.
-            final int r = (int) ((i + 1) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
-            Direction t = dirs[r];
-            dirs[r] = dirs[i];
-            dirs[i] = t;
+        switch (measurement){
+            case MANHATTAN:
+                System.arraycopy(Direction.CARDINALS, 0, dirs, 0, 4);
+                for (int i = 3; i > 0; i--) {
+                    // equivalent to rng.nextInt(i+1), but here it can omit an unnecessary check and be inlined.
+                    final int r = (int) ((i + 1) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
+                    Direction t = dirs[r];
+                    dirs[r] = dirs[i];
+                    dirs[i] = t;
+                }
+
+                dirs[4] = Direction.NONE;
+                break;
+            case CHEBYSHEV:
+                System.arraycopy(Direction.OUTWARDS, 0, dirs, 0, 8);
+                for (int i = 7; i > 0; i--) {
+                    // equivalent to rng.nextInt(i+1), but here it can omit an unnecessary check and be inlined.
+                    final int r = (int) ((i + 1) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
+                    Direction t = dirs[r];
+                    dirs[r] = dirs[i];
+                    dirs[i] = t;
+                }
+                dirs[8] = Direction.NONE;
+                break;
+            default:
+                System.arraycopy(Direction.OUTWARDS, 0, dirs, 0, 8);
+                for (int i = 3; i > 0; i--) {
+                    // equivalent to rng.nextInt(i+1), but here it can omit an unnecessary check and be inlined.
+                    final int r = (int) ((i + 1) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
+                    Direction t = dirs[r];
+                    dirs[r] = dirs[i];
+                    dirs[i] = t;
+                }
+                for (int j = 7; j > 4; j--) {
+                    // equivalent to 4+rng.nextInt(j-3), but here it can omit an unnecessary check and be inlined.
+                    final int r = 4 + (int) ((j - 3) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
+                    Direction t = dirs[r];
+                    dirs[r] = dirs[j];
+                    dirs[j] = t;
+                }
+                dirs[8] = Direction.NONE;
         }
-        dirs[n] = Direction.NONE;
     }
 
     public static boolean isWithin(int x, int y, int width, int height) {
