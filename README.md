@@ -27,11 +27,9 @@ The class used here is `ObjectDeque`, which is drawn from the jdkgdxds library; 
 one would prefer a List because it permits random-access of items by index in constant time, while also having
 constant-time removal from the head and tail. It can be sorted and reversed, also.
 
-Another major change is that `ObjectDeque`, its specialized subclass `Path`, `DirectedGraph`, and `UndirectedGraph`
-all implement `Json.Serializable`, making them easy to feed into the libGDX Json class to read or write. These do
-need the vertex type to be serializable somehow, so our `JsonRegistration` class makes that easier and more concise
-for the common vertex types `Vector2`, `Vector3`, `Vector4`, `GridPoint2`, and `GridPoint3`. However, you might not
-want to use those types for points, because...
+Another major change is that large parts of the library can be automatically serialized by libGDX Json. There is also
+additional support for serialization with Apache Fury, even though it isn't a dependency. See
+Serialization below.
 
 Version 0.1.0 adds the types `PointI2`, `PointF2`, `PointI3`, and `PointF3`, which have either int (for the "I"
 types) or float (for the "F" types) components, and can have 2 or 3 of each. These extend `GridPoint2`, `Vector2`,
@@ -53,6 +51,21 @@ only 170, so you would expect ObjectDeque to slow things down a bit with added c
 some things down, but none of them are done especially often. Plus, other code is a little faster, so it all
 essentially evens out.
 
+New in 0.2.0 is the GradientGrid class, which is a port of DijkstraMap in SquidSquad (and its precursor, SquidLib).
+It allows more efficient pathfinding when you have many goals, or when one point never changes but other points do
+change frequently. It works by performing a gradient flood-fill of a grid-based space, and using the gradient at a
+position as the pathfinding distance between that position and the nearest goal. The class is not structured quite as
+well as the graph code (I wrote most of it several years ago). Even with that in mind, it is still useful when a single
+path to a single goal isn't what you want.
+
+## Serialization
+
+`ObjectDeque`, its specialized subclass `Path`, `DirectedGraph`, and `UndirectedGraph`
+all implement `Json.Serializable`, making them easy to feed into the libGDX Json class to read or write. These do
+need the vertex type to be serializable somehow, so our `JsonRegistration` class makes that easier and more concise
+for the common vertex types `Vector2`, `Vector3`, `Vector4`, `GridPoint2`, and `GridPoint3`. You can instead use
+`PointI2`, `PointI3`, `PointF2`, or `PointF3` from this library, which are already `Json.Serializable`.
+
 A small change in 0.1.1 makes the Graph types (all of them) `Externalizable`, which enables
 [Fury](https://fury.apache.org) to serialize them without needing any extra work in your code. Only the Graph
 types actually needed this; everything else exposed to users can be handled by Fury already. Fury is in
@@ -73,12 +86,12 @@ Kryo is still good, it just seems to have a rare (but serious) bug with this lib
 
 # Find It
 
-`implementation "com.github.tommyettinger:gand:0.1.1"`
+`implementation "com.github.tommyettinger:gand:0.2.0"`
 
 If you use GWT, then your GWT module needs to depend on:
 
 ```
-implementation "com.github.tommyettinger:gand:0.1.1:sources"
+implementation "com.github.tommyettinger:gand:0.2.0:sources"
 implementation "com.github.tommyettinger:crux:0.0.1:sources"
 ```
 

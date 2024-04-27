@@ -43,7 +43,7 @@ import java.util.Random;
  * these features have some price; when paths are short or unobstructed, A* tends to be faster, though some convoluted
  * map shapes can slow down A* more than GradientGrid.
  * <br>
- * One unique optimization made possible by Dijkstra Maps is for when only one endpoint of a path can change in some
+ * One unique optimization made possible here is for when only one endpoint of a path can change in some
  * section of a game, such as when you want to draw a path from the (stationary) player's current cell to the cell the
  * mouse is over, and the mouse can move quickly. This can be done very efficiently by setting the player as a goal with
  * {@link #setGoal(Point2)}, scanning the map to find distances with {@link #scan(Iterable)}, and then as long as the
@@ -553,7 +553,7 @@ public class GradientGrid {
     }
 
     /**
-     * Recalculate the Dijkstra map and return it. Cells that were marked as goals with setGoal will have
+     * Recalculate the GradientGrid and return it. Cells that were marked as goals with setGoal will have
      * a value of 0, the cells adjacent to goals will have a value of 1, and cells progressively further
      * from goals will have a value equal to the distance from the nearest goal. The exceptions are walls,
      * which will have a value defined by the WALL constant in this class, and areas that the scan was
@@ -568,7 +568,7 @@ public class GradientGrid {
     }
 
     /**
-     * Recalculate the Dijkstra map and return it. Cells that were marked as goals with setGoal will have
+     * Recalculate the GradientGrid and return it. Cells that were marked as goals with setGoal will have
      * a value of 0, the cells adjacent to goals will have a value of 1, and cells progressively further
      * from goals will have a value equal to the distance from the nearest goal. The exceptions are walls,
      * which will have a value defined by the WALL constant in this class, and areas that the scan was
@@ -596,7 +596,7 @@ public class GradientGrid {
     }
 
     /**
-     * Recalculate the Dijkstra map and return it. Cells that were marked as goals with setGoal will have
+     * Recalculate the GradientGrid and return it. Cells that were marked as goals with setGoal will have
      * a value of 0, the cells adjacent to goals will have a value of 1, and cells progressively further
      * from goals will have a value equal to the distance from the nearest goal. The exceptions are walls,
      * which will have a value defined by the WALL constant in this class, and areas that the scan was
@@ -622,7 +622,7 @@ public class GradientGrid {
     }
 
     /**
-     * Recalculate the Dijkstra map and return it. Cells in {@link #gradientMap} that had the lowest value
+     * Recalculate the GradientGrid and return it. Cells in {@link #gradientMap} that had the lowest value
      * will be treated as goals if {@code nonZeroOptimum} is true; otherwise, only cells marked as goals with
      * {@link #setGoal(Point2)} will be considered goals and some overhead will be saved. The cells adjacent
      * to goals will have a value of 1, and cells progressively further from goals will have a value equal to
@@ -735,7 +735,7 @@ public class GradientGrid {
     }
 
     /**
-     * Recalculate the Dijkstra map up to a limit and return it. Cells that were marked as goals with setGoal will have
+     * Recalculate the GradientGrid up to a limit and return it. Cells that were marked as goals with setGoal will have
      * a value of 0, the cells adjacent to goals will have a value of 1, and cells progressively further
      * from goals will have a value equal to the distance from the nearest goal. If a cell would take more steps to
      * reach than the given limit, it will have a value of DARK if it was passable instead of the distance. The
@@ -751,7 +751,7 @@ public class GradientGrid {
     }
 
     /**
-     * Recalculate the Dijkstra map up to a limit and return it. Cells that were marked as goals with setGoal will have
+     * Recalculate the GradientGrid up to a limit and return it. Cells that were marked as goals with setGoal will have
      * a value of 0, the cells adjacent to goals will have a value of 1, and cells progressively further
      * from goals will have a value equal to the distance from the nearest goal. If a cell would take more steps to
      * reach than the given limit, it will have a value of DARK if it was passable instead of the distance. The
@@ -780,7 +780,7 @@ public class GradientGrid {
     }
 
     /**
-     * Recalculate the Dijkstra map up to a limit and return it. Cells that were marked as goals with setGoal will have
+     * Recalculate the GradientGrid up to a limit and return it. Cells that were marked as goals with setGoal will have
      * a value of 0, the cells adjacent to goals will have a value of 1, and cells progressively further
      * from goals will have a value equal to the distance from the nearest goal. If a cell would take more steps to
      * reach than the given limit, or if it was otherwise unreachable, it will have a value of {@link #FLOOR} or greater
@@ -808,7 +808,7 @@ public class GradientGrid {
     }
 
     /**
-     * Recalculate the Dijkstra map up to a limit and return it. Cells in {@link #gradientMap} that had the lowest value
+     * Recalculate the GradientGrid up to a limit and return it. Cells in {@link #gradientMap} that had the lowest value
      * will be treated as goals if {@code nonZeroOptimum} is true; otherwise, only cells marked as goals with
      * {@link #setGoal(Point2)} will be considered goals and some overhead will be saved. If a cell would take more steps
      * to reach than the given limit, or if it was otherwise unreachable, it will have a value of {@link #FLOOR} or
@@ -940,8 +940,8 @@ public class GradientGrid {
     }
 
     /**
-     * Recalculate the Dijkstra map for a creature that is potentially larger than 1x1 cell and return it. The value of
-     * a cell in the returned Dijkstra map assumes that a creature is square, with a side length equal to the passed
+     * Recalculate the GradientGrid for a creature that is potentially larger than 1x1 cell and return it. The value of
+     * a cell in the returned GradientGrid assumes that a creature is square, with a side length equal to the passed
      * size, that its minimum-x, minimum-y cell is the starting cell, and that any cell with a distance number
      * represents the distance for the creature's minimum-x, minimum-y cell to reach it. Cells that cannot be entered
      * by the minimum-x, minimum-y cell because of sizing (such as a floor cell next to a maximum-x and/or maximum-y
@@ -975,8 +975,8 @@ public class GradientGrid {
     }
 
     /**
-     * Recalculate the Dijkstra map for a creature that is potentially larger than 1x1 cell and return it. The value of
-     * a cell in the returned Dijkstra map assumes that a creature is square, with a side length equal to the passed
+     * Recalculate the GradientGrid for a creature that is potentially larger than 1x1 cell and return it. The value of
+     * a cell in the returned GradientGrid assumes that a creature is square, with a side length equal to the passed
      * size, that its minimum-x, minimum-y cell is the starting cell, and that any cell with a distance number
      * represents the distance for the creature's minimum-x, minimum-y cell to reach it. Cells that cannot be entered
      * by the minimum-x, minimum-y cell because of sizing (such as a floor cell next to a maximum-x and/or maximum-y
@@ -1119,8 +1119,8 @@ public class GradientGrid {
 
 
     /**
-     * Recalculate the Dijkstra map for a creature that is potentially larger than 1x1 cell and return it. The value of
-     * a cell in the returned Dijkstra map assumes that a creature is square, with a side length equal to the passed
+     * Recalculate the GradientGrid for a creature that is potentially larger than 1x1 cell and return it. The value of
+     * a cell in the returned GradientGrid assumes that a creature is square, with a side length equal to the passed
      * size, that its minimum-x, minimum-y cell is the starting cell, and that any cell with a distance number
      * represents the distance for the creature's minimum-x, minimum-y cell to reach it. Cells that cannot be entered
      * by the minimum-x, minimum-y cell because of sizing (such as a floor cell next to a maximum-x and/or maximum-y
@@ -1154,8 +1154,8 @@ public class GradientGrid {
     }
 
     /**
-     * Recalculate the Dijkstra map for a creature that is potentially larger than 1x1 cell and return it. The value of
-     * a cell in the returned Dijkstra map assumes that a creature is square, with a side length equal to the passed
+     * Recalculate the GradientGrid for a creature that is potentially larger than 1x1 cell and return it. The value of
+     * a cell in the returned GradientGrid assumes that a creature is square, with a side length equal to the passed
      * size, that its minimum-x, minimum-y cell is the starting cell, and that any cell with a distance number
      * represents the distance for the creature's minimum-x, minimum-y cell to reach it. Cells that cannot be entered
      * by the minimum-x, minimum-y cell because of sizing (such as a floor cell next to a maximum-x and/or maximum-y
