@@ -28,8 +28,10 @@ import java.util.Random;
  * This generates orthogonally-connected paths of {@link PointI3} that meander through an area;
  * this won't ever generate paths that cross themselves.
  * <br>
- * This randomly generates a graph with only some valid edges actually connected, then solves it with
- * {@link com.github.tommyettinger.gand.algorithms.Algorithms#findShortestPath(Object, Object)}.
+ * This randomly generates a graph with only some valid edges easily connected, then solves it with
+ * {@link com.github.tommyettinger.gand.algorithms.Algorithms#findShortestPath(Object, Object)}. If an edge
+ * is "easily connected", it has a cost of 1, and if it isn't, it has a cost of 1024, which strongly discourages
+ * the pathfinder from traversing that connection (but still permits it if only one path is an option).
  * The "twisted-ness" of the path can be decreased by setting {@code relaxation} to a value greater than 0.
  * The relaxation only needs to be increased a little above 0 to start having an effect; most values greater than 0.5
  * will look the same as 1.0 (mostly optimal paths, and not very "twisty").
@@ -49,6 +51,9 @@ public class TwistedLineI3 {
 
     private transient final ObjectOrderedSet<PointI3> frontier = new ObjectOrderedSet<>();
     private transient final ObjectSet<PointI3> done = new ObjectSet<>();
+
+    private transient final PointI3 tempPt = new PointI3();
+
     /**
      * You probably don't want this constructor; use {@link #TwistedLineI3(Random, PointI3[], float)} instead.
      */
@@ -98,30 +103,31 @@ public class TwistedLineI3 {
         done.clear();
         frontier.add(start);
 
-        PointI3 c = new PointI3(), v;
-        OUTER:
+        PointI3 v;
+
         while (!frontier.isEmpty()) {
+            float cost = 1f;
             PointI3 p = frontier.getAt(frontier.size() - 1);
             if(random.nextFloat() >= relaxation) {
                 shuffle(dirs);
                 for (int j = 0; j < dirs.length; j++) {
                     PointI3 dir = dirs[j];
-                    c.set(p).add(dir);
-                    if ((v = graph.getStoredVertex(c)) != null) {
+                    tempPt.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(tempPt)) != null) {
                         if (!done.contains(v) && frontier.add(v)) {
-                            graph.addEdge(p, v);
-                            continue OUTER;
+                            graph.addEdge(p, v, cost);
+                            cost = 1024f;
                         }
                     }
                 }
             } else {
                 for (int j = 0; j < dirs.length; j++) {
                     PointI3 dir = dirs[j];
-                    c.set(p).add(dir);
-                    if ((v = graph.getStoredVertex(c)) != null) {
+                    tempPt.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(tempPt)) != null) {
                         if (!done.contains(v)) {
                             frontier.add(v);
-                            graph.addEdge(p, v);
+                            graph.addEdge(p, v, 1f);
                         }
                     }
                 }
@@ -145,30 +151,31 @@ public class TwistedLineI3 {
         done.clear();
         frontier.add(graph.getVertices().iterator().next());
 
-        PointI3 c = new PointI3(), v;
-        OUTER:
+        PointI3 v;
+
         while (!frontier.isEmpty()) {
+            float cost = 1f;
             PointI3 p = frontier.getAt(frontier.size() - 1);
             if(random.nextFloat() >= relaxation) {
                 shuffle(dirs);
                 for (int j = 0; j < dirs.length; j++) {
                     PointI3 dir = dirs[j];
-                    c.set(p).add(dir);
-                    if ((v = graph.getStoredVertex(c)) != null) {
+                    tempPt.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(tempPt)) != null) {
                         if (!done.contains(v) && frontier.add(v)) {
-                            graph.addEdge(p, v);
-                            continue OUTER;
+                            graph.addEdge(p, v, cost);
+                            cost = 1024f;
                         }
                     }
                 }
             } else {
                 for (int j = 0; j < dirs.length; j++) {
                     PointI3 dir = dirs[j];
-                    c.set(p).add(dir);
-                    if ((v = graph.getStoredVertex(c)) != null) {
+                    tempPt.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(tempPt)) != null) {
                         if (!done.contains(v)) {
                             frontier.add(v);
-                            graph.addEdge(p, v);
+                            graph.addEdge(p, v, 1f);
                         }
                     }
                 }

@@ -28,8 +28,10 @@ import java.util.Random;
  * This generates orthogonally-connected paths of {@link PointI2} that meander through an area;
  * this won't ever generate paths that cross themselves.
  * <br>
- * This randomly generates a graph with only some valid edges actually connected, then solves it with
- * {@link com.github.tommyettinger.gand.algorithms.Algorithms#findShortestPath(Object, Object)}.
+ * This randomly generates a graph with only some valid edges easily connected, then solves it with
+ * {@link com.github.tommyettinger.gand.algorithms.Algorithms#findShortestPath(Object, Object)}. If an edge
+ * is "easily connected", it has a cost of 1, and if it isn't, it has a cost of 1024, which strongly discourages
+ * the pathfinder from traversing that connection (but still permits it if only one path is an option).
  * The "twisted-ness" of the path can be decreased by setting {@code relaxation} to a value greater than 0.
  * The relaxation only needs to be increased a little above 0 to start having an effect; most values greater than 0.5
  * will look the same as 1.0 (mostly optimal paths, and not very "twisty").
@@ -48,6 +50,9 @@ public class TwistedLineI2 {
 
     private transient final ObjectOrderedSet<PointI2> frontier = new ObjectOrderedSet<>();
     private transient final ObjectSet<PointI2> done = new ObjectSet<>();
+
+    private transient final PointI2 tempPt = new PointI2();
+
     /**
      * You probably don't want this constructor; use {@link #TwistedLineI2(Random, PointI2[], float)} instead.
      */
@@ -82,7 +87,7 @@ public class TwistedLineI2 {
 
     /**
      * This sets up a random maze as a {@link Int2UndirectedGraph} so a path can be found, using the given array of PointI2
-     * to represent which cells on a 2D grid can actually be traversed (and so can be used in a random path).
+     * to represent which cells on a 2D grid can actually be traversed easily (and so can be used in a random path).
      * You can call this after construction to change the paths this can find.
      * @param traversable an array of PointI2 points that are valid vertices this can travel through
      * @param relaxation between 0.0 and 1.0, with lower values being very "twisty" and higher values being closer to straight lines
@@ -97,30 +102,31 @@ public class TwistedLineI2 {
         done.clear();
         frontier.add(start);
 
-        PointI2 c = new PointI2(), v;
-        OUTER:
+        PointI2 v;
+
         while (!frontier.isEmpty()) {
+            float cost = 1f;
             PointI2 p = frontier.getAt(frontier.size() - 1);
             if(random.nextFloat() >= relaxation) {
                 shuffle(dirs);
                 for (int j = 0; j < dirs.length; j++) {
                     PointI2 dir = dirs[j];
-                    c.set(p).add(dir);
-                    if ((v = graph.getStoredVertex(c)) != null) {
+                    tempPt.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(tempPt)) != null) {
                         if (!done.contains(v) && frontier.add(v)) {
-                            graph.addEdge(p, v);
-                            continue OUTER;
+                            graph.addEdge(p, v, cost);
+                            cost = 1024f;
                         }
                     }
                 }
             } else {
                 for (int j = 0; j < dirs.length; j++) {
                     PointI2 dir = dirs[j];
-                    c.set(p).add(dir);
-                    if ((v = graph.getStoredVertex(c)) != null) {
+                    tempPt.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(tempPt)) != null) {
                         if (!done.contains(v)) {
                             frontier.add(v);
-                            graph.addEdge(p, v);
+                            graph.addEdge(p, v, 1f);
                         }
                     }
                 }
@@ -144,30 +150,31 @@ public class TwistedLineI2 {
         done.clear();
         frontier.add(graph.getVertices().iterator().next());
 
-        PointI2 c = new PointI2(), v;
-        OUTER:
+        PointI2 v;
+
         while (!frontier.isEmpty()) {
+            float cost = 1f;
             PointI2 p = frontier.getAt(frontier.size() - 1);
             if(random.nextFloat() >= relaxation) {
                 shuffle(dirs);
                 for (int j = 0; j < dirs.length; j++) {
                     PointI2 dir = dirs[j];
-                    c.set(p).add(dir);
-                    if ((v = graph.getStoredVertex(c)) != null) {
+                    tempPt.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(tempPt)) != null) {
                         if (!done.contains(v) && frontier.add(v)) {
-                            graph.addEdge(p, v);
-                            continue OUTER;
+                            graph.addEdge(p, v, cost);
+                            cost = 1024f;
                         }
                     }
                 }
             } else {
                 for (int j = 0; j < dirs.length; j++) {
                     PointI2 dir = dirs[j];
-                    c.set(p).add(dir);
-                    if ((v = graph.getStoredVertex(c)) != null) {
+                    tempPt.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(tempPt)) != null) {
                         if (!done.contains(v)) {
                             frontier.add(v);
-                            graph.addEdge(p, v);
+                            graph.addEdge(p, v, 1f);
                         }
                     }
                 }
@@ -179,7 +186,7 @@ public class TwistedLineI2 {
 
     public Path<PointI2> line(PointI2 start, PointI2 end) {
         lastPath.clear();
-        lastPath.addAll(graph.algorithms.findShortestPath(start, end, PointI2::dst));
+        lastPath.addAll(graph.algorithms().findShortestPath(start, end, PointI2::dst));
         return lastPath;
     }
 
@@ -193,7 +200,7 @@ public class TwistedLineI2 {
      * @return {@code path}, after modifications
      */
     public Collection<PointI2> line(Collection<PointI2> path, PointI2 start, PointI2 end) {
-        path.addAll(graph.algorithms.findShortestPath(start, end, PointI2::dst));
+        path.addAll(graph.algorithms().findShortestPath(start, end, PointI2::dst));
         return path;
     }
 
@@ -208,10 +215,9 @@ public class TwistedLineI2 {
     /**
      * Gets the last path this found, which may be empty. This returns the same reference to any path this produces,
      * and the path is cleared when a new twisted line is requested. You probably want to copy the contents of this path
-     * into another list if you want to keep its contents.
+     * into another Path, Deque, or List if you want to keep its contents.
      * @return the most recent path of PointI2, as a Path (essentially an ObjectDeque), this found.
      */
-   
     public Path<PointI2> getLastPath() {
         return lastPath;
     }

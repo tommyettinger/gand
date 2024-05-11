@@ -6,6 +6,7 @@ import com.github.tommyettinger.gand.Int2UndirectedGraph;
 import com.github.tommyettinger.gand.Path;
 import com.github.tommyettinger.gand.TestUtils;
 import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gand.TwistedLineI2;
 
 public class ShowTest {
     public static void main(String[] args) {
@@ -58,12 +59,12 @@ public class ShowTest {
             graph.connectAdjacent(null, false);
             PointI2[] arr = graph.largestComponent().getVertices().toArray(new PointI2[0]);
             PointI2 start = random.randomElement(arr), end = random.randomElement(arr);
-
+            TwistedLineI2 twist = new TwistedLineI2(random, arr, 0f);
             char[][] grid = new char[20][20];
             for (int t = 0; t <= 20; t++) {
                 random.setSeed(123456789L);
                 System.out.println("Calling randomize("+(t * 0.05f)+")");
-                TwistedLineI2 twist = new TwistedLineI2(random, arr, t * 0.05f);
+                twist.randomize(t * 0.05f);
                 Path<PointI2> path = twist.line(start, end); // path is a reference to twist.lastPath
                 for (int x = 0; x < 20; x++) {
                     System.arraycopy(TestUtils.DUNGEON[x + 10], 2, grid[x], 0, 20);
