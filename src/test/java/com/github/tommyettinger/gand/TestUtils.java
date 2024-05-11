@@ -34,8 +34,8 @@ import com.github.tommyettinger.gand.points.PointF2;
 import com.github.tommyettinger.gand.points.PointF3;
 import com.github.tommyettinger.gand.points.PointI2;
 
-class TestUtils {
-    static Graph<Vector2> makeGridGraph(Graph<Vector2> graph, int n) {
+public class TestUtils {
+    public static Graph<Vector2> makeGridGraph(Graph<Vector2> graph, int n) {
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -61,7 +61,7 @@ class TestUtils {
         return graph;
     }
 
-    static Graph<PointI2> makeGridGraphI2(Graph<PointI2> graph, int n) {
+    public static Graph<PointI2> makeGridGraphI2(Graph<PointI2> graph, int n) {
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -87,7 +87,7 @@ class TestUtils {
         return graph;
     }
 
-    static Graph<PointF2> makeGridGraphF2(Graph<PointF2> graph, int n) {
+    public static Graph<PointF2> makeGridGraphF2(Graph<PointF2> graph, int n) {
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -113,7 +113,7 @@ class TestUtils {
         return graph;
     }
 
-    static Graph<PointF3> makeGridGraphF3(Graph<PointF3> graph, int n) {
+    public static Graph<PointF3> makeGridGraphF3(Graph<PointF3> graph, int n) {
 
         long newSeed = MathUtils.random.nextLong();
         MathUtils.random.setSeed(123456789L);
@@ -251,7 +251,7 @@ class TestUtils {
         return graph;
     }
 
-    static final char[][] DUNGEON = new char[][]{
+    public static final char[][] DUNGEON = new char[][]{
             "#########################".toCharArray(),
             "#.......###.......#..####".toCharArray(),
             "#...............###..####".toCharArray(),
@@ -357,7 +357,8 @@ class TestUtils {
     public static final float[][] NOISE_2D = new float[125][75];
 
     public static final float[][][] NOISE_3D = new float[40][40][20];
-    {
+
+    static {
         ContinuousNoise noise = new ContinuousNoise(new FoamNoise(123), 123, 0.05f, ContinuousNoise.FBM, 2);
         for (int x = 0; x < NOISE_2D.length; x++) {
             for (int y = 0; y < NOISE_2D[x].length; y++) {
