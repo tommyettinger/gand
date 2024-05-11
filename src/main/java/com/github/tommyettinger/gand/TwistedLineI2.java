@@ -16,10 +16,10 @@
 
 package com.github.tommyettinger.gand;
 
-import com.badlogic.gdx.math.RandomXS128;
 import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
 import com.github.tommyettinger.gand.ds.ObjectSet;
 import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gand.utils.FlowRandom;
 
 import java.util.Random;
 
@@ -57,7 +57,7 @@ public class TwistedLineI2 {
     /**
      * Builds a TwistedLineI2 and calls {@link #reinitialize(PointI2[], float)} using the given traversable points.
      * You can get a line between two points using {@link #line(PointI2, PointI2)} after this.
-     * @param random any Random or subclass; if null, this will create a new {@link RandomXS128}
+     * @param random any Random or subclass; if null, this will create a new {@link FlowRandom}
      * @param traversable an array of points that this line is permitted to travel through
      */
     public TwistedLineI2(Random random, PointI2[] traversable) {
@@ -68,13 +68,13 @@ public class TwistedLineI2 {
      * Builds a TwistedLineI2 and calls {@link #reinitialize(PointI2[], float)} using the given traversable points.
      * You can get a line between two points using {@link #line(PointI2, PointI2)} after this. How "twisty" the line
      * will be can be configured by changing {@code relaxation}.
-     * @param random any Random or subclass; if null, this will create a new {@link RandomXS128}
+     * @param random any Random or subclass; if null, this will create a new {@link FlowRandom}
      * @param traversable an array of points that this line is permitted to travel through
      * @param relaxation between 0.0 and 1.0, with lower values being very "twisty" and higher values being closer to straight lines
      */
     public TwistedLineI2(Random random, PointI2[] traversable, float relaxation) {
         graph = new Int2UndirectedGraph();
-        this.random = random == null ? new RandomXS128() : random;
+        this.random = random == null ? new FlowRandom() : random;
         lastPath = new Path<>();
         reinitialize(traversable, relaxation);
     }
@@ -187,7 +187,7 @@ public class TwistedLineI2 {
     }
 
     public void setRandom(Random random) {
-        this.random = random == null ? new RandomXS128() : random;
+        this.random = random == null ? new FlowRandom() : random;
     }
 
     /**

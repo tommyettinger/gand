@@ -81,7 +81,8 @@ dependencies {
 // from `api` to `testImplementation` .
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
     api "com.github.tommyettinger:crux:$cruxVersion"
-    testImplementation "org.furyio:fury-core:$furyVersion"
+    testImplementation "org.apache.fury:fury-core:$furyVersion"
+//    testImplementation "org.furyio:fury-core:$furyVersion"
     testImplementation "com.github.tommyettinger:cringe:$cringeVersion"
     testImplementation "com.github.yellowstonegames.squidsquad:squidcore:$squidSquadVersion"
     testImplementation "com.github.yellowstonegames.squidsquad:squidgrid:$squidSquadVersion"

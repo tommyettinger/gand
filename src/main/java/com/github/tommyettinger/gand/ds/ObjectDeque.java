@@ -1720,7 +1720,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	/**
 	 * Pseudo-randomly shuffles the order of this Arrangeable in-place.
 	 *
-	 * @param random any {@link Random}, such as {@link com.badlogic.gdx.math.RandomXS128} or any better one
+	 * @param random any {@link Random}, such as {@link com.github.tommyettinger.gand.utils.FlowRandom}
 	 */
 	public void shuffle (Random random) {
 		for (int i = size() - 1; i > 0; i--)

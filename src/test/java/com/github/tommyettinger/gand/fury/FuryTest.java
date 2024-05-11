@@ -25,8 +25,8 @@ import com.github.tommyettinger.gand.points.PointF2;
 import com.github.tommyettinger.gand.points.PointF3;
 import com.github.tommyettinger.gand.points.PointI2;
 import com.github.tommyettinger.gand.points.PointI3;
-import io.fury.Fury;
-import io.fury.config.Language;
+import org.apache.fury.Fury;
+import org.apache.fury.config.Language;
 import org.junit.Assert;
 import org.junit.Test;
 
