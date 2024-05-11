@@ -57,30 +57,31 @@ public class ShowTest {
             PointI2[] arr = graph.largestComponent().getVertices().toArray(new PointI2[0]);
             PointI2 start = random.randomElement(arr), end = random.randomElement(arr);
             TwistedLineI2 twist = new TwistedLineI2(random, arr, 0.16f);
-            Path<PointI2> path = twist.line(start, end);
+            Path<PointI2> path = twist.line(start, end); // path is a reference to twist.lastPath
             char[][] grid = new char[20][20];
             for (int x = 0; x < 20; x++) {
                 System.arraycopy(TestUtils.DUNGEON[x + 10], 2, grid[x], 0, 20);
             }
-            PointI2 previous = path.first(), current;
+            PointI2 previous = path.first(), current, key = new PointI2();
             grid[previous.x][previous.y] = '@';
-            for (int i = 1; i < path.size; i++) {
+            for (int i = 1; i < path.size - 1; i++) {
                 current = path.get(i);
-                grid[current.x][current.y] = (char) ('@' + i);//(char)arrows.get(current.cpy().sub(previous), '*');
+                grid[current.x][current.y] = (char) arrows.get(key.set(path.get(i + 1)).sub(current), '*');
+//                grid[current.x][current.y] = (char) ('@' + i);
                 previous.set(current);
             }
             grid[path.last().x][path.last().y] = '^';
 
-            for (int x = 0; x < 20; x++) {
-                for (int y = 0; y < 20; y++) {
+            for (int y = 0; y < 20; y++) {
+                for (int x = 0; x < 20; x++) {
                     System.out.print(partial[x][y]);
                 }
                 System.out.println();
             }
             System.out.println();
 
-            for (int x = 0; x < 20; x++) {
-                for (int y = 0; y < 20; y++) {
+            for (int y = 0; y < 20; y++) {
+                for (int x = 0; x < 20; x++) {
                     System.out.print(grid[x][y]);
                 }
                 System.out.println();

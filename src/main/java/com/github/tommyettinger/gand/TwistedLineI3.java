@@ -21,6 +21,7 @@ import com.github.tommyettinger.gand.ds.ObjectSet;
 import com.github.tommyettinger.gand.points.PointI3;
 import com.github.tommyettinger.gand.utils.FlowRandom;
 
+import java.util.Collection;
 import java.util.Random;
 
 /**
@@ -181,6 +182,20 @@ public class TwistedLineI3 {
         lastPath.clear();
         lastPath.addAll(graph.algorithms.findShortestPath(start, end, PointI3::dst));
         return lastPath;
+    }
+
+    /**
+     * Finds a twisted line from {@code start} to {@code end} and appends the points of that
+     * line into {@code path}. This does not remove any existing points from {@code path},
+     * so you may want to {@link Collection#clear()} it first.
+     * @param path will be appended to; will not be cleared first
+     * @param start the start point to include in the path first
+     * @param end the end point to include in the path last
+     * @return {@code path}, after modifications
+     */
+    public Collection<PointI3> line(Collection<PointI3> path, PointI3 start, PointI3 end) {
+        path.addAll(graph.algorithms.findShortestPath(start, end, PointI3::dst));
+        return path;
     }
 
     public Random getRandom() {
