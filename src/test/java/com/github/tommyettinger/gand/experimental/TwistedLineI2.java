@@ -16,7 +16,6 @@
 
 package com.github.tommyettinger.gand.experimental;
 
-import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Int2UndirectedGraph;
 import com.github.tommyettinger.gand.Path;
 import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
@@ -93,9 +92,44 @@ public class TwistedLineI2 {
     public void reinitialize(PointI2[] traversable, float relaxation) {
         graph.removeAllVertices();
         graph.addVertices(traversable);
-        graph.connectAdjacent(PointI2::dst, false);
 
-        randomize(relaxation);
+        PointI2 start = traversable[random.nextInt(traversable.length)];
+
+        frontier.clear();
+        done.clear();
+        frontier.add(start);
+
+        PointI2 c = new PointI2(), v;
+        while (!frontier.isEmpty()) {
+            float cost = 1f;
+            PointI2 p = frontier.getAt(frontier.size() - 1);
+            if(random.nextFloat() >= relaxation) {
+                shuffle(dirs);
+                for (int j = 0; j < dirs.length; j++) {
+                    PointI2 dir = dirs[j];
+                    c.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(c)) != null) {
+                        if (!done.contains(v) && frontier.add(v)) {
+                            graph.addEdge(p, v, cost);
+                            cost = 1024f;
+                        }
+                    }
+                }
+            } else {
+                for (int j = 0; j < dirs.length; j++) {
+                    PointI2 dir = dirs[j];
+                    c.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(c)) != null) {
+                        if (!done.contains(v)) {
+                            frontier.add(v);
+                            graph.addEdge(p, v, 1f);
+                        }
+                    }
+                }
+            }
+            done.add(p);
+            frontier.remove(p);
+        }
     }
 
 
@@ -105,13 +139,43 @@ public class TwistedLineI2 {
      * @param relaxation between 0.0 and 1.0, with lower values being very "twisty" and higher values being closer to straight lines
      */
     public void randomize(float relaxation) {
-        if(graph.getEdgeCount() == 0 || relaxation >= 1f || relaxation < 0f)
-            return;
-        float compRel = (1f - relaxation) * 1024f;
-        ObjectOrderedSet<Connection<PointI2>> edges = new ObjectOrderedSet<>(graph.getEdges());
+        if(graph.getVertices().isEmpty()) return;
         graph.removeAllEdges();
-        for(Connection<PointI2> conn : edges) {
-            graph.addEdge(conn.getA(), conn.getB(), conn.getWeight() * (1f + compRel * random.nextFloat()));
+
+        frontier.clear();
+        done.clear();
+        frontier.add(graph.getVertices().iterator().next());
+
+        PointI2 c = new PointI2(), v;
+        while (!frontier.isEmpty()) {
+            float cost = 1f;
+            PointI2 p = frontier.getAt(frontier.size() - 1);
+            if(random.nextFloat() >= relaxation) {
+                shuffle(dirs);
+                for (int j = 0; j < dirs.length; j++) {
+                    PointI2 dir = dirs[j];
+                    c.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(c)) != null) {
+                        if (!done.contains(v) && frontier.add(v)) {
+                            graph.addEdge(p, v, cost);
+                            cost = 1024f;
+                        }
+                    }
+                }
+            } else {
+                for (int j = 0; j < dirs.length; j++) {
+                    PointI2 dir = dirs[j];
+                    c.set(p).add(dir);
+                    if ((v = graph.getStoredVertex(c)) != null) {
+                        if (!done.contains(v)) {
+                            frontier.add(v);
+                            graph.addEdge(p, v, 1f);
+                        }
+                    }
+                }
+            }
+            done.add(p);
+            frontier.remove(p);
         }
     }
 
