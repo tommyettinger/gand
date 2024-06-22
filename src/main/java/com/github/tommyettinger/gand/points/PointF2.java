@@ -122,7 +122,7 @@ public class PointF2 extends Vector2 implements Point2<PointF2>, Json.Serializab
 
     @Override
     public int hashCode() {
-        return (int)(NumberUtils.floatToIntBits(x) * 0xC13FA9A902A6328FL + NumberUtils.floatToIntBits(y) * 0x91E10DA5C79E7B1DL >>> 31);
+        return NumberUtils.floatToIntBits(x) * 0x1827F5 ^ NumberUtils.floatToIntBits(y) * 0x123C21;
     }
 
     @Override

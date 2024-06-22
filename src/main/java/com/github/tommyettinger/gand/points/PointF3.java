@@ -134,9 +134,7 @@ public class PointF3 extends Vector3 implements Point3<PointF3>, Json.Serializab
 
     @Override
     public int hashCode() {
-        return (int)(NumberUtils.floatToIntBits(x) * 0xD1B54A32D192ED03L
-                + NumberUtils.floatToIntBits(y) * 0xABC98388FB8FAC03L
-                + NumberUtils.floatToIntBits(z) * 0x8CB92BA72F3D8DD7L >>> 31);
+        return NumberUtils.floatToIntBits(x) * 0x1A36A9 ^ NumberUtils.floatToIntBits(y) * 0x157931 ^ NumberUtils.floatToIntBits(z) * 0x119725;
     }
 
     @Override
