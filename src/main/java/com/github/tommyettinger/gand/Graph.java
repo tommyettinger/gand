@@ -315,10 +315,7 @@ public abstract class Graph<V> implements Externalizable {
      * @param comparator a comparator for comparing edges
      */
     public void sortEdges(final Comparator<Connection<V>> comparator) {
-        List<Connection<V>> entryList = new ArrayList<>(edgeSet);
-        Collections.sort(entryList, comparator);
-        edgeSet.clear();
-        edgeSet.addAll(entryList);
+        edgeSet.order().sort(comparator);
     }
 
 

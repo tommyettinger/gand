@@ -3,11 +3,14 @@ package com.github.tommyettinger.gand.utils;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.github.tommyettinger.gand.points.*;
 
 /**
- * Utility methods to register common vertex types with an instance of libGDX {@link Json}.
+ * Utility methods to register common Vector/GridPoint types with an instance of libGDX {@link Json}.
  * This can handle {@link Vector2}, {@link Vector3}, {@link Vector4}, {@link GridPoint2}, and {@link GridPoint3}.
- * It also adds short class tags for each registered type, such as "V2" or "G3".
+ * It also adds short class tags for each registered type, such as "V2" or "G3". You do not need to manually register
+ * the {@link PointF2}, {@link PointF3}, {@link PointI2}, or {@link PointI3} classes, since they implement
+ * {@link Json.Serializable} already.
  */
 public class JsonRegistration {
     private JsonRegistration() {}

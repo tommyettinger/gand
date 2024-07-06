@@ -7,6 +7,8 @@ import java.util.Comparator;
  * {@link com.badlogic.gdx.utils.Sort} for sorting an array with no allocation. This uses an in-place mergesort
  * algorithm from the <a href="https://github.com/vigna/fastutil">FastUtil project</a> (which is also licensed under
  * Apache 2.0). Most of the code in this class is barely changed from FastUtil.
+ * <br>
+ * This class is currently not used by Gand.
  */
 public class ObjectSort {
     private static <K> void swap (K[] items, int first, int second) {
