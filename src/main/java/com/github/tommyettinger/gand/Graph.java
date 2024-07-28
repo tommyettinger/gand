@@ -323,13 +323,22 @@ public abstract class Graph<V> implements Externalizable {
      * Get the hash used to calculate the index in the table at which the Node<V> associated with
      * v would be held. What this returns is also used in {@link Node#mapHash}.
      * <br>
-     * The default implementation is much like what {@link com.badlogic.gdx.utils.ObjectMap} uses to mix hashCodes it
-     * receives: it multiplies the hashCode() by a large long constant, then right-shifts and casts to int. This can be
-     * overridden by Graph subclasses that know more about their vertex type to use a more appropriate mixing algorithm.
+     * The default implementation performs an invertible bitwise operation on the hashCode() it receives and returns the
+     * result. The invertible bitwise operation is to XOR an input with two different bitwise rotations of that input;
+     * it is important that it is invertible because otherwise there would be values this could never return, producing
+     * unnecessary gaps in hash tables. This uses int math only because any math involving long values is drastically
+     * slower on GWT (and somewhat slower on TeaVM).
+     * <br>
+     * This can be overridden by Graph subclasses that know more about their vertex type to use a more appropriate
+     * mixing algorithm.
      */
     public int hash(V v) {
-        // 0xABC98388FB8FAC03L is a harmonic-number constant; used in jdkgdxds.
-        return (int)(v.hashCode() * 0xABC98388FB8FAC03L >>> 25);
+        // used in version 0.2.0
+//        return (int)(v.hashCode() * 0xABC98388FB8FAC03L >>> 25);
+
+        // avoids math on longs, which is quite slow on GWT
+        final int h = v.hashCode();
+        return h ^ (h << 23 | h >>> 9) ^ (h << 7 | h >>> 25);
 
         // The original mixer used here.
 //        final int h = v.hashCode();
