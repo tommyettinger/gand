@@ -6,7 +6,7 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.25.3'
+        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.29.0'
     }
 }
 
@@ -18,6 +18,15 @@ def projectName = 'gand'
 group 'com.github.tommyettinger'
 
 version "$VERSION_NAME" // You can set the version in gradle.properties .
+
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+
+mavenPublishing {
+    configure(new JavaLibrary(new JavadocJar.Javadoc(), true))
+}
+
+mavenPlainJavadocJar.archiveBaseName.set(projectName)
 
 [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
