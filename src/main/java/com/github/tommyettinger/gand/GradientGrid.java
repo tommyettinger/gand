@@ -1007,7 +1007,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      *                   creature. Non-square creatures are not supported because turning is really hard.
      * @return A 2D float[width][height] using the width and height of what this knows about the physical map.
      */
-    public float[][] scan(final Iterable<PointI2> impassable, final int size) {
+    public float[][] scan(final Iterable<? extends Point2<?>> impassable, final int size) {
         scan(null, impassable, size);
         float[][] gradientClone = new float[width][height];
         for (int x = 0; x < width; x++) {
@@ -1050,14 +1050,14 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param size       The length of one side of a square creature using this to find a path, i.e. 2 for a 2x2 cell
      *                   creature. Non-square creatures are not supported because turning is really hard.
      */
-    public void scan(final PointI2 start, final Iterable<PointI2> impassable, final int size) {
+    public void scan(final Point2<?> start, final Iterable<? extends Point2<?>> impassable, final int size) {
 
         if (!initialized) return;
         float[][] gradientClone = copy(gradientMap);
         if (impassable != null) {
-            for (PointI2 pt : impassable) {
+            for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height))
-                    gradientMap[pt.x][pt.y] = WALL;
+                    gradientMap[(int)pt.x()][(int)pt.y()] = WALL;
             }
         }
         for (int xx = size; xx < width; xx++) {
@@ -1132,12 +1132,12 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                         setFresh(adjX, adjY, cs);
                         ++numAssigned;
                         ++mappedCount;
-                        if (start != null && start.x == adjX && start.y == adjY) {
+                        if (start != null && (int)start.x() == adjX && (int)start.y() == adjY) {
                             if (impassable != null) {
-                                for (PointI2 pt : impassable) {
+                                for (Point2<?> pt : impassable) {
                                     if (pt != null && isWithin(pt, width, height)) {
-                                        for (int xs = pt.x, xi = 0; xi < size && xs >= 0; xs--, xi++) {
-                                            for (int ys = pt.y, yi = 0; yi < size && ys >= 0; ys--, yi++) {
+                                        for (int xs = (int) pt.x(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
+                                            for (int ys = (int) pt.y(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
                                                 gradientClone[xs][ys] = physicalMap[xs][ys];
                                             }
                                         }
@@ -1152,10 +1152,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
             }
         }
         if (impassable != null) {
-            for (PointI2 pt : impassable) {
+            for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height)) {
-                    for (int xs = pt.x, xi = 0; xi < size && xs >= 0; xs--, xi++) {
-                        for (int ys = pt.y, yi = 0; yi < size && ys >= 0; ys--, yi++) {
+                    for (int xs = (int) pt.x(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
+                        for (int ys = (int) pt.y(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
                             gradientClone[xs][ys] = physicalMap[xs][ys];
                         }
                     }
@@ -1186,7 +1186,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      *                   creature. Non-square creatures are not supported because turning is really hard.
      * @return A 2D float[width][height] using the width and height of what this knows about the physical map.
      */
-    public float[][] partialScan(final int limit, final Iterable<PointI2> impassable, final int size) {
+    public float[][] partialScan(final int limit, final Iterable<? extends Point2<?>> impassable, final int size) {
         partialScan(limit, null, impassable, size);
         float[][] gradientClone = new float[width][height];
         for (int x = 0; x < width; x++) {
@@ -1229,14 +1229,14 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param size       The length of one side of a square creature using this to find a path, i.e. 2 for a 2x2 cell
      *                   creature. Non-square creatures are not supported because turning is really hard.
      */
-    public void partialScan(final int limit, final PointI2 start, final Iterable<PointI2> impassable, final int size) {
+    public void partialScan(final int limit, final Point2<?> start, final Iterable<? extends Point2<?>> impassable, final int size) {
 
         if (!initialized || limit <= 0) return;
         float[][] gradientClone = copy(gradientMap);
         if (impassable != null) {
-            for (PointI2 pt : impassable) {
+            for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height))
-                    gradientMap[pt.x][pt.y] = WALL;
+                    gradientMap[(int)pt.x()][(int)pt.y()] = WALL;
             }
         }
         for (int xx = size; xx < width; xx++) {
@@ -1312,12 +1312,12 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                         setFresh(adjX, adjY, cs);
                         ++numAssigned;
                         ++mappedCount;
-                        if (start != null && start.x == adjX && start.y == adjY) {
+                        if (start != null && (int)start.x() == adjX && (int)start.y() == adjY) {
                             if (impassable != null) {
-                                for (PointI2 pt : impassable) {
+                                for (Point2<?> pt : impassable) {
                                     if (pt != null && isWithin(pt, width, height)) {
-                                        for (int xs = pt.x, xi = 0; xi < size && xs >= 0; xs--, xi++) {
-                                            for (int ys = pt.y, yi = 0; yi < size && ys >= 0; ys--, yi++) {
+                                        for (int xs = (int) pt.x(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
+                                            for (int ys = (int) pt.y(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
                                                 gradientClone[xs][ys] = physicalMap[xs][ys];
                                             }
                                         }
@@ -1332,10 +1332,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
             }
         }
         if (impassable != null) {
-            for (PointI2 pt : impassable) {
+            for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height)) {
-                    for (int xs = pt.x, xi = 0; xi < size && xs >= 0; xs--, xi++) {
-                        for (int ys = pt.y, yi = 0; yi < size && ys >= 0; ys--, yi++) {
+                    for (int xs = (int) pt.x(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
+                        for (int ys = (int) pt.y(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
                             gradientClone[xs][ys] = physicalMap[xs][ys];
                         }
                     }
@@ -1727,24 +1727,24 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                 break;
             }
             currentPos = currentPos.cpy();
-            float best = gradientMap[currentPos.x][currentPos.y];
+            float best = gradientMap[(int) currentPos.x()][(int) currentPos.y()];
             appendDirToShuffle(rng);
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
-                int adjX = currentPos.x + dirs[d].deltaX;
-                int adjY = currentPos.y + dirs[d].deltaY;
+                int adjX = (int)currentPos.x() + dirs[d].deltaX;
+                int adjY = (int)currentPos.y() + dirs[d].deltaY;
                 if (adjX < 0 || adjY < 0 || adjX >= width || adjY >= height)
                     /* Outside the map */
                     continue;
                 if (dirs[d].isDiagonal() && blockingRequirement > 0) // diagonal
                 {
-                    if ((gradientMap[adjX][currentPos.y] > FLOOR ? 1 : 0)
-                            + (gradientMap[currentPos.x][adjY] > FLOOR ? 1 : 0)
+                    if ((gradientMap[adjX][(int)currentPos.y()] > FLOOR ? 1 : 0)
+                            + (gradientMap[(int)currentPos.x()][adjY] > FLOOR ? 1 : 0)
                             >= blockingRequirement)
                         continue;
                 }
-                workPt.set(adjX, adjY);
+                P workPt = workingEdit(adjX, adjY);
                 if (gradientMap[adjX][adjY] < best && !blocked.contains(workPt)) {
                     if (dirs[choice] == Direction.NONE || !path.contains(workPt)) {
                         best = gradientMap[adjX][adjY];
@@ -1752,8 +1752,9 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     }
                 }
             }
-
-            if (best >= gradientMap[currentPos.x][currentPos.y] || physicalMap[currentPos.x + dirs[choice].deltaX][currentPos.y + dirs[choice].deltaY] > FLOOR) {
+            int x = (int)currentPos.x();
+            int y = (int)currentPos.y();
+            if (best >= gradientMap[x][y] || physicalMap[x + dirs[choice].deltaX][y + dirs[choice].deltaY] > FLOOR) {
                 cutShort = true;
                 frustration = 0;
                 if (buffer == null)
@@ -1763,7 +1764,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     return buffer;
                 }
             }
-            currentPos.add(dirs[choice].deltaX, dirs[choice].deltaY);
+            currentPos = currentPos.set(x + dirs[choice].deltaX, y + dirs[choice].deltaY);
             path.add(currentPos);
             paidLength++;
             if (paidLength > moveLength - 1f) {
@@ -1775,7 +1776,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                 }
                 break;
             }
-            if (gradientMap[currentPos.x][currentPos.y] == 0)
+            if (gradientMap[(int)currentPos.x()][(int)currentPos.y()] == 0)
                 break;
         }
         cutShort = false;
