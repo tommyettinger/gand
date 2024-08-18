@@ -185,7 +185,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      */
     public Path<P> path = new Path<>();
 
-    private ObjectSet<Point2<?>> blocked;
+    protected ObjectSet<Point2<?>> blocked;
 
     public transient boolean cutShort;
 
@@ -206,22 +206,22 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * will be returned again and again if the same parameters are requested.
      */
     protected final FlowRandom rng = new FlowRandom(0L, 0x9E3779B97F4A7C15L);
-    private transient int frustration;
+    protected transient int frustration;
 
-    private final Direction[] dirs = new Direction[9];
+    protected final Direction[] dirs = new Direction[9];
 
-    private boolean initialized;
+    protected boolean initialized;
 
-    private transient int mappedCount;
+    protected transient int mappedCount;
 
-    private int blockingRequirement = 2;
+    protected int blockingRequirement = 2;
 
-    private transient float cachedLongerPaths = 1.2f;
-    private transient final ObjectSet<Point2<?>> cachedImpassable = new ObjectSet<>(32);
-    private transient ObjectSet<Point2<?>> cachedFearSources;
-    private transient float[][] cachedFleeMap;
+    protected transient float cachedLongerPaths = 1.2f;
+    protected transient final ObjectSet<Point2<?>> cachedImpassable = new ObjectSet<>(32);
+    protected transient ObjectSet<Point2<?>> cachedFearSources;
+    protected transient float[][] cachedFleeMap;
 
-    private transient final PointPair<P> workRay = new PointPair<>(acquire(0, 0), acquire(1, 0));
+    protected transient final PointPair<P> workRay = new PointPair<>(acquire(0, 0), acquire(1, 0));
 
     /**
      * Construct a GradientGrid without a level to actually scan. If you use this constructor, you must call an
@@ -585,14 +585,14 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         }
     }
 
-    private void setFresh(final int x, final int y, float counter) {
+    protected void setFresh(final int x, final int y, float counter) {
         if (x < 0 || x >= width || y < 0 || y >= height || gradientMap[x][y] < counter)
             return;
         gradientMap[x][y] = counter;
         fresh.addFirst(encode(x, y));
     }
 
-    private void setFresh(final PointI2 pt, float counter) {
+    protected void setFresh(final PointI2 pt, float counter) {
         if (!isWithin(pt, width, height) || gradientMap[pt.x][pt.y] < counter)
             return;
         gradientMap[pt.x][pt.y] = counter;
@@ -2196,7 +2196,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         this.blockingRequirement = Math.min(Math.max(blockingRequirement, 0), 2);
     }
 
-    private void appendDirToShuffle(Random rng) {
+    protected void appendDirToShuffle(Random rng) {
         switch (measurement){
             case MANHATTAN:
                 System.arraycopy(Direction.CARDINALS, 0, dirs, 0, 4);
@@ -2271,7 +2271,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         return target;
     }
 
-    private boolean wallQuery(int gx, int gy) {
+    protected boolean wallQuery(int gx, int gy) {
         return isWithin(gx, gy, width, height) && physicalMap[gx][gy] == WALL;
     }
 }
