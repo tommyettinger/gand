@@ -221,7 +221,6 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
     private transient ObjectSet<Point2<?>> cachedFearSources;
     private transient float[][] cachedFleeMap;
 
-    private transient final PointI2 workPt = new PointI2();
     private transient final PointPair<P> workRay = new PointPair<>(acquire(0, 0), acquire(1, 0));
 
     /**
@@ -437,7 +436,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param encoded an encoded int that stores a 2D point; see {@link #encode(Point2)}
      * @return the PointI2 that represents the same x,y position that the given encoded int stores
      */
-    public PointI2 decode(PointI2 changing, final int encoded) {
+    public Point2<?> decode(Point2<?> changing, final int encoded) {
         return changing.set(encoded & 0xFFFF, encoded >>> 16);
     }
 
@@ -445,7 +444,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * If you for some reason have one of the internally-used ints produced by {@link #encode(Point2)}, this will decode
      * the x component of the point encoded in that int. This is an extremely simple method that is equivalent to the
      * code {@code encoded & 0xFFFF}. You probably would use this method in
-     * conjunction with {@link #decodeY(int)}, or would instead use {@link #decode(PointI2, int)} to get a PointI2.
+     * conjunction with {@link #decodeY(int)}, or would instead use {@link #decode(Point2, int)} to get a Point2.
      *
      * @param encoded an encoded int; see {@link #encode(Point2)}
      * @return the x component of the position that the given encoded int stores
@@ -458,7 +457,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * If you for some reason have one of the internally-used ints produced by {@link #encode(Point2)}, this will decode
      * the y component of the point encoded in that int. This is an extremely simple method that is equivalent to the
      * code {@code encoded >>> 16}. You probably would use this method in
-     * conjunction with {@link #decodeX(int)}, or would instead use {@link #decode(PointI2, int)} to get a PointI2.
+     * conjunction with {@link #decodeX(int)}, or would instead use {@link #decode(Point2, int)} to get a PointI2.
      *
      * @param encoded an encoded int; see {@link #encode(Point2)}
      * @return the y component of the position that the given encoded int stores
@@ -569,9 +568,9 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      *
      * @param pt
      */
-    public void resetCell(PointI2 pt) {
+    public void resetCell(Point2<?> pt) {
         if (!initialized || !isWithin(pt, width, height)) return;
-        gradientMap[pt.x][pt.y] = physicalMap[pt.x][pt.y];
+        gradientMap[(int) pt.x()][(int) pt.y()] = physicalMap[(int) pt.x()][(int) pt.y()];
     }
 
     /**
@@ -1816,7 +1815,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param fearSources       a vararg or array of PointI2 positions to run away from
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes away from fear sources. Copy of path.
      */
-    public ObjectDeque<PointI2> findFleePath(int length, float preferLongerPaths, Collection<? extends Point2<?>> impassable,
+    public ObjectDeque<P> findFleePath(int length, float preferLongerPaths, Collection<? extends Point2<?>> impassable,
                                            Collection<? extends Point2<?>> onlyPassable, Point2<?> start, Collection<Point2<?>> fearSources) {
         return findFleePath(null, length, -1, preferLongerPaths, impassable, onlyPassable, start, fearSources);
     }
@@ -1853,7 +1852,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param fearSources       a vararg or array of PointI2 positions to run away from
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes away from fear sources. Copy of path.
      */
-    public ObjectDeque<PointI2> findFleePath(int length, int scanLimit, float preferLongerPaths, Collection<? extends Point2<?>> impassable,
+    public ObjectDeque<P> findFleePath(int length, int scanLimit, float preferLongerPaths, Collection<? extends Point2<?>> impassable,
                                            Collection<? extends Point2<?>> onlyPassable, Point2<?> start, Collection<Point2<?>> fearSources) {
         return findFleePath(null, length, scanLimit, preferLongerPaths, impassable, onlyPassable, start, fearSources);
     }
@@ -1893,7 +1892,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param fearSources       a vararg or array of PointI2 positions to run away from
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes away from fear sources. Copy of path.
      */
-    public ObjectDeque<PointI2> findFleePath(ObjectDeque<PointI2> buffer, int length, int scanLimit, float preferLongerPaths,
+    public ObjectDeque<P> findFleePath(ObjectDeque<P> buffer, int length, int scanLimit, float preferLongerPaths,
                                              Collection<? extends Point2<?>> impassable,
                                            Collection<? extends Point2<?>> onlyPassable, Point2<?> start, Collection<Point2<?>> fearSources) {
         if (!initialized || length <= 0) {
@@ -1973,7 +1972,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
             } else
                 cachedFleeMap = partialScan(scanLimit, blocked);
         }
-        PointI2 currentPos = workPt.set(start);
+        P currentPos = workingEdit(start);
         float paidLength = 0f;
         rng.setState(start.hashCode(), fearSources.size());
 
@@ -1984,24 +1983,24 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
             }
             currentPos = currentPos.cpy();
 
-            float best = gradientMap[currentPos.x][currentPos.y];
+            float best = gradientMap[(int)currentPos.x()][(int)currentPos.y()];
             appendDirToShuffle(rng);
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
-                int adjX = currentPos.x + dirs[d].deltaX;
-                int adjY = currentPos.y + dirs[d].deltaY;
+                int adjX = (int)currentPos.x() + dirs[d].deltaX;
+                int adjY = (int)currentPos.y() + dirs[d].deltaY;
                 if (adjX < 0 || adjY < 0 || adjX >= width || adjY >= height)
                     /* Outside the map */
                     continue;
                 if (dirs[d].isDiagonal() && blockingRequirement > 0) // diagonal
                 {
-                    if ((gradientMap[adjX][currentPos.y] > FLOOR ? 1 : 0)
-                            + (gradientMap[currentPos.x][adjY] > FLOOR ? 1 : 0)
+                    if ((gradientMap[adjX][(int)currentPos.y()] > FLOOR ? 1 : 0)
+                            + (gradientMap[(int)currentPos.x()][adjY] > FLOOR ? 1 : 0)
                             >= blockingRequirement)
                         continue;
                 }
-                workPt.set(adjX, adjY);
+                P workPt = workingEdit(adjX, adjY);
                 if (gradientMap[adjX][adjY] < best && !blocked.contains(workPt)) {
                     if (dirs[choice] == Direction.NONE || !path.contains(workPt)) {
                         best = gradientMap[adjX][adjY];
@@ -2009,7 +2008,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     }
                 }
             }
-            if (best >= gradientMap[(int)start.x()][(int)start.y()] || physicalMap[currentPos.x + dirs[choice].deltaX][currentPos.y + dirs[choice].deltaY] > FLOOR) {
+            if (best >= gradientMap[(int)start.x()][(int)start.y()] || physicalMap[(int)currentPos.x() + dirs[choice].deltaX][(int)currentPos.y() + dirs[choice].deltaY] > FLOOR) {
                 cutShort = true;
                 frustration = 0;
                 if (buffer == null)
@@ -2019,10 +2018,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     return buffer;
                 }
             }
-            currentPos.add(dirs[choice].deltaX, dirs[choice].deltaY);
+            currentPos = currentPos.set(currentPos.x() + dirs[choice].deltaX, currentPos.y() + dirs[choice].deltaY);
             if (!path.isEmpty()) {
-                PointI2 last = path.peekLast();
-                if (gradientMap[last.x][last.y] <= gradientMap[currentPos.x][currentPos.y])
+                Point2<?> last = path.peekLast();
+                if (gradientMap[(int)last.x()][(int)last.y()] <= gradientMap[(int)currentPos.x()][(int)currentPos.y()])
                     break;
             }
             path.add(currentPos);
@@ -2059,7 +2058,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param target the target cell
      * @return an ObjectDeque of PointI2 that make up the best path. Copy of path.
      */
-    public ObjectDeque<PointI2> findPathPreScanned(Point2<?> target) {
+    public ObjectDeque<P> findPathPreScanned(Point2<?> target) {
         return findPathPreScanned(null, target);
     }
 
@@ -2078,7 +2077,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param target the target cell
      * @return an ObjectDeque of PointI2 that make up the best path, appended to buffer (if non-null)
      */
-    public ObjectDeque<PointI2> findPathPreScanned(ObjectDeque<PointI2> buffer, Point2<?> target) {
+    public ObjectDeque<P> findPathPreScanned(ObjectDeque<P> buffer, Point2<?> target) {
         path.clear();
         if (!initialized || goals == null || goals.isEmpty()) {
             if (buffer == null)
@@ -2087,8 +2086,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                 return buffer;
             }
         }
-        PointI2 currentPos = new PointI2(target);
-        if (gradientMap[currentPos.x][currentPos.y] <= FLOOR)
+        P currentPos = acquire(target);
+        if (gradientMap[(int)currentPos.x()][(int)currentPos.y()] <= FLOOR)
             path.add(currentPos);
         else {
             if (buffer == null)
@@ -2100,24 +2099,24 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         rng.setState(target.hashCode(), 0x9E3779B97F4A7C15L);
         do {
             currentPos = currentPos.cpy();
-            float best = gradientMap[currentPos.x][currentPos.y];
+            float best = gradientMap[(int)currentPos.x()][(int)currentPos.y()];
             appendDirToShuffle(rng);
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
-                int adjX = currentPos.x + dirs[d].deltaX;
-                int adjY = currentPos.y + dirs[d].deltaY;
+                int adjX = (int)currentPos.x() + dirs[d].deltaX;
+                int adjY = (int)currentPos.y() + dirs[d].deltaY;
                 if (adjX < 0 || adjY < 0 || adjX >= width || adjY >= height)
                     /* Outside the map */
                     continue;
                 if (dirs[d].isDiagonal() && blockingRequirement > 0) // diagonal
                 {
-                    if ((gradientMap[adjX][currentPos.y] > FLOOR ? 1 : 0)
-                            + (gradientMap[currentPos.x][adjY] > FLOOR ? 1 : 0)
+                    if ((gradientMap[adjX][(int)currentPos.y()] > FLOOR ? 1 : 0)
+                            + (gradientMap[(int)currentPos.x()][adjY] > FLOOR ? 1 : 0)
                             >= blockingRequirement)
                         continue;
                 }
-                workPt.set(adjX, adjY);
+                P workPt = workingEdit(adjX, adjY);
                 if (gradientMap[adjX][adjY] < best && !blocked.contains(workPt)) {
                     if (dirs[choice] == Direction.NONE || !path.contains(workPt)) {
                         best = gradientMap[adjX][adjY];
@@ -2126,7 +2125,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                 }
             }
 
-            if (best >= gradientMap[currentPos.x][currentPos.y] || physicalMap[currentPos.x + dirs[choice].deltaX][currentPos.y + dirs[choice].deltaY] > FLOOR) {
+            if (best >= gradientMap[(int)currentPos.x()][(int)currentPos.y()] || physicalMap[(int) (currentPos.x() + dirs[choice].deltaX)][(int) (currentPos.y() + dirs[choice].deltaY)] > FLOOR) {
                 cutShort = true;
                 if (buffer == null)
                     return new ObjectDeque<>(path);
@@ -2135,10 +2134,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     return buffer;
                 }
             }
-            currentPos.add(dirs[choice].deltaX, dirs[choice].deltaY);
+            currentPos = currentPos.set(currentPos.x() + dirs[choice].deltaX, currentPos.y() + dirs[choice].deltaY);
             path.addFirst(currentPos);
 
-        } while (gradientMap[currentPos.x][currentPos.y] != 0);
+        } while (gradientMap[(int)currentPos.x()][(int)currentPos.y()] != 0);
         cutShort = false;
         if (buffer == null)
             return new ObjectDeque<>(path);
