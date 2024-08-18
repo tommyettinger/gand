@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import static com.github.tommyettinger.gand.points.PointMaker.pt;
 
-public class TestGradientGrid {
+public class TestGradientGridI2 {
     /**
      * Prints with y pointing down, matching how 2D arrays are entered in source code.
      * @param level a 2D char array that will be printed to stdout with y-down
@@ -50,7 +50,7 @@ public class TestGradientGrid {
                 "#.......#".toCharArray(),
                 "#########".toCharArray(),
         };
-        GradientGrid dm = new GradientGrid(map, GridMetric.EUCLIDEAN);
+        GradientGridI2 dm = new GradientGridI2(map, GridMetric.EUCLIDEAN);
         dm.setBlockingRequirement(2);
         ObjectDeque<PointI2> path = new ObjectDeque<>(16);
 

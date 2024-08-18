@@ -31,7 +31,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.github.tommyettinger.digital.ArrayTools;
-import com.github.tommyettinger.gand.GradientGrid;
+import com.github.tommyettinger.gand.GradientGridI2;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
 import com.github.tommyettinger.gand.points.PointI2;
 import com.github.tommyettinger.gand.utils.GridMetric;
@@ -62,7 +62,7 @@ public class LightingTest extends ApplicationAdapter {
     private Region seen, inView, blockage;
     private final Noise waves = new Noise(123, 0.5f, Noise.FOAM, 1);
     private GlyphActor playerGlyph;
-    private GradientGrid playerToCursor;
+    private GradientGridI2 playerToCursor;
     private final ObjectDeque<PointI2> toCursor =     new ObjectDeque<>(100);
     private final ObjectDeque<PointI2> awaitedMoves = new ObjectDeque<>(50);
     private Coord cursor = Coord.get(-1, -1);
@@ -257,7 +257,7 @@ public class LightingTest extends ApplicationAdapter {
         gg.backgrounds = new int[GRID_WIDTH][GRID_HEIGHT];
         gg.map.clear();
         if(playerToCursor == null)
-            playerToCursor = new GradientGrid(bare, GridMetric.EUCLIDEAN);
+            playerToCursor = new GradientGridI2(bare, GridMetric.EUCLIDEAN);
         else
             playerToCursor.initialize(bare);
         playerToCursor.setGoal(player);
