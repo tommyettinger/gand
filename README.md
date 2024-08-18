@@ -51,12 +51,15 @@ only 170, so you would expect ObjectDeque to slow things down a bit with added c
 some things down, but none of them are done especially often. Plus, other code is a little faster, so it all
 essentially evens out.
 
-New in 0.2.0 is the GradientGrid class, which is a port of DijkstraMap in SquidSquad (and its precursor, SquidLib).
-It allows more efficient pathfinding when you have many goals, or when one point never changes but other points do
-change frequently. It works by performing a gradient flood-fill of a grid-based space, and using the gradient at a
-position as the pathfinding distance between that position and the nearest goal. The class is not structured quite as
-well as the graph code (I wrote most of it several years ago). Even with that in mind, it is still useful when a single
-path to a single goal isn't what you want.
+New in 0.2.0 (and changed in 0.2.1) is the GradientGrid class, which is a port of DijkstraMap in SquidSquad and its
+precursor, SquidLib. It allows more efficient pathfinding when you have many goals, or when one point never changes but
+other points do change frequently. It works by performing a gradient flood-fill of a grid-based space, and using the
+gradient at a position as the pathfinding distance between that position and the nearest goal. The class is not
+structured quite as well as the graph code (I wrote most of it several years ago). Even with that in mind, it is still
+useful when a single path to a single goal isn't what you want. GradientGrid changed in 0.2.1; now the original version,
+with very few changes, is in `GradientGridI2`, while `GradientGrid` is a parent abstract class that can use more than
+just `PointI2`, depending on the subclass. If Gand is the only library you use that has types implementing `Point2` from
+crux, which is likely, then you can use `GradientGridI2` and don't need to worry about any kind of inheritance.
 
 ## Serialization
 
@@ -86,12 +89,12 @@ Kryo is still good, it just seems to have a rare (but serious) bug with this lib
 
 # Find It
 
-`implementation "com.github.tommyettinger:gand:0.2.0"`
+`implementation "com.github.tommyettinger:gand:0.2.1"`
 
 If you use GWT, then your GWT module needs to depend on:
 
 ```
-implementation "com.github.tommyettinger:gand:0.2.0:sources"
+implementation "com.github.tommyettinger:gand:0.2.1:sources"
 implementation "com.github.tommyettinger:crux:0.0.1:sources"
 ```
 

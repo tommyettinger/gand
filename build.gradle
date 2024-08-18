@@ -14,9 +14,7 @@ apply plugin: 'java-library'
 apply plugin: 'com.vanniktech.maven.publish'
 
 def projectName = 'gand'
-
 group 'com.github.tommyettinger'
-
 version "$VERSION_NAME" // You can set the version in gradle.properties .
 
 import com.vanniktech.maven.publish.JavaLibrary
