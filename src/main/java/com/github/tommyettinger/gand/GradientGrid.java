@@ -60,12 +60,13 @@ import java.util.Random;
  * toward (it could be just one Point2, with or without explicitly putting it in an array, or it could be more and the
  * NPC will pick the closest).
  * <br>
- * Other versions of this algorithm are also "out there" in various libraries. This implementation is different from the
- * kinds in SquidLib and SquidSquad in that it permits the interface {@link Point2} for most places a 2D point could be
- * given to it, but when this produces any points, it uses the class {@link PointI2}. You can, awkwardly, pass
- * {@link com.github.tommyettinger.gand.points.PointF2} as a Point2 here, but it has to be rounded or cast to an int for
- * this class to use it, and unless every coordinate in your PointF2 values has no fractional part, you're much
- * better-off using PointI2 (or some other integer-based Point2, such as Coord in SquidSquad).
+ * Other versions of this algorithm are also "out there" in various libraries. This class is abstract and is meant to be
+ * subclassed with a concrete {@link Point2} implementation {@code P}, which in this library means {@link PointI2} being
+ * used by {@link GradientGridI2}. Implementing classes don't need to do much; they have to provide a way to
+ * {@link #acquire(float, float)} an instance of {@code P}, and if {@code P} is mutable, they should store some mutable
+ * member instance, then modify and return it when {@link #workingEdit(float, float)} is called. Other than providing a
+ * constructor and probably calling an {@link #initialize} method where possible in constructors, the class can be
+ * nearly empty.
  * <br>
  * As a bit of introduction, <a href="http://www.roguebasin.com/index.php?title=Dijkstra_Maps_Visualized">this article
  * on RogueBasin</a> can provide some useful information on how these work and how to visualize the information they can
@@ -147,11 +148,12 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
 
 
     /**
-     * This affects how distance is measured on diagonal directions vs. orthogonal directions. MANHATTAN should form a
-     * diamond shape on a featureless map, while CHEBYSHEV and EUCLIDEAN will form a square. EUCLIDEAN does not affect
-     * the length of paths, though it will change the GradientGrid's gradientMap to have many non-integer values, and
-     * that in turn will make paths this finds much more realistic and smooth (favoring orthogonal directions unless a
-     * diagonal one is a better option). This defaults to EUCLIDEAN.
+     * This affects how distance is measured on diagonal directions vs. orthogonal directions.
+     * {@link GridMetric#MANHATTAN} should form a diamond shape on a featureless map, while {@link GridMetric#CHEBYSHEV}
+     * and {@link GridMetric#EUCLIDEAN} will form a square. EUCLIDEAN does not affect the length of paths, though it
+     * will change the GradientGrid's gradientMap to have many non-integer values, and that in turn will make paths this
+     * finds much more realistic and smooth (favoring orthogonal directions unless a diagonal one is a better option).
+     * This defaults to EUCLIDEAN. You should set this to MANHATTAN if only 4-way movement is possible.
      */
     public GridMetric measurement = GridMetric.EUCLIDEAN;
 
@@ -170,14 +172,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      */
     public float[][] gradientMap;
 
-    /**
-     * Height of the map. Exciting stuff. Don't change this, instead call initialize().
-     */
-    public int height;
-    /**
-     * Width of the map. Exciting stuff. Don't change this, instead call initialize().
-     */
-    public int width;
+    protected int height;
+    protected int width;
     /**
      * The latest path that was obtained by calling findPath(). It will not contain the value passed as a starting
      * cell; only steps that require movement will be included, and so if the path has not been found or a valid
@@ -187,6 +183,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
 
     protected ObjectSet<Point2<?>> blocked;
 
+    /**
+     * This is set to true if a path was forced to stop due to length limits, and set to false if a complete path was
+     * found. You can check this if you want to know if a path found was complete.
+     */
     public transient boolean cutShort;
 
     /**
@@ -201,7 +201,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
     protected IntDeque fresh = new IntDeque(256);
 
     /**
-     * The FlowRandom used to decide which one of multiple equally-short paths to take; this has its state set
+     * The {@link FlowRandom} used to decide which one of multiple equally-short paths to take; this has its state set
      * deterministically before any usage. There will only be one path produced for a given set of parameters, and it
      * will be returned again and again if the same parameters are requested.
      */
@@ -264,16 +264,15 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
 
     /**
      * Constructor meant to take a char[][] in a simple, classic-roguelike-ish format, where
-     * '#' means a wall and anything else (often '.' or ' ') is a walkable tile.
+     * {@code alternateWall} means a wall and anything else (often '.' or ' ') is a walkable tile.
      * This uses {@link GridMetric#EUCLIDEAN}, allowing 8-way movement
      * but preferring orthogonal directions in case of a tie.
-     * You can specify the character used for walls.
      *
      * @param level a 2D char array where {@code alternateWall} indicates a wall and any other char is walkable
      * @param alternateWall the char that indicates a wall in {@code level}
      */
     public GradientGrid(final char[][] level, char alternateWall) {
-        initialize(level, alternateWall);
+        this(level, alternateWall, GridMetric.EUCLIDEAN);
     }
 
     /**
@@ -288,19 +287,16 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param measurement how this should measure orthogonal vs. diagonal measurement, such as {@link GridMetric#MANHATTAN} for 4-way only movement
      */
     public GradientGrid(final char[][] level, GridMetric measurement) {
-        this.measurement = measurement;
-
-        initialize(level);
+        this(level, '#', measurement);
     }
 
     /**
      * Constructor meant to take a char[][] in a simple, classic-roguelike-ish format, where
-     * '#' means a wall and anything else (often '.' or ' ') is a walkable tile.
+     * {@code alternateWall} means a wall and anything else (often '.' or ' ') is a walkable tile.
      * Also takes a distance measurement, which you may want to set
      * to {@link GridMetric#MANHATTAN} for 4-way movement only, {@link GridMetric#CHEBYSHEV}
      * for unpredictable 8-way movement or {@link GridMetric#EUCLIDEAN} for more reasonable 8-way
      * movement that prefers straight lines. EUCLIDEAN usually looks the most natural.
-     * You can specify the character used for walls.
      *
      * @param level       a char[x][y] map where {@code alternateWall} is a wall, and anything else is walkable
      * @param alternateWall the char that indicates a wall in {@code level}
@@ -320,7 +316,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param level a 2D float array that should be used as the physicalMap for this GradientGrid
      * @return this for chaining
      */
-    public GradientGrid initialize(final float[][] level) {
+    public GradientGrid<P> initialize(final float[][] level) {
         int oldWidth = width, oldHeight = height;
         width = level.length;
         height = level[0].length;
@@ -348,27 +344,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param level a 2D char array that this will use to establish which cells are walls ('#' as wall, others as floor)
      * @return this for chaining
      */
-    public GradientGrid initialize(final char[][] level) {
-        int oldWidth = width, oldHeight = height;
-        width = level.length;
-        height = level[0].length;
-        if (width != oldWidth || height != oldHeight) {
-            gradientMap = new float[width][height];
-            physicalMap = new float[width][height];
-        }
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                float t = (level[x][y] == '#') ? WALL : FLOOR;
-                gradientMap[x][y] = t;
-                physicalMap[x][y] = t;
-            }
-        }
-        if (blocked == null)
-            blocked = new ObjectSet<>(32);
-        else
-            blocked.clear();
-        initialized = true;
-        return this;
+    public GradientGrid<P> initialize(final char[][] level) {
+        return initialize(level, '#');
     }
 
     /**
@@ -381,7 +358,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param alternateWall the char to consider a wall when it appears in level
      * @return this for chaining
      */
-    public GradientGrid initialize(final char[][] level, char alternateWall) {
+    public GradientGrid<P> initialize(final char[][] level, char alternateWall) {
         int oldWidth = width, oldHeight = height;
         width = level.length;
         height = level[0].length;
@@ -429,12 +406,12 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
 
     /**
      * If you for some reason have one of the internally-used ints produced by {@link #encode(Point2)}, this will write
-     * it into a PointI2 if you need it as such. You may prefer using {@link #decodeX(int)} and  {@link #decodeY(int)}
+     * it into a Point2 if you need it as such. You may prefer using {@link #decodeX(int)} and  {@link #decodeY(int)}
      * to get the x and y components independently and without involving objects.
      *
-     * @param changing a PointI2 that will be modified to receive the decoded coordinates
+     * @param changing a Point2 that will be modified to receive the decoded coordinates
      * @param encoded an encoded int that stores a 2D point; see {@link #encode(Point2)}
-     * @return the PointI2 that represents the same x,y position that the given encoded int stores
+     * @return the Point2 that represents the same x,y position that the given encoded int stores
      */
     public Point2<?> decode(Point2<?> changing, final int encoded) {
         return changing.set(encoded & 0xFFFF, encoded >>> 16);
@@ -457,7 +434,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * If you for some reason have one of the internally-used ints produced by {@link #encode(Point2)}, this will decode
      * the y component of the point encoded in that int. This is an extremely simple method that is equivalent to the
      * code {@code encoded >>> 16}. You probably would use this method in
-     * conjunction with {@link #decodeX(int)}, or would instead use {@link #decode(Point2, int)} to get a PointI2.
+     * conjunction with {@link #decodeX(int)}, or would instead use {@link #decode(Point2, int)} to get a Point2.
      *
      * @param encoded an encoded int; see {@link #encode(Point2)}
      * @return the y component of the position that the given encoded int stores
@@ -517,9 +494,9 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
 
     /**
      * Marks many cells as goals for pathfinding, ignoring cells in walls or unreachable areas. Simply loops through
-     * pts and calls {@link #setGoal(Point2)} on each PointI2 in pts.
+     * pts and calls {@link #setGoal(Point2)} on each Point2 in pts.
      *
-     * @param pts any Iterable of PointI2, which can be a List, Set, Queue, etc. of Coords to mark as goals
+     * @param pts any Iterable of Point2, which can be a List, Set, Queue, etc. of Coords to mark as goals
      */
     public void setGoals(Iterable<? extends Point2<?>> pts) {
         if (!initialized) return;
@@ -530,9 +507,9 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
 
     /**
      * Marks many cells as goals for pathfinding, ignoring cells in walls or unreachable areas. Simply loops through
-     * pts and calls {@link #setGoal(Point2)} on each PointI2 in pts.
+     * pts and calls {@link #setGoal(Point2)} on each Point2 in pts.
      *
-     * @param pts an array of PointI2 to mark as goals
+     * @param pts an array of Point2 to mark as goals
      */
     public void setGoals(Point2<?>[] pts) {
         if (!initialized) return;
@@ -592,10 +569,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         fresh.addFirst(encode(x, y));
     }
 
-    protected void setFresh(final PointI2 pt, float counter) {
-        if (!isWithin(pt, width, height) || gradientMap[pt.x][pt.y] < counter)
+    protected void setFresh(final Point2<?> pt, float counter) {
+        if (!isWithin(pt, width, height) || gradientMap[(int) pt.x()][(int) pt.y()] < counter)
             return;
-        gradientMap[pt.x][pt.y] = counter;
+        gradientMap[(int) pt.x()][(int) pt.y()] = counter;
         fresh.addFirst(encode(pt));
     }
 
@@ -623,7 +600,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * these areas should not be used to place NPCs or items and should be filled with walls). This uses the
      * current measurement. The result is stored in the {@link #gradientMap} field and a copy is returned.
      *
-     * @param impassable An Iterable of PointI2 keys representing the locations of enemies or other moving obstacles to a
+     * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
      * @return A 2D float[width][height] using the width and height of what this knows about the physical map.
      */
@@ -660,8 +637,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * are still FLOOR could not be reached from any goal), and the overloads of scan that return 2D float
      * arrays do change FLOOR to {@link #DARK}, which is usually treated similarly to {@link #WALL}.
      *
-     * @param start      a PointI2 representing the location of the pathfinder; may be null, which has this scan the whole map
-     * @param impassable An Iterable of PointI2 keys representing the locations of enemies or other moving obstacles to a
+     * @param start      a Point2 representing the location of the pathfinder; may be null, which has this scan the whole map
+     * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
      */
     public void scan(final Point2<?> start, final Iterable<? extends Point2<?>> impassable) {
@@ -688,8 +665,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * are still FLOOR could not be reached from any goal), and the overloads of scan that return 2D float
      * arrays do change FLOOR to {@link #DARK}, which is usually treated similarly to {@link #WALL}.
      *
-     * @param start          a PointI2 representing the location of the pathfinder; may be null, which has this scan the whole map
-     * @param impassable     An Iterable of PointI2 keys representing the locations of enemies or other moving obstacles to a
+     * @param start          a Point2 representing the location of the pathfinder; may be null, which has this scan the whole map
+     * @param impassable     An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                       path that cannot be moved through; this can be null if there are no such obstacles.
      * @param nonZeroOptimum if the cell to pathfind toward should have a value of {@link #GOAL} (0f), this should be
      *                       false; if it should have a different value or if you don't know, it should be true
@@ -807,7 +784,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * current measurement. The result is stored in the {@link #gradientMap} field and a copy is returned.
      *
      * @param limit      The maximum number of steps to scan outward from a goal.
-     * @param impassable A Collection of PointI2 keys representing the locations of enemies or other moving obstacles to a
+     * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
      * @return A 2D float[width][height] using the width and height of what this knows about the physical map.
      */
@@ -845,9 +822,9 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * partialScan that return 2D float arrays do change FLOOR to {@link #DARK}, which is usually treated similarly to
      * {@link #WALL}.
      *
-     * @param start      a PointI2 representing the location of the pathfinder; may be null to have this scan more of the map
+     * @param start      a Point2 representing the location of the pathfinder; may be null to have this scan more of the map
      * @param limit      The maximum number of steps to scan outward from a goal.
-     * @param impassable An Iterable of PointI2 keys representing the locations of enemies or other moving obstacles to a
+     * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
      */
     public void partialScan(final Point2<?> start, final int limit, final Iterable<? extends Point2<?>> impassable) {
@@ -873,9 +850,9 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * partialScan that return 2D float arrays do change FLOOR to {@link #DARK}, which is usually treated similarly to
      * {@link #WALL}.
      *
-     * @param start          a PointI2 representing the location of the pathfinder; may be null to have this scan more of the map
+     * @param start          a Point2 representing the location of the pathfinder; may be null to have this scan more of the map
      * @param limit          The maximum number of steps to scan outward from a goal.
-     * @param impassable     An Iterable of PointI2 keys representing the locations of enemies or other moving obstacles to a
+     * @param impassable     An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                       path that cannot be moved through; this can be null if there are no such obstacles.
      * @param nonZeroOptimum if the cell to pathfind toward should have a value of {@link #GOAL} (0f), this should be
      *                       false; if it should have a different value or if you don't know, it should be true
@@ -1000,7 +977,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * these areas should not be used to place NPCs or items and should be filled with walls). This uses the
      * current measurement.  The result is stored in the {@link #gradientMap} field and a copy is returned.
      *
-     * @param impassable An Iterable of PointI2 keys representing the locations of enemies or other moving obstacles to a
+     * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
      * @param size       The length of one side of a square creature using this to find a path, i.e. 2 for a 2x2 cell
      *                   creature. Non-square creatures are not supported because turning is really hard.
@@ -1044,7 +1021,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * are still FLOOR could not be reached from any goal), and the overloads of scan that return 2D float
      * arrays do change FLOOR to {@link #DARK}, which is usually treated similarly to {@link #WALL}.
      *
-     * @param impassable An Iterable of PointI2 keys representing the locations of enemies or other moving obstacles to a
+     * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
      * @param size       The length of one side of a square creature using this to find a path, i.e. 2 for a 2x2 cell
      *                   creature. Non-square creatures are not supported because turning is really hard.
@@ -1179,7 +1156,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * these areas should not be used to place NPCs or items and should be filled with walls). This uses the
      * current measurement.  The result is stored in the {@link #gradientMap} field and a copy is returned.
      *
-     * @param impassable An Iterable of PointI2 keys representing the locations of enemies or other moving obstacles to a
+     * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
      * @param size       The length of one side of a square creature using this to find a path, i.e. 2 for a 2x2 cell
      *                   creature. Non-square creatures are not supported because turning is really hard.
@@ -1223,7 +1200,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * are still FLOOR could not be reached from any goal), and the overloads of partialScan that return 2D float
      * arrays do change FLOOR to {@link #DARK}, which is usually treated similarly to {@link #WALL}.
      *
-     * @param impassable An Iterable of PointI2 keys representing the locations of enemies or other moving obstacles to a
+     * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
      * @param size       The length of one side of a square creature using this to find a path, i.e. 2 for a 2x2 cell
      *                   creature. Non-square creatures are not supported because turning is really hard.
@@ -1345,8 +1322,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
     }
 
     /**
-     * Scans the dungeon using GradientGrid.scan with the listed goals and start point, and returns a list
-     * of PointI2 positions (using the current measurement) needed to get closer to the closest reachable
+     * Scans the dungeon using GradientGrid.scan with the listed goals and start point, and returns a deque
+     * of Point2 positions (using the current measurement) needed to get closer to the closest reachable
      * goal. The maximum length of the returned list is given by length, which represents movement in a system where
      * a single move can be multiple cells if length is greater than 1 and should usually be 1 in standard roguelikes;
      * if moving the full length of the list would place the mover in a position shared  by one of the positions in
@@ -1360,10 +1337,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * each call to a pathfinding method.
      *
      * @param length       the length of the path to calculate
-     * @param impassable   a Set of impassable PointI2 positions that may change (not constant like walls); can be null
-     * @param onlyPassable a Set of PointI2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
+     * @param impassable     a Collection of impassable Point2 positions that may change (not constant like walls); can be null
+     * @param onlyPassable   a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start        the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
-     * @param targets      a vararg or array of PointI2 that this will try to pathfind toward
+     * @param targets      a Collection of PointI2 that this will try to pathfind toward
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
     public ObjectDeque<P> findPath(int length, Collection<? extends Point2<?>> impassable,
@@ -1390,10 +1367,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      *
      * @param length       the length of the path to calculate
      * @param scanLimit    how many cells away from a goal to actually process; negative to process whole map
-     * @param impassable   a Set of impassable PointI2 positions that may change (not constant like walls); can be null
-     * @param onlyPassable a Set of PointI2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
+     * @param impassable     a Collection of impassable Point2 positions that may change (not constant like walls); can be null
+     * @param onlyPassable   a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start        the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
-     * @param targets      a vararg or array of PointI2 that this will try to pathfind toward
+     * @param targets      a Collection of PointI2 that this will try to pathfind toward
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
     public ObjectDeque<P> findPath(int length, int scanLimit, Collection<? extends Point2<?>> impassable,
@@ -1423,10 +1400,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param buffer       an existing ObjectDeque of PointI2 that will have the result appended to it (in-place); if null, this will make a new ObjectDeque
      * @param length       the length of the path to calculate
      * @param scanLimit    how many cells away from a goal to actually process; negative to process whole map
-     * @param impassable   a Set of impassable PointI2 positions that may change (not constant like walls); can be null
-     * @param onlyPassable a Set of PointI2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
+     * @param impassable     a Collection of impassable Point2 positions that may change (not constant like walls); can be null
+     * @param onlyPassable   a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start        the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
-     * @param targets      a vararg or array of PointI2 that this will try to pathfind toward
+     * @param targets      a Collection of PointI2 that this will try to pathfind toward
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
     public ObjectDeque<P> findPath(ObjectDeque<P> buffer, int length, int scanLimit, Collection<? extends Point2<?>> impassable,
@@ -1619,10 +1596,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param minPreferredRange the (inclusive) lower bound of the distance this unit will try to keep from a target
      * @param maxPreferredRange the (inclusive) upper bound of the distance this unit will try to keep from a target
      * @param los               if true, this will only try to move toward cells with an unobstructed line-of-sight to the target
-     * @param impassable        a Set of impassable PointI2 positions that may change (not constant like walls); can be null
-     * @param onlyPassable      a Set of PointI2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
+     * @param impassable     a Collection of impassable Point2 positions that may change (not constant like walls); can be null
+     * @param onlyPassable   a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start             the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
-     * @param targets           a vararg or array of PointI2 that this will try to pathfind toward
+     * @param targets           a Collection of PointI2 that this will try to pathfind toward
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
     public ObjectDeque<P> findAttackPath(ObjectDeque<P> buffer, int moveLength,
@@ -1809,11 +1786,11 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      *
      * @param length            the length of the path to calculate
      * @param preferLongerPaths Set this to 1.2f if you aren't sure; it will probably need tweaking for different maps.
-     * @param impassable        a Set of impassable PointI2 positions that may change (not constant like walls); can be null
-     * @param onlyPassable      a Set of PointI2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
+     * @param impassable     a Collection of impassable Point2 positions that may change (not constant like walls); can be null
+     * @param onlyPassable   a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start             the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
-     * @param fearSources       a vararg or array of PointI2 positions to run away from
-     * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes away from fear sources. Copy of path.
+     * @param fearSources       a Collection of PointI2 positions to run away from
+     * @return an ObjectDeque of P that will contain the locations of this creature as it goes away from fear sources. Copy of path.
      */
     public ObjectDeque<P> findFleePath(int length, float preferLongerPaths, Collection<? extends Point2<?>> impassable,
                                            Collection<? extends Point2<?>> onlyPassable, Point2<?> start, Collection<Point2<?>> fearSources) {
@@ -1822,7 +1799,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
 
     /**
      * Scans the dungeon using GradientGrid.scan or GradientGrid.partialScan with the listed fearSources and start
-     * point, and returns a list of PointI2 positions (using this GradientGrid's metric) needed to get further from
+     * point, and returns a deque of P positions (using this GradientGrid's metric) needed to get further from
      * the closest fearSources, meant for running away. The maximum length of the returned list is given by length,
      * which represents movement in a system where a single move can be multiple cells if length is greater than 1 and
      * should usually be 1 in standard roguelikes; if moving the full length of the list would place the mover in a
@@ -1846,10 +1823,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param length            the length of the path to calculate
      * @param scanLimit         how many steps away from a fear source to calculate; negative scans the whole map
      * @param preferLongerPaths Set this to 1.2f if you aren't sure; it will probably need tweaking for different maps.
-     * @param impassable        a Set of impassable PointI2 positions that may change (not constant like walls); can be null
-     * @param onlyPassable      a Set of PointI2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
+     * @param impassable     a Collection of impassable Point2 positions that may change (not constant like walls); can be null
+     * @param onlyPassable   a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start             the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
-     * @param fearSources       a vararg or array of PointI2 positions to run away from
+     * @param fearSources       a Collection of PointI2 positions to run away from
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes away from fear sources. Copy of path.
      */
     public ObjectDeque<P> findFleePath(int length, int scanLimit, float preferLongerPaths, Collection<? extends Point2<?>> impassable,
@@ -1886,10 +1863,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param length            the length of the path to calculate
      * @param scanLimit         how many steps away from a fear source to calculate; negative scans the whole map
      * @param preferLongerPaths Set this to 1.2f if you aren't sure; it will probably need tweaking for different maps.
-     * @param impassable        a Set of impassable PointI2 positions that may change (not constant like walls); can be null
-     * @param onlyPassable      a Set of PointI2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
+     * @param impassable     a Collection of impassable Point2 positions that may change (not constant like walls); can be null
+     * @param onlyPassable   a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start             the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
-     * @param fearSources       a vararg or array of PointI2 positions to run away from
+     * @param fearSources       a Collection of PointI2 positions to run away from
      * @return an ObjectDeque of PointI2 that will contain the locations of this creature as it goes away from fear sources. Copy of path.
      */
     public ObjectDeque<P> findFleePath(ObjectDeque<P> buffer, int length, int scanLimit, float preferLongerPaths,
@@ -2273,5 +2250,19 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
 
     protected boolean wallQuery(int gx, int gy) {
         return isWithin(gx, gy, width, height) && physicalMap[gx][gy] == WALL;
+    }
+
+    /**
+     * The y-size of the map. If you want to change this, instead call initialize().
+     */
+    public int getHeight() {
+        return height;
+    }
+
+    /**
+     * The x-size of the map. If you want to change this, instead call initialize().
+     */
+    public int getWidth() {
+        return width;
     }
 }
