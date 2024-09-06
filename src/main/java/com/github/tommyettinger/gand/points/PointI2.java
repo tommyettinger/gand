@@ -137,6 +137,17 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
     }
 
     @Override
+    public int xi() {
+        return x;
+    }
+
+    @Override
+    public PointI2 xi(int next) {
+        x = next;
+        return this;
+    }
+
+    @Override
     public float y() {
         return y;
     }
@@ -147,9 +158,27 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
         return this;
     }
 
+    @Override
+    public int yi() {
+        return y;
+    }
+
+    @Override
+    public PointI2 yi(int next) {
+        y = next;
+        return this;
+    }
+
     public PointI2 set(float x, float y){
         this.x = round(x);
         this.y = round(y);
+        return this;
+    }
+
+    @Override
+    public PointI2 seti(int x, int y){
+        this.x = x;
+        this.y = y;
         return this;
     }
 
@@ -166,7 +195,7 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
     }
 
     /**
-     * Sets the coordinates of this PointI2.
+     * Sets the coordinates of this PointI2. Identical to {@link #seti(int, int)}.
      *
      * @param x X coordinate
      * @param y Y coordinate
@@ -174,15 +203,15 @@ public class PointI2 extends GridPoint2 implements Point2<PointI2>, Json.Seriali
      */
     @Override
     public PointI2 set(int x, int y) {
-        super.set(x, y);
-        return this;
+        return seti(x, y);
     }
 
     public PointI2 set(Point2<?> pt) {
-        x = round(pt.x());
-        y = round(pt.y());
+        x = pt.xi();
+        y = pt.yi();
         return this;
     }
+
     /**
      * Adds another point to this point.
      *

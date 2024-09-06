@@ -139,6 +139,17 @@ public class PointI3 extends GridPoint3 implements Point3<PointI3>, Json.Seriali
     }
 
     @Override
+    public int xi() {
+        return x;
+    }
+
+    @Override
+    public PointI3 xi(int next) {
+        x = next;
+        return this;
+    }
+
+    @Override
     public float y() {
         return y;
     }
@@ -146,6 +157,17 @@ public class PointI3 extends GridPoint3 implements Point3<PointI3>, Json.Seriali
     @Override
     public PointI3 y(float next) {
         y = round(next);
+        return this;
+    }
+
+    @Override
+    public int yi() {
+        return y;
+    }
+
+    @Override
+    public PointI3 yi(int next) {
+        y = next;
         return this;
     }
 
@@ -161,6 +183,17 @@ public class PointI3 extends GridPoint3 implements Point3<PointI3>, Json.Seriali
     }
 
     @Override
+    public int zi() {
+        return z;
+    }
+
+    @Override
+    public PointI3 zi(int next) {
+        z = next;
+        return this;
+    }
+
+    @Override
     public int hashCode() {
         return x * 0x1A36A9 ^ y * 0x157931 ^ z * 0x119725;
     }
@@ -169,6 +202,14 @@ public class PointI3 extends GridPoint3 implements Point3<PointI3>, Json.Seriali
         this.x = round(x);
         this.y = round(y);
         this.z = round(z);
+        return this;
+    }
+
+    @Override
+    public PointI3 seti(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
         return this;
     }
 
@@ -185,7 +226,7 @@ public class PointI3 extends GridPoint3 implements Point3<PointI3>, Json.Seriali
     }
 
     /**
-     * Sets the coordinates of this PointI3.
+     * Sets the coordinates of this PointI3. Identical to {@link #seti(int, int, int)}.
      *
      * @param x X coordinate
      * @param y Y coordinate
@@ -194,7 +235,13 @@ public class PointI3 extends GridPoint3 implements Point3<PointI3>, Json.Seriali
      */
     @Override
     public PointI3 set(int x, int y, int z) {
-        super.set(x, y, z);
+        return seti(x, y, z);
+    }
+
+    public PointI3 set(Point3<?> pt) {
+        x = pt.xi();
+        y = pt.yi();
+        z = pt.zi();
         return this;
     }
 
