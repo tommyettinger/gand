@@ -170,7 +170,7 @@ public class TestUtils {
         for (int i = 0; i < sideLength; i++) {
             for (int j = 0; j < sideLength; j++) {
                 if ((i & j & 1) == 0 || MathUtils.randomBoolean(0.3f))
-                    graph.addVertex(basis.cpy().set(i, j));
+                    graph.addVertex(basis.cpy().seti(i, j));
             }
         }
 
@@ -182,14 +182,14 @@ public class TestUtils {
                 if (!graph.contains(v1))
                     continue;
                 if (i < sideLength - 1) {
-                    v2.set(i + 1, j);
+                    v2.seti(i + 1, j);
                     if (graph.contains(v2)) {
                         graph.addEdge(v1, v2, v1.dst(v2));
                         if (graph.isDirected()) graph.addEdge(v2, v1, v1.dst(v2));
                     }
                 }
                 if (j < sideLength - 1) {
-                    v2.set(i, j + 1);
+                    v2.seti(i, j + 1);
                     if (graph.contains(v2)) {
                         graph.addEdge(v1, v2, v1.dst(v2));
                         if (graph.isDirected()) graph.addEdge(v2, v1, v1.dst(v2));

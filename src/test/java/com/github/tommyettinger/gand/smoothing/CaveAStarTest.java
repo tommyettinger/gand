@@ -335,7 +335,7 @@ public class CaveAStarTest extends PathFinderTestBase {
 					lastEndTileX = tileX;
 					lastEndTileY = tileY;
 				} else {
-					endVec.set(lastEndTileX, lastEndTileY);
+					endVec.seti(lastEndTileX, lastEndTileY);
 				}
 				path.clear();
 				path.addAll(pathFinder.algorithms().findShortestPath(startVec, endVec, heuristic, SearchStep::vertex));

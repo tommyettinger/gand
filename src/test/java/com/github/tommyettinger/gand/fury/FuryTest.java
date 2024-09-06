@@ -75,20 +75,20 @@ public class FuryTest {
 
         for (int i = 0; i < sideLength; i++) {
             for (int j = 0; j < sideLength; j++) {
-                graph.addVertex(basis.cpy().set(i, j));
+                graph.addVertex(basis.cpy().seti(i, j));
             }
         }
 
         for (int i = 0; i < sideLength; i++) {
             for (int j = 0; j < sideLength; j++) {
                 if (i<sideLength-1) {
-                    V v1 = basis.cpy().set(i, j), v2 = basis.cpy().set(i+1,j);
+                    V v1 = basis.cpy().seti(i, j), v2 = basis.cpy().seti(i+1,j);
                     float dst = v1.dst(v2);
                     graph.addEdge(v1, v2, dst);
                     if (graph.isDirected()) graph.addEdge(v2, v1, dst);
                 }
                 if (j<sideLength-1) {
-                    V v1 = basis.cpy().set(i, j), v2 = basis.cpy().set(i,j+1);
+                    V v1 = basis.cpy().seti(i, j), v2 = basis.cpy().seti(i,j+1);
                     float dst = v1.dst(v2);
                     graph.addEdge(v1, v2, dst);
                     if (graph.isDirected()) graph.addEdge(v2, v1, dst);
@@ -104,7 +104,7 @@ public class FuryTest {
         for (int i = 0; i < sideLength; i++) {
             for (int j = 0; j < sideLength; j++) {
                 for (int k = 0; k < sideLength; k++) {
-                    graph.addVertex(basis.cpy().set(i, j, k));
+                    graph.addVertex(basis.cpy().seti(i, j, k));
                 }
             }
         }
@@ -113,19 +113,19 @@ public class FuryTest {
             for (int j = 0; j < sideLength; j++) {
                 for (int k = 0; k < sideLength; k++) {
                     if (i < sideLength - 1) {
-                        V v1 = basis.cpy().set(i, j, k), v2 = basis.cpy().set(i + 1, j, k);
+                        V v1 = basis.cpy().seti(i, j, k), v2 = basis.cpy().seti(i + 1, j, k);
                         float dst = v1.dst(v2);
                         graph.addEdge(v1, v2, dst);
                         if (graph.isDirected()) graph.addEdge(v2, v1, dst);
                     }
                     if (j < sideLength - 1) {
-                        V v1 = basis.cpy().set(i, j, k), v2 = basis.cpy().set(i, j + 1, k);
+                        V v1 = basis.cpy().seti(i, j, k), v2 = basis.cpy().seti(i, j + 1, k);
                         float dst = v1.dst(v2);
                         graph.addEdge(v1, v2, dst);
                         if (graph.isDirected()) graph.addEdge(v2, v1, dst);
                     }
                     if (k < sideLength - 1) {
-                        V v1 = basis.cpy().set(i, j, k), v2 = basis.cpy().set(i, j, k + 1);
+                        V v1 = basis.cpy().seti(i, j, k), v2 = basis.cpy().seti(i, j, k + 1);
                         float dst = v1.dst(v2);
                         graph.addEdge(v1, v2, dst);
                         if (graph.isDirected()) graph.addEdge(v2, v1, dst);
