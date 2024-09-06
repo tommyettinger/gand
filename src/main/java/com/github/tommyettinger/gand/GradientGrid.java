@@ -63,8 +63,8 @@ import java.util.Random;
  * Other versions of this algorithm are also "out there" in various libraries. This class is abstract and is meant to be
  * subclassed with a concrete {@link Point2} implementation {@code P}, which in this library means {@link PointI2} being
  * used by {@link GradientGridI2}. Implementing classes don't need to do much; they have to provide a way to
- * {@link #acquire(float, float)} an instance of {@code P}, and if {@code P} is mutable, they should store some mutable
- * member instance, then modify and return it when {@link #workingEdit(float, float)} is called. Other than providing a
+ * {@link #acquire(int, int)} an instance of {@code P}, and if {@code P} is mutable, they should store some mutable
+ * member instance, then modify and return it when {@link #workingEdit(int, int)} is called. Other than providing a
  * constructor and probably calling an {@link #initialize} method where possible in constructors, the class can be
  * nearly empty.
  * <br>
@@ -91,22 +91,22 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param y the int y coordinate to use in the new {@code P}
      * @return a new or cached {@code P} instance
      */
-    protected abstract P acquire(float x, float y);
+    protected abstract P acquire(int x, int y);
 
     /**
-     * Simply calls {@link #acquire(float, float)} with {@code (other.x(), other.y())}.
+     * Simply calls {@link #acquire(int, int)} with {@code (other.xi(), other.yi())}.
      *
      * @param other any Point2 instance; does not have to be a {@code P}
      * @return a new or cached {@code P} instance with the same x and y values as {@code other}
      */
     protected P acquire(Point2<?> other) {
-        return acquire(other.x(), other.y());
+        return acquire(other.xi(), other.yi());
     }
 
     /**
      * An internal extension point for GradientGrid, this can be implemented in different ways depending on whether
      * {@code P} is a mutable or immutable type. If {@code P} is immutable, this doesn't need to be changed in the
-     * subclass, and the default behavior will simply return {@link #acquire(float, float)}. If {@code P} is mutable, you
+     * subclass, and the default behavior will simply return {@link #acquire(int, int)}. If {@code P} is mutable, you
      * will typically have a {@code P} instance as a member of your GradientGrid subclass, and calling this will set its
      * position to the x and y here, then return that member.
      *
@@ -114,18 +114,18 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param y the y coordinate that the working {@code P} will have
      * @return the working {@code P} if there is one, or a new {@code P} otherwise
      */
-    protected P workingEdit(float x, float y) {
+    protected P workingEdit(int x, int y) {
         return acquire(x, y);
     }
 
     /**
-     * Simply calls {@link #workingEdit(float, float)} with {@code (other.x(), other.y())}.
+     * Simply calls {@link #workingEdit(int, int)} with {@code (other.xi(), other.yi())}.
      *
      * @param other any Point2 instance; does not have to be a {@code P}
      * @return the working {@code P} if there is one, or a new {@code P} otherwise; will have {@code other}'s x and y
      */
     protected P workingEdit(Point2<?> other) {
-        return workingEdit(other.x(), other.y());
+        return workingEdit(other.xi(), other.yi());
     }
 
 
@@ -391,7 +391,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @return an int that encodes the given Point2
      */
     public int encode(final Point2<?> point) {
-        return (int) point.y() << 16 | ((int) point.x() & 0xFFFF);
+        return point.yi() << 16 | (point.xi() & 0xFFFF);
     }
 
     /**
@@ -416,7 +416,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @return the Point2 that represents the same x,y position that the given encoded int stores
      */
     public Point2<?> decode(Point2<?> changing, final int encoded) {
-        return changing.set(encoded & 0xFFFF, encoded >>> 16);
+        return changing.seti(encoded & 0xFFFF, encoded >>> 16);
     }
 
     /**
@@ -490,7 +490,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      * @param pt any Point2, such as a {@link PointI2}
      */
     public void setGoal(Point2<?> pt) {
-        setGoal((int) pt.x(), (int) pt.y());
+        setGoal(pt.xi(), pt.yi());
 
     }
 
@@ -549,7 +549,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      */
     public void resetCell(Point2<?> pt) {
         if (!initialized || !isWithin(pt, width, height)) return;
-        gradientMap[(int) pt.x()][(int) pt.y()] = physicalMap[(int) pt.x()][(int) pt.y()];
+        gradientMap[pt.xi()][pt.yi()] = physicalMap[pt.xi()][pt.yi()];
     }
 
     /**
@@ -572,9 +572,9 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
     }
 
     protected void setFresh(final Point2<?> pt, float counter) {
-        if (!isWithin(pt, width, height) || gradientMap[(int) pt.x()][(int) pt.y()] < counter)
+        if (!isWithin(pt, width, height) || gradientMap[pt.xi()][pt.yi()] < counter)
             return;
-        gradientMap[(int) pt.x()][(int) pt.y()] = counter;
+        gradientMap[pt.xi()][pt.yi()] = counter;
         fresh.addFirst(encode(pt));
     }
 
@@ -679,7 +679,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         if (impassable != null) {
             for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height))
-                    gradientMap[(int) pt.x()][(int) pt.y()] = WALL;
+                    gradientMap[pt.xi()][pt.yi()] = WALL;
             }
         }
         int dec, adjX, adjY, cen, cenX, cenY;
@@ -739,11 +739,11 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                         setFresh(adjX, adjY, cs);
                         ++numAssigned;
                         ++mappedCount;
-                        if (start != null && start.x() == adjX && start.y() == adjY) {
+                        if (start != null && start.xi() == adjX && start.yi() == adjY) {
                             if (impassable != null) {
                                 for (Point2<?> pt : impassable) {
                                     if (pt != null && isWithin(pt, width, height))
-                                        gradientMap[(int) pt.x()][(int) pt.y()] = physicalMap[(int) pt.x()][(int) pt.y()];
+                                        gradientMap[pt.xi()][pt.yi()] = physicalMap[pt.xi()][pt.yi()];
                                 }
                             }
                             return;
@@ -755,7 +755,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         if (impassable != null) {
             for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height))
-                    gradientMap[(int) pt.x()][(int) pt.y()] = physicalMap[(int) pt.x()][(int) pt.y()];
+                    gradientMap[pt.xi()][pt.yi()] = physicalMap[pt.xi()][pt.yi()];
             }
         }
     }
@@ -865,7 +865,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         if (impassable != null) {
             for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height))
-                    gradientMap[(int) pt.x()][(int) pt.y()] = WALL;
+                    gradientMap[pt.xi()][pt.yi()] = WALL;
             }
         }
         int dec, adjX, adjY, cen, cenX, cenY;
@@ -893,8 +893,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     }
                 }
             } else {
-                final int x0 = Math.max(0, (int) start.x() - limit), x1 = Math.min((int) start.x() + limit + 1, width),
-                        y0 = Math.max(0, (int) start.y() - limit), y1 = Math.min((int) start.y() + limit + 1, height);
+                final int x0 = Math.max(0, start.xi() - limit), x1 = Math.min(start.xi() + limit + 1, width),
+                        y0 = Math.max(0, start.yi() - limit), y1 = Math.min(start.yi() + limit + 1, height);
                 for (int x = x0; x < x1; x++) {
                     for (int y = y0; y < y1; y++) {
                         if (gradientMap[x][y] <= FLOOR) {
@@ -944,11 +944,11 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                         setFresh(adjX, adjY, cs);
                         ++numAssigned;
                         ++mappedCount;
-                        if (start != null && (int) start.x() == adjX && (int) start.y() == adjY) {
+                        if (start != null && start.xi() == adjX && start.yi() == adjY) {
                             if (impassable != null) {
                                 for (Point2<?> pt : impassable) {
                                     if (pt != null && isWithin(pt, width, height))
-                                        gradientMap[(int) pt.x()][(int) pt.y()] = physicalMap[(int) pt.x()][(int) pt.y()];
+                                        gradientMap[pt.xi()][pt.yi()] = physicalMap[pt.xi()][pt.yi()];
                                 }
                             }
                             return;
@@ -960,7 +960,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         if (impassable != null) {
             for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height))
-                    gradientMap[(int) pt.x()][(int) pt.y()] = physicalMap[(int) pt.x()][(int) pt.y()];
+                    gradientMap[pt.xi()][pt.yi()] = physicalMap[pt.xi()][pt.yi()];
             }
         }
     }
@@ -1035,7 +1035,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         if (impassable != null) {
             for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height))
-                    gradientMap[(int) pt.x()][(int) pt.y()] = WALL;
+                    gradientMap[pt.xi()][pt.yi()] = WALL;
             }
         }
         for (int xx = size; xx < width; xx++) {
@@ -1110,12 +1110,12 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                         setFresh(adjX, adjY, cs);
                         ++numAssigned;
                         ++mappedCount;
-                        if (start != null && (int) start.x() == adjX && (int) start.y() == adjY) {
+                        if (start != null && start.xi() == adjX && start.yi() == adjY) {
                             if (impassable != null) {
                                 for (Point2<?> pt : impassable) {
                                     if (pt != null && isWithin(pt, width, height)) {
-                                        for (int xs = (int) pt.x(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
-                                            for (int ys = (int) pt.y(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
+                                        for (int xs = pt.xi(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
+                                            for (int ys = pt.yi(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
                                                 gradientClone[xs][ys] = physicalMap[xs][ys];
                                             }
                                         }
@@ -1132,8 +1132,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         if (impassable != null) {
             for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height)) {
-                    for (int xs = (int) pt.x(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
-                        for (int ys = (int) pt.y(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
+                    for (int xs = pt.xi(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
+                        for (int ys = pt.yi(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
                             gradientClone[xs][ys] = physicalMap[xs][ys];
                         }
                     }
@@ -1214,7 +1214,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         if (impassable != null) {
             for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height))
-                    gradientMap[(int) pt.x()][(int) pt.y()] = WALL;
+                    gradientMap[pt.xi()][pt.yi()] = WALL;
             }
         }
         for (int xx = size; xx < width; xx++) {
@@ -1290,12 +1290,12 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                         setFresh(adjX, adjY, cs);
                         ++numAssigned;
                         ++mappedCount;
-                        if (start != null && (int) start.x() == adjX && (int) start.y() == adjY) {
+                        if (start != null && start.xi() == adjX && start.yi() == adjY) {
                             if (impassable != null) {
                                 for (Point2<?> pt : impassable) {
                                     if (pt != null && isWithin(pt, width, height)) {
-                                        for (int xs = (int) pt.x(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
-                                            for (int ys = (int) pt.y(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
+                                        for (int xs = pt.xi(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
+                                            for (int ys = pt.yi(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
                                                 gradientClone[xs][ys] = physicalMap[xs][ys];
                                             }
                                         }
@@ -1312,8 +1312,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         if (impassable != null) {
             for (Point2<?> pt : impassable) {
                 if (pt != null && isWithin(pt, width, height)) {
-                    for (int xs = (int) pt.x(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
-                        for (int ys = (int) pt.y(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
+                    for (int xs = pt.xi(), xi = 0; xi < size && xs >= 0; xs--, xi++) {
+                        for (int ys = pt.yi(), yi = 0; yi < size && ys >= 0; ys--, yi++) {
                             gradientClone[xs][ys] = physicalMap[xs][ys];
                         }
                     }
@@ -1442,7 +1442,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
             scan(start, blocked);
         else
             partialScan(start, scanLimit, blocked);
-        P currentPos = workingEdit(start.x(), start.y());
+        P currentPos = workingEdit(start.xi(), start.yi());
         float paidLength = 0f;
         rng.setState(start.hashCode(), targets.size());
         while (true) {
@@ -1451,20 +1451,20 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                 break;
             }
             currentPos = currentPos.cpy();
-            float best = gradientMap[(int) currentPos.x()][(int) currentPos.y()];
+            float best = gradientMap[currentPos.xi()][currentPos.yi()];
             appendDirToShuffle(rng);
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
-                int adjX = (int) currentPos.x() + dirs[d].deltaX;
-                int adjY = (int) currentPos.y() + dirs[d].deltaY;
+                int adjX = currentPos.xi() + dirs[d].deltaX;
+                int adjY = currentPos.yi() + dirs[d].deltaY;
                 if (adjX < 0 || adjY < 0 || adjX >= width || adjY >= height)
                     /* Outside the map */
                     continue;
                 if (dirs[d].isDiagonal() && blockingRequirement > 0) // diagonal
                 {
-                    if ((gradientMap[adjX][(int) currentPos.y()] > FLOOR ? 1 : 0)
-                            + (gradientMap[(int) currentPos.x()][adjY] > FLOOR ? 1 : 0)
+                    if ((gradientMap[adjX][currentPos.yi()] > FLOOR ? 1 : 0)
+                            + (gradientMap[currentPos.xi()][adjY] > FLOOR ? 1 : 0)
                             >= blockingRequirement)
                         continue;
                 }
@@ -1476,8 +1476,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     }
                 }
             }
-            int x = (int) currentPos.x();
-            int y = (int) currentPos.y();
+            int x = currentPos.xi();
+            int y = currentPos.yi();
             if (best >= gradientMap[x][y] || physicalMap[x + dirs[choice].deltaX][y + dirs[choice].deltaY] > FLOOR) {
                 cutShort = true;
                 frustration = 0;
@@ -1488,7 +1488,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     return buffer;
                 }
             }
-            currentPos = currentPos.set(x + dirs[choice].deltaX, y + dirs[choice].deltaY);
+            currentPos = currentPos.seti(x + dirs[choice].deltaX, y + dirs[choice].deltaY);
             path.add(currentPos);
             paidLength++;
             if (paidLength > length - 1f) {
@@ -1499,7 +1499,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                 }
                 break;
             }
-            if (gradientMap[(int) currentPos.x()][(int) currentPos.y()] == 0)
+            if (gradientMap[currentPos.xi()][currentPos.yi()] == 0)
                 break;
         }
         cutShort = false;
@@ -1661,18 +1661,17 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                 if (gradientMap[x][y] == WALL || gradientMap[x][y] == DARK)
                     continue;
                 if (gradientMap[x][y] >= minPreferredRange && gradientMap[x][y] <= maxPreferredRange) {
-                    workRay.a = workRay.a.set(x, y);
+                    workRay.a = workRay.a.seti(x, y);
                     for (Point2<?> goal : targets) {
                         if (!los || !Ortho2DRaycastCollisionDetector.collides(
-                                workRay.set(workRay.a, workRay.b.set(goal.x(), goal.y())), this::wallQuery)) {
+                                workRay.set(workRay.a, workRay.b.seti(goal.xi(), goal.yi())), this::wallQuery)) {
                             setGoal(x, y);
                             gradientMap[x][y] = 0;
                             continue CELL;
                         }
                     }
-                    gradientMap[x][y] = FLOOR;
-                } else
-                    gradientMap[x][y] = FLOOR;
+                }
+                gradientMap[x][y] = FLOOR;
             }
         }
         measurement = mess;
@@ -1684,7 +1683,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                 }
             }
         }
-        if (gradientMap[(int) start.x()][(int) start.y()] <= 0f) {
+        if (gradientMap[start.xi()][start.yi()] <= 0f) {
             cutShort = false;
             frustration = 0;
             goals.clear();
@@ -1705,20 +1704,20 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                 break;
             }
             currentPos = currentPos.cpy();
-            float best = gradientMap[(int) currentPos.x()][(int) currentPos.y()];
+            float best = gradientMap[currentPos.xi()][currentPos.yi()];
             appendDirToShuffle(rng);
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
-                int adjX = (int) currentPos.x() + dirs[d].deltaX;
-                int adjY = (int) currentPos.y() + dirs[d].deltaY;
+                int adjX = currentPos.xi() + dirs[d].deltaX;
+                int adjY = currentPos.yi() + dirs[d].deltaY;
                 if (adjX < 0 || adjY < 0 || adjX >= width || adjY >= height)
                     /* Outside the map */
                     continue;
                 if (dirs[d].isDiagonal() && blockingRequirement > 0) // diagonal
                 {
-                    if ((gradientMap[adjX][(int) currentPos.y()] > FLOOR ? 1 : 0)
-                            + (gradientMap[(int) currentPos.x()][adjY] > FLOOR ? 1 : 0)
+                    if ((gradientMap[adjX][currentPos.yi()] > FLOOR ? 1 : 0)
+                            + (gradientMap[currentPos.xi()][adjY] > FLOOR ? 1 : 0)
                             >= blockingRequirement)
                         continue;
                 }
@@ -1730,8 +1729,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     }
                 }
             }
-            int x = (int) currentPos.x();
-            int y = (int) currentPos.y();
+            int x = currentPos.xi();
+            int y = currentPos.yi();
             if (best >= gradientMap[x][y] || physicalMap[x + dirs[choice].deltaX][y + dirs[choice].deltaY] > FLOOR) {
                 cutShort = true;
                 frustration = 0;
@@ -1742,7 +1741,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     return buffer;
                 }
             }
-            currentPos = currentPos.set(x + dirs[choice].deltaX, y + dirs[choice].deltaY);
+            currentPos = currentPos.seti(x + dirs[choice].deltaX, y + dirs[choice].deltaY);
             path.add(currentPos);
             paidLength++;
             if (paidLength > moveLength - 1f) {
@@ -1754,7 +1753,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                 }
                 break;
             }
-            if (gradientMap[(int) currentPos.x()][(int) currentPos.y()] == 0)
+            if (gradientMap[currentPos.xi()][currentPos.yi()] == 0)
                 break;
         }
         cutShort = false;
@@ -1961,20 +1960,20 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
             }
             currentPos = currentPos.cpy();
 
-            float best = gradientMap[(int) currentPos.x()][(int) currentPos.y()];
+            float best = gradientMap[currentPos.xi()][currentPos.yi()];
             appendDirToShuffle(rng);
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
-                int adjX = (int) currentPos.x() + dirs[d].deltaX;
-                int adjY = (int) currentPos.y() + dirs[d].deltaY;
+                int adjX = currentPos.xi() + dirs[d].deltaX;
+                int adjY = currentPos.yi() + dirs[d].deltaY;
                 if (adjX < 0 || adjY < 0 || adjX >= width || adjY >= height)
                     /* Outside the map */
                     continue;
                 if (dirs[d].isDiagonal() && blockingRequirement > 0) // diagonal
                 {
-                    if ((gradientMap[adjX][(int) currentPos.y()] > FLOOR ? 1 : 0)
-                            + (gradientMap[(int) currentPos.x()][adjY] > FLOOR ? 1 : 0)
+                    if ((gradientMap[adjX][currentPos.yi()] > FLOOR ? 1 : 0)
+                            + (gradientMap[currentPos.xi()][adjY] > FLOOR ? 1 : 0)
                             >= blockingRequirement)
                         continue;
                 }
@@ -1986,7 +1985,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     }
                 }
             }
-            if (best >= gradientMap[(int) start.x()][(int) start.y()] || physicalMap[(int) currentPos.x() + dirs[choice].deltaX][(int) currentPos.y() + dirs[choice].deltaY] > FLOOR) {
+            if (best >= gradientMap[start.xi()][start.yi()] || physicalMap[currentPos.xi() + dirs[choice].deltaX][currentPos.yi() + dirs[choice].deltaY] > FLOOR) {
                 cutShort = true;
                 frustration = 0;
                 if (buffer == null)
@@ -1996,10 +1995,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     return buffer;
                 }
             }
-            currentPos = currentPos.set(currentPos.x() + dirs[choice].deltaX, currentPos.y() + dirs[choice].deltaY);
+            currentPos = currentPos.seti(currentPos.xi() + dirs[choice].deltaX, currentPos.yi() + dirs[choice].deltaY);
             if (!path.isEmpty()) {
                 Point2<?> last = path.peekLast();
-                if (gradientMap[(int) last.x()][(int) last.y()] <= gradientMap[(int) currentPos.x()][(int) currentPos.y()])
+                if (gradientMap[last.xi()][last.yi()] <= gradientMap[currentPos.xi()][currentPos.yi()])
                     break;
             }
             path.add(currentPos);
@@ -2065,7 +2064,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
             }
         }
         P currentPos = acquire(target);
-        if (gradientMap[(int) currentPos.x()][(int) currentPos.y()] <= FLOOR)
+        if (gradientMap[currentPos.xi()][currentPos.yi()] <= FLOOR)
             path.add(currentPos);
         else {
             if (buffer == null)
@@ -2077,20 +2076,20 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         rng.setState(target.hashCode(), 0x9E3779B97F4A7C15L);
         do {
             currentPos = currentPos.cpy();
-            float best = gradientMap[(int) currentPos.x()][(int) currentPos.y()];
+            float best = gradientMap[currentPos.xi()][currentPos.yi()];
             appendDirToShuffle(rng);
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
-                int adjX = (int) currentPos.x() + dirs[d].deltaX;
-                int adjY = (int) currentPos.y() + dirs[d].deltaY;
+                int adjX = currentPos.xi() + dirs[d].deltaX;
+                int adjY = currentPos.yi() + dirs[d].deltaY;
                 if (adjX < 0 || adjY < 0 || adjX >= width || adjY >= height)
                     /* Outside the map */
                     continue;
                 if (dirs[d].isDiagonal() && blockingRequirement > 0) // diagonal
                 {
-                    if ((gradientMap[adjX][(int) currentPos.y()] > FLOOR ? 1 : 0)
-                            + (gradientMap[(int) currentPos.x()][adjY] > FLOOR ? 1 : 0)
+                    if ((gradientMap[adjX][currentPos.yi()] > FLOOR ? 1 : 0)
+                            + (gradientMap[currentPos.xi()][adjY] > FLOOR ? 1 : 0)
                             >= blockingRequirement)
                         continue;
                 }
@@ -2103,7 +2102,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                 }
             }
 
-            if (best >= gradientMap[(int) currentPos.x()][(int) currentPos.y()] || physicalMap[(int) (currentPos.x() + dirs[choice].deltaX)][(int) (currentPos.y() + dirs[choice].deltaY)] > FLOOR) {
+            if (best >= gradientMap[currentPos.xi()][currentPos.yi()] || physicalMap[currentPos.xi() + dirs[choice].deltaX][currentPos.yi() + dirs[choice].deltaY] > FLOOR) {
                 cutShort = true;
                 if (buffer == null)
                     return new ObjectDeque<>(path);
@@ -2112,10 +2111,10 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     return buffer;
                 }
             }
-            currentPos = currentPos.set(currentPos.x() + dirs[choice].deltaX, currentPos.y() + dirs[choice].deltaY);
+            currentPos = currentPos.seti(currentPos.xi() + dirs[choice].deltaX, currentPos.yi() + dirs[choice].deltaY);
             path.addFirst(currentPos);
 
-        } while (gradientMap[(int) currentPos.x()][(int) currentPos.y()] != 0);
+        } while (gradientMap[currentPos.xi()][currentPos.yi()] != 0);
         cutShort = false;
         if (buffer == null)
             return new ObjectDeque<>(path);
@@ -2224,7 +2223,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
     }
 
     public static boolean isWithin(Point2<?> pt, int width, int height) {
-        return pt.x() >= 0 && pt.x() < width && pt.y() >= 0 && pt.y() < height;
+        return pt.xi() >= 0 && pt.xi() < width && pt.yi() >= 0 && pt.yi() < height;
     }
 
     private static final float[][] emptyFloats2D = new float[0][0];

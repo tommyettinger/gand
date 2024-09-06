@@ -73,12 +73,12 @@ public class GradientGridI2 extends GradientGrid<PointI2>{
     private transient final PointI2 workPt = new PointI2();
 
     @Override
-    protected PointI2 acquire(float x, float y) {
+    protected PointI2 acquire(int x, int y) {
         return new PointI2(x, y);
     }
 
     @Override
-    protected PointI2 workingEdit(float x, float y) {
+    protected PointI2 workingEdit(int x, int y) {
         return workPt.set(x, y);
     }
 
