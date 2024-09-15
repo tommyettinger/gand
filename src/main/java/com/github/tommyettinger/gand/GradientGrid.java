@@ -30,7 +30,6 @@ import com.github.tommyettinger.gand.utils.FlowRandom;
 import com.github.tommyettinger.gand.utils.GridMetric;
 
 import java.util.Collection;
-import java.util.Random;
 
 /**
  * A group of pathfinding algorithms that explore in all directions equally, and are commonly used when there is more
@@ -149,15 +148,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
     public static final float DARK = 999800f;
 
 
-    /**
-     * This affects how distance is measured on diagonal directions vs. orthogonal directions.
-     * {@link GridMetric#MANHATTAN} should form a diamond shape on a featureless map, while {@link GridMetric#CHEBYSHEV}
-     * and {@link GridMetric#EUCLIDEAN} will form a square. EUCLIDEAN does not affect the length of paths, though it
-     * will change the GradientGrid's gradientMap to have many non-integer values, and that in turn will make paths this
-     * finds much more realistic and smooth (favoring orthogonal directions unless a diagonal one is a better option).
-     * This defaults to EUCLIDEAN. You should set this to MANHATTAN if only 4-way movement is possible.
-     */
-    public GridMetric measurement = GridMetric.EUCLIDEAN;
+    private GridMetric measurement = GridMetric.EUCLIDEAN;
 
 
     /**
@@ -1452,7 +1443,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
             }
             currentPos = currentPos.cpy();
             float best = gradientMap[currentPos.xi()][currentPos.yi()];
-            appendDirToShuffle(rng);
+            appendDirToShuffle();
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
@@ -1705,7 +1696,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
             }
             currentPos = currentPos.cpy();
             float best = gradientMap[currentPos.xi()][currentPos.yi()];
-            appendDirToShuffle(rng);
+            appendDirToShuffle();
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
@@ -1961,7 +1952,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
             currentPos = currentPos.cpy();
 
             float best = gradientMap[currentPos.xi()][currentPos.yi()];
-            appendDirToShuffle(rng);
+            appendDirToShuffle();
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
@@ -2077,7 +2068,7 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         do {
             currentPos = currentPos.cpy();
             float best = gradientMap[currentPos.xi()][currentPos.yi()];
-            appendDirToShuffle(rng);
+            appendDirToShuffle();
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
@@ -2173,10 +2164,9 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
         this.blockingRequirement = Math.min(Math.max(blockingRequirement, 0), 2);
     }
 
-    protected void appendDirToShuffle(Random rng) {
+    protected void appendDirToShuffle() {
         switch (measurement) {
             case MANHATTAN:
-                System.arraycopy(Direction.CARDINALS, 0, dirs, 0, 4);
                 for (int i = 3; i > 0; i--) {
                     // equivalent to rng.nextInt(i+1), but here it can omit an unnecessary check and be inlined.
                     final int r = (int) ((i + 1) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
@@ -2184,11 +2174,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     dirs[r] = dirs[i];
                     dirs[i] = t;
                 }
-
-                dirs[4] = Direction.NONE;
                 break;
             case CHEBYSHEV:
-                System.arraycopy(Direction.OUTWARDS, 0, dirs, 0, 8);
                 for (int i = 7; i > 0; i--) {
                     // equivalent to rng.nextInt(i+1), but here it can omit an unnecessary check and be inlined.
                     final int r = (int) ((i + 1) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
@@ -2196,10 +2183,8 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     dirs[r] = dirs[i];
                     dirs[i] = t;
                 }
-                dirs[8] = Direction.NONE;
                 break;
             default:
-                System.arraycopy(Direction.OUTWARDS, 0, dirs, 0, 8);
                 for (int i = 3; i > 0; i--) {
                     // equivalent to rng.nextInt(i+1), but here it can omit an unnecessary check and be inlined.
                     final int r = (int) ((i + 1) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
@@ -2214,7 +2199,6 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
                     dirs[r] = dirs[j];
                     dirs[j] = t;
                 }
-                dirs[8] = Direction.NONE;
         }
     }
 
@@ -2264,5 +2248,29 @@ public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
      */
     public int getWidth() {
         return width;
+    }
+
+    /**
+     * This affects how distance is measured on diagonal directions vs. orthogonal directions.
+     * {@link GridMetric#MANHATTAN} should form a diamond shape on a featureless map, while {@link GridMetric#CHEBYSHEV}
+     * and {@link GridMetric#EUCLIDEAN} will form a square. EUCLIDEAN does not affect the length of paths, though it
+     * will change the GradientGrid's gradientMap to have many non-integer values, and that in turn will make paths this
+     * finds much more realistic and smooth (favoring orthogonal directions unless a diagonal one is a better option).
+     * This defaults to EUCLIDEAN. You should set this to MANHATTAN if only 4-way movement is possible.
+     */
+    public GridMetric getMeasurement() {
+        return measurement;
+    }
+
+    public void setMeasurement(GridMetric measurement) {
+        this.measurement = measurement;
+        if (measurement == GridMetric.MANHATTAN) {
+            System.arraycopy(Direction.CARDINALS, 0, dirs, 0, 4);
+            dirs[4] = Direction.NONE;
+        } else {
+            System.arraycopy(Direction.OUTWARDS, 0, dirs, 0, 8);
+            dirs[8] = Direction.NONE;
+        }
+
     }
 }

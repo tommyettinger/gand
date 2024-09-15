@@ -105,7 +105,7 @@ public class GradientGridI2 extends GradientGrid<PointI2>{
      * @param measurement          the distance calculation to use
      */
     public GradientGridI2(final float[][] level, GridMetric measurement) {
-        this.measurement = measurement;
+        this.setMeasurement(measurement);
         initialize(level);
     }
 
@@ -147,7 +147,7 @@ public class GradientGridI2 extends GradientGrid<PointI2>{
      * @param measurement how this should measure orthogonal vs. diagonal measurement, such as {@link GridMetric#MANHATTAN} for 4-way only movement
      */
     public GradientGridI2(final char[][] level, GridMetric measurement) {
-        this.measurement = measurement;
+        this.setMeasurement(measurement);
 
         initialize(level);
     }
@@ -166,7 +166,7 @@ public class GradientGridI2 extends GradientGrid<PointI2>{
      * @param measurement how this should measure orthogonal vs. diagonal measurement, such as {@link GridMetric#MANHATTAN} for 4-way only movement
      */
     public GradientGridI2(final char[][] level, char alternateWall, GridMetric measurement) {
-        this.measurement = measurement;
+        this.setMeasurement(measurement);
 
         initialize(level, alternateWall);
     }
