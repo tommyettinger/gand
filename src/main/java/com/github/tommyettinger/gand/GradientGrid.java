@@ -17,7 +17,6 @@
 package com.github.tommyettinger.gand;
 
 import com.github.tommyettinger.crux.Point2;
-import com.github.tommyettinger.crux.PointN;
 import com.github.tommyettinger.crux.PointPair;
 import com.github.tommyettinger.gand.ds.IntDeque;
 import com.github.tommyettinger.gand.ds.IntList;
@@ -78,13 +77,13 @@ import java.util.Collection;
  * or {@link Int2DirectedGraph} will be better fits. Int2DirectedGraph and similar versions of
  * {@link DirectedGraph} can handle even very complicated kinds of map.
  */
-public abstract class GradientGrid<P extends PointN<P> & Point2<P>> {
+public abstract class GradientGrid<P extends Point2<P>> {
 
     /**
      * The main extension point for GradientGrid, this must be implemented with some way of obtaining a {@code P}
      * instance, which might simply be {@code return new PointI2(x, y);} if {@code P} is {@link PointI2}.
-     * Implementations might employ a cache to avoid allocating points. Even though x and y are floats here to allow for
-     * the most flexibility, they are almost always small-ish (less than 10,000) non-negative ints.
+     * Implementations might employ a cache to avoid allocating points. Here, x and y are almost always small-ish
+     * (less than 10,000) non-negative ints.
      *
      * @param x the int x coordinate to use in the new {@code P}
      * @param y the int y coordinate to use in the new {@code P}
