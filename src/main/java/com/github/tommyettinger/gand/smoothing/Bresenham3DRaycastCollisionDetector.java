@@ -19,17 +19,20 @@ package com.github.tommyettinger.gand.smoothing;
 import com.github.tommyettinger.crux.Point3;
 import com.github.tommyettinger.crux.PointPair;
 import com.github.tommyettinger.gand.utils.IntIntIntPredicate;
+import com.github.tommyettinger.gdcrux.PointF3;
+import com.github.tommyettinger.gdcrux.PointI2;
+import com.github.tommyettinger.gdcrux.PointI3;
 
 /** A raycast collision detector used for path smoothing in 3D, with cells considered passable if a predicate returns
  * true. This treats diagonally-connected passable cells as connected. It uses Bresenham's line algorithm.
  * <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">See Wikipedia</a> for more info.
  * <br>
  * This is typically used by passing in a lambda that either looks up a value in a 3D array (and should check the bounds
- * of the array against the indices given), or sets a {@link com.github.tommyettinger.gand.points.PointI3} with the int
+ * of the array against the indices given), or sets a {@link PointI3} with the int
  * parameters and looks that up in a map or set. The former might look like:
  * {@code (x, y, z) -> x >= 0 && x < booleanWorld.length && y >= 0 && y < booleanWorld[x].length && z >= 0 && z < booleanWorld[x][y].length && booleanWorld[x][y][z]} .
  *
- * @param <P> typically {@link com.github.tommyettinger.gand.points.PointI3} or {@link com.github.tommyettinger.gand.points.PointF3}
+ * @param <P> typically {@link PointI3} or {@link PointF3}
  * @author davebaol */
 public class Bresenham3DRaycastCollisionDetector<P extends Point3<P>> implements RaycastCollisionDetector<P> {
 	private final IntIntIntPredicate predicate;
@@ -39,7 +42,7 @@ public class Bresenham3DRaycastCollisionDetector<P extends Point3<P>> implements
 	 * is passable.
 	 * <br>
 	 * {@code predicate} is typically a lambda that either looks up a value in a 3D array (and should check the bounds
-	 * of the array against the indices given), or sets a {@link com.github.tommyettinger.gand.points.PointI2} with the
+	 * of the array against the indices given), or sets a {@link PointI2} with the
 	 * int parameters and looks that up in a map or set. The former might look like:
 	 * {@code (x, y, z) -> x >= 0 && x < booleanWorld.length && y >= 0 && y < booleanWorld[x].length && z >= 0 && z < booleanWorld[x][y].length && booleanWorld[x][y][z]} .
 	 * @param predicate should bounds-check an x,y,z point and return true if it is considered passable

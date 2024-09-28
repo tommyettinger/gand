@@ -19,6 +19,8 @@ package com.github.tommyettinger.gand.smoothing;
 import com.github.tommyettinger.crux.Point2;
 import com.github.tommyettinger.crux.PointPair;
 import com.github.tommyettinger.gand.utils.IntIntPredicate;
+import com.github.tommyettinger.gdcrux.PointF2;
+import com.github.tommyettinger.gdcrux.PointI2;
 
 /** A raycast collision detector used for path smoothing in 2D, with cells considered passable if a predicate returns
  * true. This only considers orthogonally-touching cells as connected.
@@ -26,11 +28,11 @@ import com.github.tommyettinger.gand.utils.IntIntPredicate;
  * The algorithm is from <a href="http://www.redblobgames.com/grids/line-drawing.html#stepping">Red Blob Games</a>.
  * <br>
  * This is typically used by passing in a lambda that either looks up a value in a 2D array (and should check the bounds
- * of the array against the indices given), or sets a {@link com.github.tommyettinger.gand.points.PointI2} with the int
+ * of the array against the indices given), or sets a {@link PointI2} with the int
  * parameters and looks that up in a map or set. The former might look like:
  * {@code (x, y) -> x >= 0 && x < booleanWorld.length && y >= 0 && y < booleanWorld[x].length && booleanWorld[x][y]} .
  *
- * @param <P> typically {@link com.github.tommyettinger.gand.points.PointI2} or {@link com.github.tommyettinger.gand.points.PointF2}
+ * @param <P> typically {@link PointI2} or {@link PointF2}
  */
 public class Ortho2DRaycastCollisionDetector<P extends Point2<P>> implements RaycastCollisionDetector<P> {
 	private final IntIntPredicate predicate;
@@ -40,7 +42,7 @@ public class Ortho2DRaycastCollisionDetector<P extends Point2<P>> implements Ray
 	 * is passable.
 	 * <br>
 	 * {@code predicate} is typically a lambda that either looks up a value in a 2D array (and should check the bounds
-	 * of the array against the indices given), or sets a {@link com.github.tommyettinger.gand.points.PointI2} with the
+	 * of the array against the indices given), or sets a {@link PointI2} with the
 	 * int parameters and looks that up in a map or set. The former might look like:
 	 * {@code (x, y) -> x >= 0 && x < booleanWorld.length && y >= 0 && y < booleanWorld[x].length && booleanWorld[x][y]} .
 	 * @param predicate should bounds-check an x,y point and return true if it is considered passable

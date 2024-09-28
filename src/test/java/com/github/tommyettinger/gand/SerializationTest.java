@@ -5,8 +5,8 @@ import com.badlogic.gdx.utils.Json;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
 import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
 import com.github.tommyettinger.gand.ds.ObjectSet;
-import com.github.tommyettinger.gand.points.PointF2;
-import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gdcrux.PointF2;
+import com.github.tommyettinger.gdcrux.PointI2;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -22,7 +22,7 @@ import com.github.tommyettinger.gand.ds.IntDeque;
 import com.github.tommyettinger.gand.ds.IntList;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
 import com.github.tommyettinger.gand.ds.ObjectSet;
-import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gand.smoothing.Ortho2DRaycastCollisionDetector;
 import com.github.tommyettinger.gand.utils.Direction;
 import com.github.tommyettinger.gand.utils.FlowRandom;

@@ -16,7 +16,7 @@
 
 package com.github.tommyettinger.gand.smoothing;
 
-import com.github.tommyettinger.gand.points.PointF2;
+import com.github.tommyettinger.gdcrux.PointF2;
 import com.github.tommyettinger.crux.PointPair;
 
 /** A raycast collision detector used for path smoothing against a simple 2D char array as a map.

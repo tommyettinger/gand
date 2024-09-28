@@ -33,7 +33,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 import com.github.tommyettinger.digital.ArrayTools;
 import com.github.tommyettinger.gand.GradientGridI2;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
-import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gand.utils.GridMetric;
 import com.github.tommyettinger.random.EnhancedRandom;
 import com.github.tommyettinger.random.WhiskerRandom;

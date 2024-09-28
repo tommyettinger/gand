@@ -17,12 +17,12 @@
 package com.github.tommyettinger.gand;
 
 import com.github.tommyettinger.gand.ds.ObjectDeque;
-import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gand.utils.GridMetric;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.github.tommyettinger.gand.points.PointMaker.pt;
+import static com.github.tommyettinger.gdcrux.PointMaker.pt;
 
 public class TestGradientGridI2 {
     /**

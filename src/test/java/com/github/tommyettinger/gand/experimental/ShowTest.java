@@ -5,7 +5,7 @@ import com.github.tommyettinger.cringe.RandomAce320;
 import com.github.tommyettinger.gand.Int2UndirectedGraph;
 import com.github.tommyettinger.gand.Path;
 import com.github.tommyettinger.gand.TestUtils;
-import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gand.TwistedLineI2;
 
 public class ShowTest {

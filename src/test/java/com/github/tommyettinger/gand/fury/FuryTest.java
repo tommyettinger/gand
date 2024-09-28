@@ -21,10 +21,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.github.tommyettinger.crux.Point2;
 import com.github.tommyettinger.crux.Point3;
 import com.github.tommyettinger.gand.*;
-import com.github.tommyettinger.gand.points.PointF2;
-import com.github.tommyettinger.gand.points.PointF3;
-import com.github.tommyettinger.gand.points.PointI2;
-import com.github.tommyettinger.gand.points.PointI3;
+import com.github.tommyettinger.gdcrux.PointF2;
+import com.github.tommyettinger.gdcrux.PointF3;
+import com.github.tommyettinger.gdcrux.PointI2;
+import com.github.tommyettinger.gdcrux.PointI3;
 import org.apache.fury.Fury;
 import org.apache.fury.config.Language;
 import org.junit.Assert;
@@ -33,7 +33,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-import static com.github.tommyettinger.gand.points.PointMaker.pt;
+import static com.github.tommyettinger.gdcrux.PointMaker.pt;
 
 /**
  * Testing for serialization and deserialization with <a href="https://fury.apache.org">Fury</a>.

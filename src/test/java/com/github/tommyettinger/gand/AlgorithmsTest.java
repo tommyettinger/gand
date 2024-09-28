@@ -26,10 +26,10 @@ package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.NumberUtils;
-import com.github.tommyettinger.gand.points.PointF2;
-import com.github.tommyettinger.gand.points.PointF3;
-import com.github.tommyettinger.gand.points.PointI2;
-import com.github.tommyettinger.gand.points.PointI3;
+import com.github.tommyettinger.gdcrux.PointF2;
+import com.github.tommyettinger.gdcrux.PointF3;
+import com.github.tommyettinger.gdcrux.PointI2;
+import com.github.tommyettinger.gdcrux.PointI3;
 import com.github.tommyettinger.gand.utils.Heuristic;
 import com.github.tommyettinger.gand.utils.SearchProcessor;
 import org.junit.Test;

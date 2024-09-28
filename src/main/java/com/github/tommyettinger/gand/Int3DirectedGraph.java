@@ -2,7 +2,7 @@ package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
-import com.github.tommyettinger.gand.points.PointI3;
+import com.github.tommyettinger.gdcrux.PointI3;
 import com.github.tommyettinger.gand.utils.Heuristic;
 
 import java.util.Arrays;

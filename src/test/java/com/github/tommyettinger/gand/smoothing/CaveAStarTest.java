@@ -32,7 +32,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.github.tommyettinger.gand.Float2UndirectedGraph;
 import com.github.tommyettinger.gand.Path;
 import com.github.tommyettinger.gand.algorithms.SearchStep;
-import com.github.tommyettinger.gand.points.PointF2;
+import com.github.tommyettinger.gdcrux.PointF2;
 import com.github.tommyettinger.gand.utils.Heuristic;
 
 /** This test shows how a {@link Float2UndirectedGraph} can be used on a grid-based map with no diagonal movement.

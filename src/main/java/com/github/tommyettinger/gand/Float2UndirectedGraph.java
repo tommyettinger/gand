@@ -2,8 +2,7 @@ package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.NumberUtils;
-import com.github.tommyettinger.gand.points.PointF2;
+import com.github.tommyettinger.gdcrux.PointF2;
 import com.github.tommyettinger.gand.utils.Heuristic;
 
 import java.util.Collection;

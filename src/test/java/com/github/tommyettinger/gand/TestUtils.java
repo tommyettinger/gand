@@ -30,9 +30,9 @@ import com.github.tommyettinger.cringe.ContinuousNoise;
 import com.github.tommyettinger.cringe.FoamNoise;
 import com.github.tommyettinger.crux.Point2;
 import com.github.tommyettinger.crux.Point3;
-import com.github.tommyettinger.gand.points.PointF2;
-import com.github.tommyettinger.gand.points.PointF3;
-import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gdcrux.PointF2;
+import com.github.tommyettinger.gdcrux.PointF3;
+import com.github.tommyettinger.gdcrux.PointI2;
 
 public class TestUtils {
     public static Graph<Vector2> makeGridGraph(Graph<Vector2> graph, int n) {

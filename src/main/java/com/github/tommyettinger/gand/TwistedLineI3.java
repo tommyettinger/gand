@@ -18,7 +18,7 @@ package com.github.tommyettinger.gand;
 
 import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
 import com.github.tommyettinger.gand.ds.ObjectSet;
-import com.github.tommyettinger.gand.points.PointI3;
+import com.github.tommyettinger.gdcrux.PointI3;
 import com.github.tommyettinger.gand.utils.FlowRandom;
 
 import java.util.Collection;

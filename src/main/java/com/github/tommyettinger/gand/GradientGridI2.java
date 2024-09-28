@@ -17,8 +17,9 @@
 package com.github.tommyettinger.gand;
 
 import com.github.tommyettinger.crux.Point2;
-import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gand.utils.GridMetric;
+import com.github.tommyettinger.gdcrux.PointF2;
 
 import java.util.Collection;
 
@@ -53,7 +54,7 @@ import java.util.Collection;
  * Other versions of this algorithm are also "out there" in various libraries. This implementation is different from the
  * kinds in SquidLib and SquidSquad in that it permits the interface {@link Point2} for most places a 2D point could be
  * given to it, but when this produces any points, it uses the class {@link PointI2}. You can, awkwardly, pass
- * {@link com.github.tommyettinger.gand.points.PointF2} as a Point2 here, but it has to be rounded or cast to an int for
+ * {@link PointF2} as a Point2 here, but it has to be rounded or cast to an int for
  * this class to use it, and unless every coordinate in your PointF2 values has no fractional part, you're much
  * better-off using PointI2 (or some other integer-based Point2, such as Coord in SquidSquad).
  * <br>

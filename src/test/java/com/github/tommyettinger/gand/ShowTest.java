@@ -2,7 +2,7 @@ package com.github.tommyettinger.gand;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.github.tommyettinger.cringe.RandomAce320;
-import com.github.tommyettinger.gand.points.PointI2;
+import com.github.tommyettinger.gdcrux.PointI2;
 
 import java.util.ArrayList;
 

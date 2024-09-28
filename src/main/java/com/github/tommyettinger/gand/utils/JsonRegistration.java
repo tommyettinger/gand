@@ -3,7 +3,10 @@ package com.github.tommyettinger.gand.utils;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
-import com.github.tommyettinger.gand.points.*;
+import com.github.tommyettinger.gdcrux.PointF2;
+import com.github.tommyettinger.gdcrux.PointF3;
+import com.github.tommyettinger.gdcrux.PointI2;
+import com.github.tommyettinger.gdcrux.PointI3;
 
 /**
  * Utility methods to register common Vector/GridPoint types with an instance of libGDX {@link Json}.
