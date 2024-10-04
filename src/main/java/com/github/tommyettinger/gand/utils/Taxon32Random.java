@@ -53,6 +53,18 @@ public class Taxon32Random extends Random {
     }
 
     /**
+     * Creates a new Taxon32Random with the given seed; all {@code int} values are permitted for seed.
+     * The seed will be passed to {@link #setSeed(int)} to attempt to adequately distribute the seed randomly,
+     * but only 2 to the 32 initial states are possible.
+     *
+     * @param seed any {@code long} value
+     */
+    public Taxon32Random(int seed) {
+        super(seed);
+        setSeed(seed);
+    }
+
+    /**
      * Creates a new Taxon32Random with the given seed; all {@code long} values are permitted.
      * The seed will be passed to {@link #setSeed(long)} to attempt to adequately distribute the seed randomly.
      *
@@ -118,6 +130,19 @@ public class Taxon32Random extends Random {
     public void setSeed(long seed) {
         stateA = (int) seed;
         stateB = (int) (seed >>> 32);
+    }
+
+    /**
+     * This initializes both states of the generator to values based on the given seed.
+     * (2 to the 32) possible initial generator states can be produced here; some will return the same first result for
+     * {@link #nextInt()} as other seeds, but all seeds will start at different points in the same sequence of 2 to the
+     * 64 outputs for {@link #nextInt()}.
+     *
+     * @param seed the initial seed; may be any long
+     */
+    public void setSeed(int seed) {
+        stateA = seed;
+        stateB = ~seed;
     }
 
     public int getStateA() {

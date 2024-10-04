@@ -7,6 +7,7 @@
      <inherits name="com.github.tommyettinger.gand" />
   -->
 <module>
+    <super-source path="emu" />
     <source path="gand"/>
     <inherits name="com.github.tommyettinger.crux" />
     <inherits name="com.badlogic.gdx.backends.gdx_backends_gwt" />
