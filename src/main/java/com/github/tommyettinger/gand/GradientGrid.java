@@ -22,10 +22,10 @@ import com.github.tommyettinger.gand.ds.IntDeque;
 import com.github.tommyettinger.gand.ds.IntList;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
 import com.github.tommyettinger.gand.ds.ObjectSet;
+import com.github.tommyettinger.gand.utils.Choo32Random;
 import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gand.smoothing.Ortho2DRaycastCollisionDetector;
 import com.github.tommyettinger.gand.utils.Direction;
-import com.github.tommyettinger.gand.utils.FlowRandom;
 import com.github.tommyettinger.gand.utils.GridMetric;
 
 import java.util.Collection;
@@ -193,11 +193,11 @@ public abstract class GradientGrid<P extends Point2<P>> {
     protected IntDeque fresh = new IntDeque(256);
 
     /**
-     * The {@link FlowRandom} used to decide which one of multiple equally-short paths to take; this has its state set
+     * The {@link Choo32Random} used to decide which one of multiple equally-short paths to take; this has its state set
      * deterministically before any usage. There will only be one path produced for a given set of parameters, and it
      * will be returned again and again if the same parameters are requested.
      */
-    protected final FlowRandom rng = new FlowRandom(0L, 0x9E3779B97F4A7C15L);
+    protected final Choo32Random rng = new Choo32Random(0x9E37, 0x79B9, 0x7F4A, 0x7C15);
     protected transient int frustration;
 
     protected final Direction[] dirs = new Direction[9];
@@ -1434,7 +1434,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
             partialScan(start, scanLimit, blocked);
         P currentPos = workingEdit(start.xi(), start.yi());
         float paidLength = 0f;
-        rng.setState(start.hashCode(), targets.size());
+        rng.setState(start.xi(), start.yi(), targets.size(), blocked.size());
         while (true) {
             if (frustration > 500) {
                 path.clear();
@@ -1687,7 +1687,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
         }
         P currentPos = workingEdit(start);
         float paidLength = 0f;
-        rng.setState(start.hashCode(), targets.size());
+        rng.setState(start.xi(), start.yi(), targets.size(), blocked.size());
         while (true) {
             if (frustration > 500) {
                 path.clear();
@@ -1941,7 +1941,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
         }
         P currentPos = workingEdit(start);
         float paidLength = 0f;
-        rng.setState(start.hashCode(), fearSources.size());
+        rng.setState(start.xi(), start.yi(), fearSources.size(), blocked.size());
 
         while (true) {
             if (frustration > 500) {
@@ -2063,7 +2063,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
                 return buffer;
             }
         }
-        rng.setState(target.hashCode(), 0x9E3779B97F4A7C15L);
+        rng.setState(target.xi(), target.yi(), 12345, 6789);
         do {
             currentPos = currentPos.cpy();
             float best = gradientMap[currentPos.xi()][currentPos.yi()];
@@ -2169,7 +2169,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
                 for (int i = 3; i > 0; i--) {
                     // roughly equivalent to rng.nextInt(i+1), but we don't need 32 random bits to get a random int no
                     // larger than 3, so we can use int math here.
-                    final int r = ((i + 1) * (rng.next(16) & 0xFFFF) >>> 16);
+                    final int r = ((i + 1) * (rng.nextInt() & 0xFFFF) >>> 16);
                     Direction t = dirs[r];
                     dirs[r] = dirs[i];
                     dirs[i] = t;
@@ -2179,7 +2179,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
                 for (int i = 7; i > 0; i--) {
                     // roughly equivalent to rng.nextInt(i+1), but we don't need 32 random bits to get a random int no
                     // larger than 7, so we can use int math here.
-                    final int r = ((i + 1) * (rng.next(16) & 0xFFFF) >>> 16);
+                    final int r = ((i + 1) * (rng.nextInt() & 0xFFFF) >>> 16);
                     Direction t = dirs[r];
                     dirs[r] = dirs[i];
                     dirs[i] = t;
@@ -2189,7 +2189,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
                 for (int i = 3; i > 0; i--) {
                     // roughly equivalent to rng.nextInt(i+1), but we don't need 32 random bits to get a random int no
                     // larger than 3, so we can use int math here.
-                    final int r = ((i + 1) * (rng.next(16) & 0xFFFF) >>> 16);
+                    final int r = ((i + 1) * (rng.nextInt() & 0xFFFF) >>> 16);
                     Direction t = dirs[r];
                     dirs[r] = dirs[i];
                     dirs[i] = t;
@@ -2197,7 +2197,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
                 for (int j = 7; j > 4; j--) {
                     // roughly equivalent to 4+rng.nextInt(j-3), but we don't need 32 random bits to get a random int no
                     // larger than 3, so we can use int math here.
-                    final int r = 4 + ((j - 3) * (rng.next(16) & 0xFFFF) >>> 16);
+                    final int r = 4 + ((j - 3) * (rng.nextInt() & 0xFFFF) >>> 16);
                     Direction t = dirs[r];
                     dirs[r] = dirs[j];
                     dirs[j] = t;
