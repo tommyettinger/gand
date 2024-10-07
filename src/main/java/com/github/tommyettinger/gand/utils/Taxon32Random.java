@@ -25,7 +25,9 @@ import java.util.Random;
  * A random number generator that is optimized for performance on 32-bit machines and with Google Web Toolkit, this uses
  * only the most portable operations (including compatibility with JS), and has a period of exactly 2 to the 64.
  * This is a drop-in replacement for {@link Random} that adds few new APIs, but is faster, has better statistical
- * quality, and has a guaranteed longer minimum period (also called cycle length). This is nearly identical to
+ * quality, and has a guaranteed longer minimum period (also called cycle length).
+ * <br>
+ * This is nearly identical to
  * Taxon32Random in the Juniper library, and uses the same algorithm, but only extends Random, not Juniper's
  * EnhancedRandom class. If you depend on Juniper, you lose nothing from using the EnhancedRandom classes (they also
  * extend Random), but this class doesn't have as many features as Juniper's Taxon32Random. This doesn't depend on
