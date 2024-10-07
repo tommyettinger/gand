@@ -1442,7 +1442,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
             }
             currentPos = currentPos.cpy();
             float best = gradientMap[currentPos.xi()][currentPos.yi()];
-            appendDirToShuffle();
+            shuffleDirs();
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
@@ -1695,7 +1695,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
             }
             currentPos = currentPos.cpy();
             float best = gradientMap[currentPos.xi()][currentPos.yi()];
-            appendDirToShuffle();
+            shuffleDirs();
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
@@ -1951,7 +1951,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
             currentPos = currentPos.cpy();
 
             float best = gradientMap[currentPos.xi()][currentPos.yi()];
-            appendDirToShuffle();
+            shuffleDirs();
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
@@ -2067,7 +2067,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
         do {
             currentPos = currentPos.cpy();
             float best = gradientMap[currentPos.xi()][currentPos.yi()];
-            appendDirToShuffle();
+            shuffleDirs();
             int choice = 0;
 
             for (int d = 0; d <= measurement.directionCount(); d++) {
@@ -2163,12 +2163,13 @@ public abstract class GradientGrid<P extends Point2<P>> {
         this.blockingRequirement = Math.min(Math.max(blockingRequirement, 0), 2);
     }
 
-    protected void appendDirToShuffle() {
+    protected void shuffleDirs() {
         switch (measurement) {
             case MANHATTAN:
                 for (int i = 3; i > 0; i--) {
-                    // equivalent to rng.nextInt(i+1), but here it can omit an unnecessary check and be inlined.
-                    final int r = (int) ((i + 1) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
+                    // roughly equivalent to rng.nextInt(i+1), but we don't need 32 random bits to get a random int no
+                    // larger than 3, so we can use int math here.
+                    final int r = ((i + 1) * (rng.next(16) & 0xFFFF) >>> 16);
                     Direction t = dirs[r];
                     dirs[r] = dirs[i];
                     dirs[i] = t;
@@ -2176,8 +2177,9 @@ public abstract class GradientGrid<P extends Point2<P>> {
                 break;
             case CHEBYSHEV:
                 for (int i = 7; i > 0; i--) {
-                    // equivalent to rng.nextInt(i+1), but here it can omit an unnecessary check and be inlined.
-                    final int r = (int) ((i + 1) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
+                    // roughly equivalent to rng.nextInt(i+1), but we don't need 32 random bits to get a random int no
+                    // larger than 7, so we can use int math here.
+                    final int r = ((i + 1) * (rng.next(16) & 0xFFFF) >>> 16);
                     Direction t = dirs[r];
                     dirs[r] = dirs[i];
                     dirs[i] = t;
@@ -2185,15 +2187,17 @@ public abstract class GradientGrid<P extends Point2<P>> {
                 break;
             default:
                 for (int i = 3; i > 0; i--) {
-                    // equivalent to rng.nextInt(i+1), but here it can omit an unnecessary check and be inlined.
-                    final int r = (int) ((i + 1) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
+                    // roughly equivalent to rng.nextInt(i+1), but we don't need 32 random bits to get a random int no
+                    // larger than 3, so we can use int math here.
+                    final int r = ((i + 1) * (rng.next(16) & 0xFFFF) >>> 16);
                     Direction t = dirs[r];
                     dirs[r] = dirs[i];
                     dirs[i] = t;
                 }
                 for (int j = 7; j > 4; j--) {
-                    // equivalent to 4+rng.nextInt(j-3), but here it can omit an unnecessary check and be inlined.
-                    final int r = 4 + (int) ((j - 3) * (rng.nextLong() & 0xFFFFFFFFL) >>> 32);
+                    // roughly equivalent to 4+rng.nextInt(j-3), but we don't need 32 random bits to get a random int no
+                    // larger than 3, so we can use int math here.
+                    final int r = 4 + ((j - 3) * (rng.next(16) & 0xFFFF) >>> 16);
                     Direction t = dirs[r];
                     dirs[r] = dirs[j];
                     dirs[j] = t;
