@@ -17,8 +17,14 @@
 
 package com.github.tommyettinger.gand.utils;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gdcrux.Distributor;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Random;
 
 import static com.github.tommyettinger.gand.utils.Compatibility.imul;
@@ -53,9 +59,12 @@ import static com.github.tommyettinger.gand.utils.Compatibility.imul;
  * This is meant to be used more like a hashing function than a random number generator. If you set the state or seed
  * using {@link #setState(int, int, int, int)} or {@link #setSeed(long)}, every initial state/seed should produce a
  * different sequence of numbers, and numerically close-by states should produce very different sequences.
+ * <br>
+ * This class implements interfaces that allow it to be serialized by libGDX {@link Json} and by anything that knows how
+ * to serialize an {@link Externalizable} object, such as <a href="https://fury.apache.org">Apache Fury</a>.
  */
 @SuppressWarnings({"PointlessBitwiseExpression"}) // GWT actually needs these.
-public class Choo32Random extends Random {
+public class Choo32Random extends Random implements Json.Serializable, Externalizable {
 
 	/**
 	 * The first state; can be any int.
@@ -493,5 +502,41 @@ public class Choo32Random extends Random {
 
 	public String toString () {
 		return "Choo32Random{" + "stateA=" + (stateA) + ", stateB=" + (stateB) + ", stateC=" + (stateC) + ", stateD=" + (stateD) + "}";
+	}
+
+	@Override
+	public void write(Json json) {
+		json.writeObjectStart("choo");
+		json.writeValue("a", stateA);
+		json.writeValue("b", stateB);
+		json.writeValue("c", stateC);
+		json.writeValue("d", stateD);
+		json.writeObjectEnd();
+	}
+
+	@Override
+	public void read(Json json, JsonValue jsonData) {
+		jsonData = jsonData.get("uig");
+		stateA = jsonData.getInt("a");
+		stateB = jsonData.getInt("b");
+		stateC = jsonData.getInt("c");
+		stateD = jsonData.getInt("d");
+
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeInt(stateA);
+		out.writeInt(stateB);
+		out.writeInt(stateC);
+		out.writeInt(stateD);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		stateA = in.readInt();
+		stateB = in.readInt();
+		stateC = in.readInt();
+		stateD = in.readInt();
 	}
 }
