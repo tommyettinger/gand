@@ -17,8 +17,14 @@
 
 package com.github.tommyettinger.gand.utils;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gdcrux.Distributor;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Random;
 
 /**
@@ -36,8 +42,21 @@ import java.util.Random;
  * This is meant to be used more like a hashing function than a random number generator. If you set the state or seed
  * using {@link #setState(int, int)} or {@link #setSeed(long)}, every initial state/seed should produce a different
  * sequence of numbers, and numerically close-by states should produce very different sequences.
+ * <br>
+ * You could use this random number generator if you target GWT or TeaVM, and providing one or two int values to
+ * {@link #setSeed(long)} or {@link #setState(int, int)} fits your needs, though using {@link Choo32Random} tends to be
+ * faster on the same platforms. If you do not target GWT or TeaVM, you may prefer {@link FlowRandom}, which is much
+ * faster on non-web targets, and takes one or two long values for its {@link FlowRandom#setSeed(long)} or
+ * {@link FlowRandom#setState(long, long)} methods. Choo32Random has a shorter guaranteed minimum cycle length (2 to the
+ * 32), but a much longer expected actual cycle length (longer than the others here, at least 2 to the 80 expected).
+ * This generator is in between the other two on speed on GWT, but the slowest of the three on
+ * desktop JVMs (and likely also on Android or iOS). This has the same cycle length as FlowRandom, 2 to the 64 (which
+ * generally takes years to exhaust). FlowRandom has many streams, and the others do not.
+ * <br>
+ * This class implements interfaces that allow it to be serialized by libGDX {@link Json} and by anything that knows how
+ * to serialize an {@link Externalizable} object, such as <a href="https://fury.apache.org">Apache Fury</a>.
  */
-public class Taxon32Random extends Random {
+public class Taxon32Random extends Random implements Json.Serializable, Externalizable {
     /**
      * The first state; can be any int.
      */
@@ -332,5 +351,33 @@ public class Taxon32Random extends Random {
                 "stateA=" + stateA +
                 ", stateB=" + stateB +
                 '}';
+    }
+
+    @Override
+    public void write(Json json) {
+        json.writeObjectStart("taxon");
+        json.writeValue("a", stateA);
+        json.writeValue("b", stateB);
+        json.writeObjectEnd();
+    }
+
+    @Override
+    public void read(Json json, JsonValue jsonData) {
+        jsonData = jsonData.get("taxon");
+        stateA = jsonData.getInt("a");
+        stateB = jsonData.getInt("b");
+
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeInt(stateA);
+        out.writeInt(stateB);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException {
+        stateA = in.readInt();
+        stateB = in.readInt();
     }
 }

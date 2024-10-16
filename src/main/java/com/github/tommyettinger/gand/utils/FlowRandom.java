@@ -48,10 +48,12 @@ import java.util.Random;
  * {@link #setSeed(long)} or {@link #setState(long, long)} fits your needs. If you target GWT or TeaVM, you may prefer
  * {@link Choo32Random}, which is much faster on those targets, and takes one or four int values for its
  * {@link Choo32Random#setSeed(int)} or {@link Choo32Random#setState(int, int, int, int)} methods. It has a shorter
- * guaranteed minimum cycle length, but a much longer expected actual cycle length (longer than the others here).
+ * guaranteed minimum cycle length, but a much longer expected actual cycle length (2 to the
+ * 32), but a much longer expected actual cycle length (longer than the others here, at least 2 to the 80 expected).
  * There is also {@link Taxon32Random}, which is in between the two on speed on GWT, but the slowest of the three on
  * desktop JVMs (and likely also on Android or iOS). It takes one or two int values for its seed/state, and has the same
- * cycle length as FlowRandom. FlowRandom has many streams, and the others do not.
+ * cycle length as FlowRandom, 2 to the 64 (which generally takes years to exhaust). FlowRandom has many streams, and
+ * the others do not.
  * <br>
  * FlowRandom is substantially faster at almost all operations than {@link Choo32Random} or {@link Taxon32Random} when
  * running on a desktop JDK. It is substantially slower at most operations than those two when run on GWT; this
