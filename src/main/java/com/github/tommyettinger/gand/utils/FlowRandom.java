@@ -17,8 +17,14 @@
 
 package com.github.tommyettinger.gand.utils;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gdcrux.Distributor;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Random;
 
 /**
@@ -37,8 +43,26 @@ import java.util.Random;
  * give FlowRandom twice as many possible "streams" at the expense of making no single stream equidistributed. However,
  * if all FlowRandom streams were concatenated and run through (which would take a few million years on current
  * hardware), the result would actually be 1-dimensionally equidistributed.
+ * <br>
+ * You should use this random number generator if you don't target GWT or TeaVM, and providing one or two long values to
+ * {@link #setSeed(long)} or {@link #setState(long, long)} fits your needs. If you target GWT or TeaVM, you may prefer
+ * {@link Choo32Random}, which is much faster on those targets, and takes one or four int values for its
+ * {@link Choo32Random#setSeed(int)} or {@link Choo32Random#setState(int, int, int, int)} methods. It has a shorter
+ * guaranteed minimum cycle length, but a much longer expected actual cycle length (longer than the others here).
+ * There is also {@link Taxon32Random}, which is in between the two on speed on GWT, but the slowest of the three on
+ * desktop JVMs (and likely also on Android or iOS). It takes one or two int values for its seed/state, and has the same
+ * cycle length as FlowRandom. FlowRandom has many streams, and the others do not.
+ * <br>
+ * FlowRandom is substantially faster at almost all operations than {@link Choo32Random} or {@link Taxon32Random} when
+ * running on a desktop JDK. It is substantially slower at most operations than those two when run on GWT; this
+ * disadvantage may persist on TeaVM as well. The reason for this is simple: GWT and TeaVM compile to JavaScript, which
+ * doesn't natively support 64-bit integers, and all of FlowRandom's math is done on 64-bit integers. JavaScript does
+ * fully support bitwise operations on 32-bit integers, and supports arithmetic on them with some caveats.
+ * <br>
+ * This class implements interfaces that allow it to be serialized by libGDX {@link Json} and by anything that knows how
+ * to serialize an {@link Externalizable} object, such as <a href="https://fury.apache.org">Apache Fury</a>.
  */
-public class FlowRandom extends Random {
+public class FlowRandom extends Random implements Json.Serializable, Externalizable {
     /**
      * The first state; can be any long.
      */
@@ -234,5 +258,33 @@ public class FlowRandom extends Random {
                 "stateA=" + stateA +
                 ", stateB=" + stateB +
                 '}';
+    }
+
+    @Override
+    public void write(Json json) {
+        json.writeObjectStart("flow");
+        json.writeValue("a", stateA);
+        json.writeValue("b", stateB);
+        json.writeObjectEnd();
+    }
+
+    @Override
+    public void read(Json json, JsonValue jsonData) {
+        jsonData = jsonData.get("flow");
+        stateA = jsonData.getLong("a");
+        stateB = jsonData.getLong("b");
+
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeLong(stateA);
+        out.writeLong(stateB);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException {
+        stateA = in.readLong();
+        stateB = in.readLong();
     }
 }

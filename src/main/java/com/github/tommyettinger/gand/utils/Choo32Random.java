@@ -60,6 +60,15 @@ import static com.github.tommyettinger.gand.utils.Compatibility.imul;
  * using {@link #setState(int, int, int, int)} or {@link #setSeed(long)}, every initial state/seed should produce a
  * different sequence of numbers, and numerically close-by states should produce very different sequences.
  * <br>
+ * You should use this random number generator if you target GWT or TeaVM, and providing one or four int values to
+ * {@link #setSeed(long)} or {@link #setState(int, int, int, int)} fits your needs. If you do not target GWT or TeaVM,
+ * you may prefer {@link FlowRandom}, which is much faster on non-web targets, and takes one or two long values for its
+ * {@link FlowRandom#setSeed(long)} or {@link FlowRandom#setState(long, long)} methods. Choo32Random has a shorter
+ * guaranteed minimum cycle length, but a much longer expected actual cycle length (longer than the others here).
+ * There is also {@link Taxon32Random}, which is in between the two on speed on GWT, but the slowest of the three on
+ * desktop JVMs (and likely also on Android or iOS). It takes one or two int values for its seed/state, and has the same
+ * cycle length as FlowRandom. FlowRandom has many streams, and the others do not.
+ * <br>
  * This class implements interfaces that allow it to be serialized by libGDX {@link Json} and by anything that knows how
  * to serialize an {@link Externalizable} object, such as <a href="https://fury.apache.org">Apache Fury</a>.
  */
@@ -516,7 +525,7 @@ public class Choo32Random extends Random implements Json.Serializable, Externali
 
 	@Override
 	public void read(Json json, JsonValue jsonData) {
-		jsonData = jsonData.get("uig");
+		jsonData = jsonData.get("choo");
 		stateA = jsonData.getInt("a");
 		stateB = jsonData.getInt("b");
 		stateC = jsonData.getInt("c");
