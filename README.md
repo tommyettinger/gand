@@ -31,9 +31,10 @@ Another major change is that large parts of the library can be automatically ser
 additional support for serialization with Apache Fury, even though it isn't a dependency. See
 Serialization below.
 
-Version 0.1.0 adds the types `PointI2`, `PointF2`, `PointI3`, and `PointF3`, which have either int (for the "I"
-types) or float (for the "F" types) components, and can have 2 or 3 of each. These extend `GridPoint2`, `Vector2`,
-and so on, but also implement a common interface (all of them): `PointN`, from the new and tiny
+Version 0.1.0 added the types `PointI2`, `PointF2`, `PointI3`, and `PointF3`, and they have been moved to an external
+dependency, [crux](https://github.com/tommyettinger/gdcrux), as of version 0.3.0 . These have either int (for the "I"
+types) or float (for the "F" types) components, and can have a fixed number of each. These extend `GridPoint2`,
+`Vector2`, and so on, but also implement a common interface (all of them): `PointN`, from the new and tiny
 [crux](https://github.com/tommyettinger/crux) library. The 2D points, more specifically, implement `Point2`, while
 the 3D ones implement `Point3`. Having this generalization helps some code work with either int-based grid
 coordinates or float-based smooth coordinates. This is especially relevant for...
@@ -89,18 +90,20 @@ Kryo is still good, it just seems to have a rare (but serious) bug with this lib
 
 # Find It
 
-`implementation "com.github.tommyettinger:gand:0.2.1"`
+`implementation "com.github.tommyettinger:gand:0.3.0"`
 
 If you use GWT, then your GWT module needs to depend on:
 
 ```
-implementation "com.github.tommyettinger:gand:0.2.1:sources"
-implementation "com.github.tommyettinger:crux:0.0.1:sources"
+implementation "com.github.tommyettinger:gand:0.3.0:sources"
+implementation "com.github.tommyettinger:gdcrux:0.0.2:sources"
+implementation "com.github.tommyettinger:crux:0.1.0:sources"
 ```
 
 GWT also needs this `inherits` line added to your `GdxDefinition.gwt.xml` file, with the other inherits lines:
 
 ```
+<inherits name="com.github.tommyettinger.gdcrux" />
 <inherits name="com.github.tommyettinger.crux" />
 <inherits name="com.github.tommyettinger.gand" />
 ```
