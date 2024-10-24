@@ -369,13 +369,13 @@ public class Taxon32Random extends Random implements Json.Serializable, External
 
     }
 
-    @Override
+    @GwtIncompatible
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeInt(stateA);
         out.writeInt(stateB);
     }
 
-    @Override
+    @GwtIncompatible
     public void readExternal(ObjectInput in) throws IOException {
         stateA = in.readInt();
         stateB = in.readInt();

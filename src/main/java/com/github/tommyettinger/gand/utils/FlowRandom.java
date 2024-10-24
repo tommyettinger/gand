@@ -278,13 +278,13 @@ public class FlowRandom extends Random implements Json.Serializable, Externaliza
 
     }
 
-    @Override
+    @GwtIncompatible
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeLong(stateA);
         out.writeLong(stateB);
     }
 
-    @Override
+    @GwtIncompatible
     public void readExternal(ObjectInput in) throws IOException {
         stateA = in.readLong();
         stateB = in.readLong();

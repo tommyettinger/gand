@@ -535,7 +535,7 @@ public class Choo32Random extends Random implements Json.Serializable, Externali
 
 	}
 
-	@Override
+	@GwtIncompatible
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt(stateA);
 		out.writeInt(stateB);
@@ -543,7 +543,7 @@ public class Choo32Random extends Random implements Json.Serializable, Externali
 		out.writeInt(stateD);
 	}
 
-	@Override
+	@GwtIncompatible
 	public void readExternal(ObjectInput in) throws IOException {
 		stateA = in.readInt();
 		stateB = in.readInt();
