@@ -28,6 +28,10 @@ import com.badlogic.gdx.utils.ObjectMap;
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * A graph node that wraps a given type of position, V.
+ * @param <V> some kind of position, such as a {@link com.github.tommyettinger.gdcrux.PointI2} for a grid
+ */
 public class Node<V> {
 
     //================================================================================

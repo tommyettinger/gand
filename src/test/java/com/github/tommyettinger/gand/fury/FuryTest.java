@@ -27,6 +27,7 @@ import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gdcrux.PointI3;
 import org.apache.fury.Fury;
 import org.apache.fury.config.Language;
+import org.apache.fury.logging.LoggerFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -37,9 +38,6 @@ import static com.github.tommyettinger.gdcrux.PointMaker.pt;
 
 /**
  * Testing for serialization and deserialization with <a href="https://fury.apache.org">Fury</a>.
- * Because Graph implements Externalizable, all of its concrete subclasses can be correctly written by Fury without
- * needing to register a Serializer for each type of Graph. Other classes can already be written without any issues,
- * such as {@link Path} and all point types.
  */
 public class FuryTest {
     public static Graph<Vector2> makeGridGraph(Graph<Vector2> graph, int sideLength) {
@@ -180,6 +178,7 @@ public class FuryTest {
 
     @Test
     public void testDirectedGraph3D() {
+        LoggerFactory.disableLogging();
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(DirectedGraph.class);
         fury.register(PointI3.class);

@@ -28,6 +28,12 @@ import com.github.tommyettinger.gand.ds.ObjectOrderedSet;
 
 import java.util.Collection;
 
+/**
+ * Used by {@link Graph} internally; not meant for external usage.
+ * <br>
+ * This class is public so serialization code can access it, but is also final to try to prevent improper usage.
+ * @param <V>
+ */
 public final class Internals<V> {
 
     transient final Graph<V> graph;

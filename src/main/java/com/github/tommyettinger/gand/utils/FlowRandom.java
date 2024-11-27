@@ -21,10 +21,6 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gdcrux.Distributor;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Random;
 
 /**
@@ -61,10 +57,10 @@ import java.util.Random;
  * doesn't natively support 64-bit integers, and all of FlowRandom's math is done on 64-bit integers. JavaScript does
  * fully support bitwise operations on 32-bit integers, and supports arithmetic on them with some caveats.
  * <br>
- * This class implements interfaces that allow it to be serialized by libGDX {@link Json} and by anything that knows how
- * to serialize an {@link Externalizable} object, such as <a href="https://fury.apache.org">Apache Fury</a>.
+ * This class implements interfaces that allow it to be serialized by libGDX {@link Json}. If you use
+ * <a href="https://fury.apache.org">Apache Fury</a>, then {@code fury.register(FlowRandom.class);} is all you need.
  */
-public class FlowRandom extends Random implements Json.Serializable, Externalizable {
+public class FlowRandom extends Random implements Json.Serializable {
     /**
      * The first state; can be any long.
      */
@@ -278,15 +274,4 @@ public class FlowRandom extends Random implements Json.Serializable, Externaliza
 
     }
 
-    @GwtIncompatible
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeLong(stateA);
-        out.writeLong(stateB);
-    }
-
-    @GwtIncompatible
-    public void readExternal(ObjectInput in) throws IOException {
-        stateA = in.readLong();
-        stateB = in.readLong();
-    }
 }

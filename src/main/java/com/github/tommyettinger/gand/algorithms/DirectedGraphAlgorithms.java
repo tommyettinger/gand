@@ -24,7 +24,6 @@ SOFTWARE.
 package com.github.tommyettinger.gand.algorithms;
 
 import com.github.tommyettinger.gand.DirectedGraph;
-import com.github.tommyettinger.gand.Graph;
 
 public class DirectedGraphAlgorithms<V> extends Algorithms<V> {
 

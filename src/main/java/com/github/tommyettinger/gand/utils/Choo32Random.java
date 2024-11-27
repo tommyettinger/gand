@@ -21,10 +21,6 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gdcrux.Distributor;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Random;
 
 import static com.github.tommyettinger.gand.utils.Compatibility.imul;
@@ -71,11 +67,11 @@ import static com.github.tommyettinger.gand.utils.Compatibility.imul;
  * cycle length as FlowRandom, 2 to the 64 (which generally takes years to exhaust). FlowRandom has many streams, and
  * the others do not.
  * <br>
- * This class implements interfaces that allow it to be serialized by libGDX {@link Json} and by anything that knows how
- * to serialize an {@link Externalizable} object, such as <a href="https://fury.apache.org">Apache Fury</a>.
+ * This class implements interfaces that allow it to be serialized by libGDX {@link Json}. If you use
+ * <a href="https://fury.apache.org">Apache Fury</a>, then {@code fury.register(Taxon32Random.class);} is all you need.
  */
 @SuppressWarnings({"PointlessBitwiseExpression"}) // GWT actually needs these.
-public class Choo32Random extends Random implements Json.Serializable, Externalizable {
+public class Choo32Random extends Random implements Json.Serializable {
 
 	/**
 	 * The first state; can be any int.
@@ -535,19 +531,4 @@ public class Choo32Random extends Random implements Json.Serializable, Externali
 
 	}
 
-	@GwtIncompatible
-	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeInt(stateA);
-		out.writeInt(stateB);
-		out.writeInt(stateC);
-		out.writeInt(stateD);
-	}
-
-	@GwtIncompatible
-	public void readExternal(ObjectInput in) throws IOException {
-		stateA = in.readInt();
-		stateB = in.readInt();
-		stateC = in.readInt();
-		stateD = in.readInt();
-	}
 }
