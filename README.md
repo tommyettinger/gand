@@ -68,7 +68,7 @@ crux, which is likely, then you can use `GradientGridI2` and don't need to worry
 all implement `Json.Serializable`, making them easy to feed into the libGDX Json class to read or write. These do
 need the vertex type to be serializable somehow, so our `JsonRegistration` class makes that easier and more concise
 for the common vertex types `Vector2`, `Vector3`, `Vector4`, `GridPoint2`, and `GridPoint3`. You can instead use
-`PointI2`, `PointI3`, `PointF2`, or `PointF3` from this library, which are already `Json.Serializable`.
+`PointI2`, `PointI3`, `PointF2`, or `PointF3` from the dependency gdcrux, which are already `Json.Serializable`.
 
 A small change in 0.1.1 makes the Graph types (all of them) `Externalizable`, which enables
 [Fury](https://fury.apache.org) to serialize them without needing any extra work in your code. Only the Graph
@@ -90,14 +90,14 @@ Kryo is still good, it just seems to have a rare (but serious) bug with this lib
 
 # Find It
 
-`implementation "com.github.tommyettinger:gand:0.3.0"`
+`implementation "com.github.tommyettinger:gand:0.3.1"`
 
-If you use GWT, then your GWT module needs to depend on:
+If you use GWT, then your GWT module needs to depend on libGDX 1.12.1 or higher, as well as:
 
 ```
-implementation "com.github.tommyettinger:gand:0.3.0:sources"
-implementation "com.github.tommyettinger:gdcrux:0.0.2:sources"
-implementation "com.github.tommyettinger:crux:0.1.0:sources"
+implementation "com.github.tommyettinger:gand:0.3.1:sources"
+implementation "com.github.tommyettinger:gdcrux:0.1.0:sources"
+implementation "com.github.tommyettinger:crux:0.1.2:sources"
 ```
 
 GWT also needs this `inherits` line added to your `GdxDefinition.gwt.xml` file, with the other inherits lines:
