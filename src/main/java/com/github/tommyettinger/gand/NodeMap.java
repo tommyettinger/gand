@@ -34,6 +34,7 @@ import java.util.Iterator;
  * All the Node<V> objects additionally form a separate doubly linked list to allow a consistent iteration order.
  * <br>
  * This is not meant for external usage. It is public primarily so reflection code can access it.
+ * @param <V> the vertex type associated with each {@link Node}
  */
 public class NodeMap<V> {
 

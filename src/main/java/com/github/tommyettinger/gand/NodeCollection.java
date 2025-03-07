@@ -29,7 +29,13 @@ import java.util.*;
 import com.github.tommyettinger.gand.NodeMap.NodeIterator;
 import com.github.tommyettinger.gand.utils.Errors;
 
-class NodeCollection<V> extends AbstractCollection<Node<V>> {
+/**
+ * A simple unmodifiable Collection of {@link Node} that acts as a view into a {@link NodeMap}.
+ * <br>
+ * This is not meant for external usage. It is public primarily so reflection code can access it.
+ * @param <V> the vertex type associated with each {@link Node}
+ */
+public class NodeCollection<V> extends AbstractCollection<Node<V>> {
 
     NodeMap<V> nodeMap;
 
