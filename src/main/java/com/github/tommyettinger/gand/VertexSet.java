@@ -29,7 +29,13 @@ import java.util.*;
 import com.github.tommyettinger.gand.NodeMap.NodeIterator;
 import com.github.tommyettinger.gand.utils.Errors;
 
-class VertexSet<V> extends AbstractSet<V> {
+/**
+ * A simple unmodifiable Set of {@code V} vertex items that acts as a view into a {@link NodeMap}.
+ * <br>
+ * This is not meant for external usage. It is public primarily so reflection code can access it.
+ * @param <V> the vertex type associated with each {@link Node}
+ */
+public class VertexSet<V> extends AbstractSet<V> {
 
     final NodeMap<V> nodeMap;
 
