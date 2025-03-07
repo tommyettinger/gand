@@ -106,7 +106,7 @@ public class LightingTest extends ApplicationAdapter {
         Gdx.app.log("SEED", "Initial seed is " + seed);
         EnhancedRandom random = new WhiskerRandom(seed);
         stage = new Stage();
-        Font font = KnownFonts.getFont(KnownFonts.IOSEVKA_SLAB, Font.DistanceFieldType.SDF).adjustLineHeight(1.25f);
+        Font font = KnownFonts.getFont(KnownFonts.IOSEVKA_SLAB, Font.DistanceFieldType.SDF);
         gg = new GlyphGrid(font, GRID_WIDTH, GRID_HEIGHT, true);
         //use Ă to test glyph height
         playerGlyph = new GlyphActor('@', "[red orange]", gg.getFont());

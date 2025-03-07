@@ -32,10 +32,10 @@ import java.util.Iterator;
  * A hash structure with objects of type V as keys and Node<V> objects as values.
  * Keys assigned to the same bucket are chained in a singly linked list.
  * All the Node<V> objects additionally form a separate doubly linked list to allow a consistent iteration order.
- *
+ * <br>
+ * This is not meant for external usage. It is public primarily so reflection code can access it.
  */
-
-class NodeMap<V> {
+public class NodeMap<V> {
 
     final Graph<V> graph;
 
