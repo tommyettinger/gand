@@ -46,13 +46,10 @@ import java.util.Random;
  * {@link Choo32Random#setSeed(int)} or {@link Choo32Random#setState(int, int, int, int)} methods. It has a shorter
  * guaranteed minimum cycle length, but a much longer expected actual cycle length (2 to the
  * 32), but a much longer expected actual cycle length (longer than the others here, at least 2 to the 80 expected).
- * There is also {@link Taxon32Random}, which is in between the two on speed on GWT, but the slowest of the three on
- * desktop JVMs (and likely also on Android or iOS). It takes one or two int values for its seed/state, and has the same
- * cycle length as FlowRandom, 2 to the 64 (which generally takes years to exhaust). FlowRandom has many streams, and
- * the others do not.
+ * FlowRandom has many streams, and the others do not.
  * <br>
- * FlowRandom is substantially faster at almost all operations than {@link Choo32Random} or {@link Taxon32Random} when
- * running on a desktop JDK. It is substantially slower at most operations than those two when run on GWT; this
+ * FlowRandom is substantially faster at almost all operations than {@link Choo32Random} when
+ * running on a desktop JDK. It is substantially slower at most operations than Choo32Random when run on GWT; this
  * disadvantage may persist on TeaVM as well. The reason for this is simple: GWT and TeaVM compile to JavaScript, which
  * doesn't natively support 64-bit integers, and all of FlowRandom's math is done on 64-bit integers. JavaScript does
  * fully support bitwise operations on 32-bit integers, and supports arithmetic on them with some caveats.
