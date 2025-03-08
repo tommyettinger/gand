@@ -10,7 +10,13 @@ import java.util.Comparator;
  * <br>
  * This class is currently not used by Gand.
  */
-public class ObjectSort {
+public final class ObjectSort {
+    /**
+     * Not instantiable.
+     */
+    private ObjectSort() {
+    }
+
     private static <K> void swap (K[] items, int first, int second) {
         K firstValue = items[first];
         items[first] = items[second];

@@ -173,7 +173,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
      */
     public Path<P> path = new Path<>();
 
-    protected ObjectSet<Point2<?>> blocked;
+    protected transient ObjectSet<Point2<?>> blocked;
 
     /**
      * This is set to true if a path was forced to stop due to length limits, and set to false if a complete path was
@@ -190,7 +190,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * variable and not a local one to avoid reallocating the data structure. Each item is an encoded point, as done by
      * {@link #encode(int, int)}.
      */
-    protected IntDeque fresh = new IntDeque(256);
+    protected transient IntDeque fresh = new IntDeque(256);
 
     /**
      * The {@link Choo32Random} used to decide which one of multiple equally-short paths to take; this has its state set
@@ -200,7 +200,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
     protected final Choo32Random rng = new Choo32Random(0x9E37, 0x79B9, 0x7F4A, 0x7C15);
     protected transient int frustration;
 
-    protected final Direction[] dirs = new Direction[9];
+    protected transient final Direction[] dirs = new Direction[9];
 
     protected boolean initialized;
 
@@ -405,7 +405,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * @param encoded  an encoded int that stores a 2D point; see {@link #encode(Point2)}
      * @return the Point2 that represents the same x,y position that the given encoded int stores
      */
-    public Point2<?> decode(Point2<?> changing, final int encoded) {
+    public Point2<? extends Point2<?>> decode(Point2<? extends Point2<?>> changing, final int encoded) {
         return changing.seti(encoded & 0xFFFF, encoded >>> 16);
     }
 

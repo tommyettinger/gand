@@ -15,7 +15,7 @@ import com.github.tommyettinger.gdcrux.PointI3;
  * the {@link PointF2}, {@link PointF3}, {@link PointI2}, or {@link PointI3} classes, since they implement
  * {@link Json.Serializable} already.
  */
-public class JsonRegistration {
+public final class JsonRegistration {
     private JsonRegistration() {}
 
     public static void registerAll(Json json) {

@@ -23,7 +23,12 @@ SOFTWARE.
  */
 package com.github.tommyettinger.gand.utils;
 
-public class Errors {
+public final class Errors {
+    /**
+     * Not instantiable.
+     */
+    private Errors() {
+    }
 
     public static void throwNullVertexException() {
         throw new IllegalArgumentException("Vertices cannot be null");
