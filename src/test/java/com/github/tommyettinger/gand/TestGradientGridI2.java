@@ -16,6 +16,7 @@
 
 package com.github.tommyettinger.gand;
 
+import com.badlogic.gdx.utils.Json;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
 import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gand.utils.GridMetric;
@@ -50,18 +51,18 @@ public class TestGradientGridI2 {
                 "#.......#".toCharArray(),
                 "#########".toCharArray(),
         };
-        GradientGridI2 dm = new GradientGridI2(map, GridMetric.EUCLIDEAN);
-        dm.setBlockingRequirement(2);
+        GradientGridI2 gg = new GradientGridI2(map, GridMetric.EUCLIDEAN);
+        gg.setBlockingRequirement(2);
         ObjectDeque<PointI2> path = new ObjectDeque<>(16);
 
         PointI2 start = pt(4, 4), goal0 = pt(5, 5), goal1 = pt(5, 6);
 
-//        dm.setGoal(goal0);
-//        dm.setGoal(goal1);
-//        dm.partialScan(10, null);
-//        dm.findPathPreScanned(path, start);
+//        gg.setGoal(goal0);
+//        gg.setGoal(goal1);
+//        gg.partialScan(10, null);
+//        gg.findPathPreScanned(path, start);
 
-        dm.findPath(path, 10, 10, null, null, start, ObjectDeque.with(goal0, goal1));
+        gg.findPath(path, 10, 10, null, null, start, ObjectDeque.with(goal0, goal1));
 
         char ch = '1';
         for(PointI2 c : path) {
@@ -69,7 +70,66 @@ public class TestGradientGridI2 {
         }
         map[start.x][start.y] = '0';
         print(map);
-        // currently fails even though goal1 is the shortest path
         Assert.assertEquals(goal1, path.last());
+    }
+
+    @Test
+    public void testJson() {
+        Json json = new Json();
+
+        char[][] map = {
+                "#########".toCharArray(),
+                "#.......#".toCharArray(),
+                "#.......#".toCharArray(),
+                "#.......#".toCharArray(),
+                "#....#..#".toCharArray(),
+                "#...#...#".toCharArray(),
+                "#.......#".toCharArray(),
+                "#.......#".toCharArray(),
+                "#########".toCharArray(),
+        };
+        GradientGridI2 gg = new GradientGridI2(map, GridMetric.EUCLIDEAN);
+        gg.setBlockingRequirement(2);
+        ObjectDeque<PointI2> path = new ObjectDeque<>(16);
+
+        PointI2 start = pt(4, 4), goal0 = pt(5, 5), goal1 = pt(5, 6);
+
+        gg.setGoal(goal0);
+        gg.setGoal(goal1);
+        gg.partialScan(10, null);
+        gg.findPathPreScanned(path, start);
+
+        gg.findPath(path, 10, 10, null, null, start, ObjectDeque.with(goal0, goal1));
+        print(map);
+
+        System.out.println("Original, pretty-printed:");
+        String ppgg = json.prettyPrint(gg);
+        System.out.println(ppgg);
+        GradientGridI2 gg2 = json.fromJson(GradientGridI2.class, ppgg);
+        Assert.assertEquals(gg, gg2);
+        System.out.println("Read back from JSON and pretty-printed again:");
+        System.out.println(json.prettyPrint(gg2));
+    }
+
+    @Test
+    public void testJsonCornerCases() {
+        Json json = new Json();
+
+        GradientGridI2 gg = new GradientGridI2();
+        gg.setBlockingRequirement(2);
+        ObjectDeque<PointI2> path = new ObjectDeque<>(16);
+
+        PointI2 start = pt(4, 4), goal0 = pt(5, 5), goal1 = pt(5, 6);
+
+        gg.setGoal(goal0);
+        gg.setGoal(goal1);
+
+        System.out.println("Original, pretty-printed:");
+        String ppgg = json.prettyPrint(gg);
+        System.out.println(ppgg);
+        GradientGridI2 gg2 = json.fromJson(GradientGridI2.class, ppgg);
+        Assert.assertEquals(gg, gg2);
+        System.out.println("Read back from JSON and pretty-printed again:");
+        System.out.println(json.prettyPrint(gg2));
     }
 }

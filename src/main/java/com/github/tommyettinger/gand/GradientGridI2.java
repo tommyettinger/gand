@@ -179,16 +179,6 @@ public class GradientGridI2 extends GradientGrid<PointI2> implements Json.Serial
         json.writeValue("m", measurement.ordinal(), int.class);
         json.writeValue("w", width, int.class);
         json.writeValue("h", height, int.class);
-        json.writeArrayStart("pm");
-        for (int x = 0; x < width; x++) {
-            json.writeValue(physicalMap[x], float[].class, float.class);
-        }
-        json.writeArrayEnd();
-        json.writeArrayStart("gm");
-        for (int x = 0; x < width; x++) {
-            json.writeValue(gradientMap[x], float[].class, float.class);
-        }
-        json.writeArrayEnd();
         json.writeValue("b", blockingRequirement, int.class);
         json.writeArrayStart("g");
         for (int i = 0; i < goals.size(); i++) {
@@ -202,16 +192,44 @@ public class GradientGridI2 extends GradientGrid<PointI2> implements Json.Serial
             json.writeValue(pt.y);
         }
         json.writeArrayEnd();
+        if (initialized) {
+            json.writeArrayStart("pm");
+            for (int x = 0; x < width; x++) {
+                json.writeValue(physicalMap[x], float[].class, float.class);
+            }
+            json.writeArrayEnd();
+            json.writeArrayStart("gm");
+            for (int x = 0; x < width; x++) {
+                json.writeValue(gradientMap[x], float[].class, float.class);
+            }
+            json.writeArrayEnd();
+        }
     }
 
     @Override
     public void read(Json json, JsonValue jsonData) {
-        GridMetric m = GridMetric.ALL[jsonData.getInt("m", 0)];
+        GridMetric m = GridMetric.ALL[Math.min(Math.max(jsonData.getInt("m", 2), 0), 2)];
         setMeasurement(m);
-        int w = jsonData.getInt("w");
+        int w = Math.max(0, jsonData.getInt("w"));
         int h = jsonData.getInt("h");
         float[][] pm = new float[w][];
+
+        setBlockingRequirement(jsonData.getInt("b"));
+        goals.clear();
+        goals.addAll(jsonData.get("g").asIntArray());
+        path.clear();
+        int[] p = jsonData.get("p").asIntArray();
+        for (int i = 0; i < p.length; i += 2) {
+            path.add(acquire(p[i], p[i+1]));
+        }
+
         JsonValue a2 = jsonData.get("pm");
+        if(a2 == null || a2.isNull()){
+            initialized = false;
+            physicalMap = null;
+            gradientMap = null;
+            return;
+        }
         int x = 0;
         for(JsonValue sub = a2.child; sub != null; sub = sub.next){
             pm[x] = sub.asFloatArray();
@@ -219,19 +237,16 @@ public class GradientGridI2 extends GradientGrid<PointI2> implements Json.Serial
         }
         initialize(pm);
         a2 = jsonData.get("gm");
+        if(a2 == null || a2.isNull()){
+            initialized = false;
+            physicalMap = null;
+            gradientMap = null;
+            return;
+        }
         x = 0;
         for(JsonValue sub = a2.child; sub != null; sub = sub.next){
             gradientMap[x] = sub.asFloatArray();
             ++x;
-        }
-        setBlockingRequirement(jsonData.getInt("b"));
-        goals.clear();
-        goals.addAll(jsonData.get("g").asIntArray());
-        /* Not even trying Path yet... */
-        path.clear();
-        int[] p = jsonData.get("p").asIntArray();
-        for (int i = 0; i < p.length; i += 2) {
-            path.add(acquire(p[i], p[i+1]));
         }
     }
 }
