@@ -229,5 +229,9 @@ public class GradientGridI2 extends GradientGrid<PointI2> implements Json.Serial
         goals.addAll(jsonData.get("g").asIntArray());
         /* Not even trying Path yet... */
         path.clear();
+        int[] p = jsonData.get("p").asIntArray();
+        for (int i = 0; i < p.length; i += 2) {
+            path.add(acquire(p[i], p[i+1]));
+        }
     }
 }

@@ -28,7 +28,9 @@ import com.github.tommyettinger.gand.smoothing.Ortho2DRaycastCollisionDetector;
 import com.github.tommyettinger.gand.utils.Direction;
 import com.github.tommyettinger.gand.utils.GridMetric;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * A group of pathfinding algorithms that explore in all directions equally, and are commonly used when there is more
@@ -171,7 +173,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * cell; only steps that require movement will be included, and so if the path has not been found or a valid
      * path toward a goal is impossible, this ObjectDeque will be empty.
      */
-    public Path<P> path = new Path<>();
+    public final Path<P> path = new Path<>();
 
     protected transient ObjectSet<Point2<?>> blocked;
 
@@ -184,7 +186,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
     /**
      * Goals that pathfinding will seek out. Each item is an encoded point, as done by {@link #encode(int, int)}.
      */
-    protected IntList goals = new IntList(256);
+    protected final IntList goals = new IntList(256);
     /**
      * Working data used during scanning, this tracks the perimeter of the scanned area so far. This is a member
      * variable and not a local one to avoid reallocating the data structure. Each item is an encoded point, as done by
@@ -2274,6 +2276,27 @@ public abstract class GradientGrid<P extends Point2<P>> {
             System.arraycopy(Direction.OUTWARDS, 0, dirs, 0, 8);
             dirs[8] = Direction.NONE;
         }
+    }
 
+    @Override
+    public final boolean equals(Object o) {
+        if (!(o instanceof GradientGrid)) return false;
+
+        GradientGrid<?> that = (GradientGrid<?>) o;
+        return height == that.height && width == that.width && initialized == that.initialized && blockingRequirement == that.blockingRequirement && measurement == that.measurement && Arrays.deepEquals(physicalMap, that.physicalMap) && Arrays.deepEquals(gradientMap, that.gradientMap) && path.equals(that.path) && goals.equals(that.goals);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = measurement.hashCode();
+        result = 31 * result + Arrays.deepHashCode(physicalMap);
+        result = 31 * result + Arrays.deepHashCode(gradientMap);
+        result = 31 * result + height;
+        result = 31 * result + width;
+        result = 31 * result + Objects.hashCode(path);
+        result = 31 * result + goals.hashCode();
+        result = 31 * result + Boolean.hashCode(initialized);
+        result = 31 * result + blockingRequirement;
+        return result;
     }
 }
