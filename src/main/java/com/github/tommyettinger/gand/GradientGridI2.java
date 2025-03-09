@@ -16,6 +16,8 @@
 
 package com.github.tommyettinger.gand;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.crux.Point2;
 import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gand.utils.GridMetric;
@@ -69,7 +71,7 @@ import java.util.Collection;
  * or {@link Int2DirectedGraph} will be better fits. Int2DirectedGraph and similar versions of
  * {@link DirectedGraph} can handle even very complicated kinds of map.
  */
-public class GradientGridI2 extends GradientGrid<PointI2>{
+public class GradientGridI2 extends GradientGrid<PointI2> implements Json.Serializable {
 
     private transient final PointI2 workPt = new PointI2();
 
@@ -170,5 +172,62 @@ public class GradientGridI2 extends GradientGrid<PointI2>{
         this.setMeasurement(measurement);
 
         initialize(level, alternateWall);
+    }
+
+    @Override
+    public void write(Json json) {
+        json.writeValue("m", measurement.ordinal(), int.class);
+        json.writeValue("w", width, int.class);
+        json.writeValue("h", height, int.class);
+        json.writeArrayStart("pm");
+        for (int x = 0; x < width; x++) {
+            json.writeValue(physicalMap[x], float[].class, float.class);
+        }
+        json.writeArrayEnd();
+        json.writeArrayStart("gm");
+        for (int x = 0; x < width; x++) {
+            json.writeValue(gradientMap[x], float[].class, float.class);
+        }
+        json.writeArrayEnd();
+        json.writeValue("b", blockingRequirement, int.class);
+        json.writeArrayStart("g");
+        for (int i = 0; i < goals.size(); i++) {
+            json.writeValue(goals.get(i));
+        }
+        json.writeArrayEnd();
+        json.writeArrayStart("p");
+        for (int i = 0; i < path.size(); i++) {
+            PointI2 pt = path.get(i);
+            json.writeValue(pt.x);
+            json.writeValue(pt.y);
+        }
+        json.writeArrayEnd();
+    }
+
+    @Override
+    public void read(Json json, JsonValue jsonData) {
+        GridMetric m = GridMetric.ALL[jsonData.getInt("m", 0)];
+        setMeasurement(m);
+        int w = jsonData.getInt("w");
+        int h = jsonData.getInt("h");
+        float[][] pm = new float[w][];
+        JsonValue a2 = jsonData.get("pm");
+        int x = 0;
+        for(JsonValue sub = a2.child; sub != null; sub = sub.next){
+            pm[x] = sub.asFloatArray();
+            ++x;
+        }
+        initialize(pm);
+        a2 = jsonData.get("gm");
+        x = 0;
+        for(JsonValue sub = a2.child; sub != null; sub = sub.next){
+            gradientMap[x] = sub.asFloatArray();
+            ++x;
+        }
+        setBlockingRequirement(jsonData.getInt("b"));
+        goals.clear();
+        goals.addAll(jsonData.get("g").asIntArray());
+        /* Not even trying Path yet... */
+        path.clear();
     }
 }

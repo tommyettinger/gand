@@ -147,7 +147,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
     public static final float DARK = 999800f;
 
 
-    private GridMetric measurement = GridMetric.EUCLIDEAN;
+    protected GridMetric measurement = GridMetric.EUCLIDEAN;
 
 
     /**

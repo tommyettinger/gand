@@ -27,6 +27,12 @@ public enum GridMetric {
          */
         EUCLIDEAN;
 
+    /**
+     * Static field that stores the output of {@link #values()} so it doesn't have to be repeatedly called.
+     * Must not be modified.
+     */
+    public static final GridMetric[] ALL = values();
+
         public float heuristic(Direction target) {
             if (this == GridMetric.EUCLIDEAN &&
                 (target == Direction.DOWN_LEFT || target == Direction.DOWN_RIGHT || target == Direction.UP_LEFT || target == Direction.UP_RIGHT)) {
