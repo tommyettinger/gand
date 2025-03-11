@@ -178,7 +178,6 @@ public class GradientGridI2 extends GradientGrid<PointI2> implements Json.Serial
     public void write(Json json) {
         json.writeValue("m", measurement.ordinal(), int.class);
         json.writeValue("w", width, int.class);
-        json.writeValue("h", height, int.class);
         json.writeValue("b", blockingRequirement, int.class);
         json.writeArrayStart("g");
         for (int i = 0; i < goals.size(); i++) {
@@ -211,7 +210,6 @@ public class GradientGridI2 extends GradientGrid<PointI2> implements Json.Serial
         GridMetric m = GridMetric.ALL[Math.min(Math.max(jsonData.getInt("m", 2), 0), 2)];
         setMeasurement(m);
         int w = Math.max(0, jsonData.getInt("w"));
-        int h = jsonData.getInt("h");
         float[][] pm = new float[w][];
 
         setBlockingRequirement(jsonData.getInt("b"));

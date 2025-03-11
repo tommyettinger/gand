@@ -16,6 +16,7 @@
 
 package com.github.tommyettinger.gand;
 
+import com.badlogic.gdx.utils.ObjectFloatMap;
 import com.github.tommyettinger.crux.Point2;
 import com.github.tommyettinger.crux.PointPair;
 import com.github.tommyettinger.gand.ds.IntDeque;
@@ -2115,6 +2116,53 @@ public abstract class GradientGrid<P extends Point2<P>> {
             return buffer;
         }
 
+    }
+
+
+    /**
+     * A simple limited flood-fill that returns an ObjectFloatMap of P keys to the float values in the GradientGrid,
+     * only calculating out to a number of steps determined by limit. This can be useful if you need many flood-fills
+     * and don't need a large area for each, or if you want to have an effect spread to a certain number of cells away.
+     *
+     * @param radius the number of steps to take outward from each starting position
+     * @param starts any Iterable of P points to step outward from; {@link java.util.Collections#singletonList(Object)} may be useful if you have only one point
+     * @return a new ObjectFloatMap with P keys; the starts are included in this with the value 0f
+     */
+    public ObjectFloatMap<P> floodFill(int radius, Iterable<P> starts) {
+        return floodFill(new ObjectFloatMap<>(32), radius, starts);
+    }
+    /**
+     * A simple limited flood-fill that returns an ObjectFloatMap of P keys to the float values in the GradientGrid,
+     * only calculating out to a number of steps determined by limit. This can be useful if you need many flood-fills
+     * and don't need a large area for each, or if you want to have an effect spread to a certain number of cells away.
+     *
+     * @param filling a non-null ObjectFloatMap with P keys; this will have the contents of the fill appended into it
+     * @param radius the number of steps to take outward from each starting position
+     * @param starts any Iterable of P points to step outward from; {@link java.util.Collections#singletonList(Object)} may be useful if you have only one point
+     * @return {@code filling}, potentially after changes; the starts are included in this with the value 0f
+     */
+    public ObjectFloatMap<P> floodFill(ObjectFloatMap<P> filling, int radius, Iterable<P> starts) {
+        if (!initialized) return null;
+
+        resetMap();
+        for (P goal : starts) {
+            setGoal(goal.xi(), goal.yi());
+        }
+        if (goals.isEmpty())
+            return filling;
+
+        partialScan(radius, null);
+        float dist;
+        for (int x = 1; x < width - 1; x++) {
+            for (int y = 1; y < height - 1; y++) {
+                dist = gradientMap[x][y];
+                if (dist < FLOOR) {
+                    filling.put(acquire(x, y), dist);
+                }
+            }
+        }
+        goals.clear();
+        return filling;
     }
 
     public int getMappedCount() {

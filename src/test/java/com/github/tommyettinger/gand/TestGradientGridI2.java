@@ -117,9 +117,8 @@ public class TestGradientGridI2 {
 
         GradientGridI2 gg = new GradientGridI2();
         gg.setBlockingRequirement(2);
-        ObjectDeque<PointI2> path = new ObjectDeque<>(16);
 
-        PointI2 start = pt(4, 4), goal0 = pt(5, 5), goal1 = pt(5, 6);
+        PointI2 goal0 = pt(5, 5), goal1 = pt(5, 6);
 
         gg.setGoal(goal0);
         gg.setGoal(goal1);
