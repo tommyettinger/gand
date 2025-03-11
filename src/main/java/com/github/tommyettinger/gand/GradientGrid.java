@@ -401,7 +401,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
 
     /**
      * If you for some reason have one of the internally-used ints produced by {@link #encode(Point2)}, this will write
-     * it into a Point2 if you need it as such. You may prefer using {@link #decodeX(int)} and  {@link #decodeY(int)}
+     * it into a Point2 if you need it as such. You may prefer using {@link #decodeX(int)} and {@link #decodeY(int)}
      * to get the x and y components independently and without involving objects.
      *
      * @param changing a Point2 that will be modified to receive the decoded coordinates
@@ -413,10 +413,23 @@ public abstract class GradientGrid<P extends Point2<P>> {
     }
 
     /**
+     * If you for some reason have one of the internally-used ints produced by {@link #encode(Point2)}, this will
+     * {@link #acquire(int, int)} and return a {@code P} point with the encoded position.
+     * You may prefer using {@link #decodeX(int)} and {@link #decodeY(int)} to get the x and y components independently
+     * and without involving objects.
+     *
+     * @param encoded  an encoded int that stores a 2D point; see {@link #encode(Point2)}
+     * @return the P point that represents the same x,y position that the given encoded int stores
+     */
+    public P decode(final int encoded) {
+        return acquire(encoded & 0xFFFF, encoded >>> 16);
+    }
+
+    /**
      * If you for some reason have one of the internally-used ints produced by {@link #encode(Point2)}, this will decode
      * the x component of the point encoded in that int. This is an extremely simple method that is equivalent to the
      * code {@code encoded & 0xFFFF}. You probably would use this method in
-     * conjunction with {@link #decodeY(int)}, or would instead use {@link #decode(Point2, int)} to get a Point2.
+     * conjunction with {@link #decodeY(int)}, or would instead use {@link #decode(int)} to get a P point.
      *
      * @param encoded an encoded int; see {@link #encode(Point2)}
      * @return the x component of the position that the given encoded int stores
@@ -578,9 +591,10 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * which will have a value defined by the WALL constant in this class, and areas that the scan was
      * unable to reach, which will have a value defined by the DARK constant in this class (typically,
      * these areas should not be used to place NPCs or items and should be filled with walls). This uses the
-     * current measurement. The result is stored in the {@link #gradientMap} field and a copy is returned.
+     * current measurement. The result is stored in the {@link #gradientMap} field, which is returned directly
+     * (it is not a copy).
      *
-     * @return A 2D float[width][height] using the width and height of what this knows about the physical map.
+     * @return the {@link #gradientMap} of this GradientGrid, returned directly (not a copy)
      */
     public float[][] scan() {
         return scan(null);
@@ -593,25 +607,24 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * which will have a value defined by the WALL constant in this class, and areas that the scan was
      * unable to reach, which will have a value defined by the DARK constant in this class (typically,
      * these areas should not be used to place NPCs or items and should be filled with walls). This uses the
-     * current measurement. The result is stored in the {@link #gradientMap} field and a copy is returned.
+     * current measurement. The result is stored in the {@link #gradientMap} field, which is returned directly
+     * (it is not a copy).
      *
      * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
-     * @return A 2D float[width][height] using the width and height of what this knows about the physical map.
+     * @return the {@link #gradientMap} of this GradientGrid, returned directly (not a copy)
      */
     public float[][] scan(final Iterable<? extends Point2<?>> impassable) {
         scan(null, impassable);
-        float[][] gradientClone = new float[width][height];
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (gradientMap[x][y] == FLOOR) {
                     gradientMap[x][y] = DARK;
                 }
             }
-            System.arraycopy(gradientMap[x], 0, gradientClone[x], 0, height);
         }
 
-        return gradientClone;
+        return gradientMap;
     }
 
     /**
@@ -763,7 +776,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * current measurement. The result is stored in the {@link #gradientMap} field and a copy is returned.
      *
      * @param limit The maximum number of steps to scan outward from a goal.
-     * @return A 2D float[width][height] using the width and height of what this knows about the physical map.
+     * @return the {@link #gradientMap} of this GradientGrid, returned directly (not a copy)
      */
     public float[][] partialScan(final int limit) {
         return partialScan(limit, null);
@@ -776,26 +789,25 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * reach than the given limit, it will have a value of DARK if it was passable instead of the distance. The
      * exceptions are walls, which will have a value defined by the WALL constant in this class, and areas that the scan
      * was unable to reach, which will have a value defined by the DARK constant in this class. This uses the
-     * current measurement. The result is stored in the {@link #gradientMap} field and a copy is returned.
+     * current measurement. The result is stored in the {@link #gradientMap} field, which is returned directly
+     * (it is not a copy).
      *
      * @param limit      The maximum number of steps to scan outward from a goal.
      * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
-     * @return A 2D float[width][height] using the width and height of what this knows about the physical map.
+     * @return the {@link #gradientMap} of this GradientGrid, returned directly (not a copy)
      */
     public float[][] partialScan(final int limit, final Iterable<? extends Point2<?>> impassable) {
         partialScan(null, limit, impassable);
-        float[][] gradientClone = new float[width][height];
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (gradientMap[x][y] == FLOOR) {
                     gradientMap[x][y] = DARK;
                 }
             }
-            System.arraycopy(gradientMap[x], 0, gradientClone[x], 0, height);
         }
 
-        return gradientClone;
+        return gradientMap;
     }
 
     /**
@@ -970,26 +982,25 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * which will have a value defined by the WALL constant in this class, and areas that the scan was
      * unable to reach, which will have a value defined by the DARK constant in this class. (typically,
      * these areas should not be used to place NPCs or items and should be filled with walls). This uses the
-     * current measurement.  The result is stored in the {@link #gradientMap} field and a copy is returned.
+     * current measurement.  The result is stored in the {@link #gradientMap} field and returned directly
+     * (it is not a copy).
      *
      * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
      * @param size       The length of one side of a square creature using this to find a path, i.e. 2 for a 2x2 cell
      *                   creature. Non-square creatures are not supported because turning is really hard.
-     * @return A 2D float[width][height] using the width and height of what this knows about the physical map.
+     * @return the {@link #gradientMap} of this GradientGrid, returned directly (not a copy)
      */
     public float[][] scan(final Iterable<? extends Point2<?>> impassable, final int size) {
         scan(null, impassable, size);
-        float[][] gradientClone = new float[width][height];
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (gradientMap[x][y] == FLOOR) {
                     gradientMap[x][y] = DARK;
                 }
             }
-            System.arraycopy(gradientMap[x], 0, gradientClone[x], 0, height);
         }
-        return gradientClone;
+        return gradientMap;
 
     }
 
@@ -1149,27 +1160,25 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * which will have a value defined by the WALL constant in this class, and areas that the scan was
      * unable to reach, which will have a value defined by the DARK constant in this class. (typically,
      * these areas should not be used to place NPCs or items and should be filled with walls). This uses the
-     * current measurement.  The result is stored in the {@link #gradientMap} field and a copy is returned.
+     * current measurement.  The result is stored in the {@link #gradientMap} field and returned directly
+     * (it is not a copy).
      *
      * @param impassable An Iterable of Point2 keys representing the locations of enemies or other moving obstacles to a
      *                   path that cannot be moved through; this can be null if there are no such obstacles.
      * @param size       The length of one side of a square creature using this to find a path, i.e. 2 for a 2x2 cell
      *                   creature. Non-square creatures are not supported because turning is really hard.
-     * @return A 2D float[width][height] using the width and height of what this knows about the physical map.
+     * @return the {@link #gradientMap} of this GradientGrid, returned directly (not a copy)
      */
     public float[][] partialScan(final int limit, final Iterable<? extends Point2<?>> impassable, final int size) {
         partialScan(limit, null, impassable, size);
-        float[][] gradientClone = new float[width][height];
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (gradientMap[x][y] == FLOOR) {
                     gradientMap[x][y] = DARK;
                 }
             }
-            System.arraycopy(gradientMap[x], 0, gradientClone[x], 0, height);
         }
-        return gradientClone;
-
+        return gradientMap;
     }
 
     /**
