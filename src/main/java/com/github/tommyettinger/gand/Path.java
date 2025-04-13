@@ -33,7 +33,7 @@ import java.util.Collection;
 
 public class Path<V> extends ObjectDeque<V> implements Json.Serializable {
 
-    public static final Path EMPTY_PATH = new Path(0, false);
+    public static final Path EMPTY_PATH = new Path(0);
 
     private float length = 0;
 
@@ -46,11 +46,6 @@ public class Path<V> extends ObjectDeque<V> implements Json.Serializable {
 
     public Path(int capacity) {
         super(capacity);
-    }
-
-    public Path(int capacity, boolean resize) {
-        super(capacity);
-        if (resize) this.size = capacity;
     }
 
     /**
@@ -188,14 +183,182 @@ public class Path<V> extends ObjectDeque<V> implements Json.Serializable {
         setLength(jsonData.next.asFloat());
     }
 
+
+    /**
+     * Constructs an empty path given the type as a generic type argument.
+     * This is usually less useful than just using the constructor, but can be handy
+     * in some code-generation scenarios when you don't know how many arguments you will have.
+     *
+     * @param <T>    the type of items; must be given explicitly
+     * @return a new path containing nothing
+     */
+    public static <T> Path<T> with () {
+        return new Path<>(0);
+    }
+
+    /**
+     * Creates a new Path that holds only the given item, but can be resized.
+     * @param item one T item
+     * @return a new Path that holds the given item
+     * @param <T> the type of item, typically inferred
+     */
     public static <T> Path<T> with (T item) {
-        Path<T> path = new Path<>();
+        Path<T> path = new Path<>(1);
         path.add(item);
         return path;
     }
 
+    /**
+     * Creates a new Path that holds only the given items, but can be resized.
+     * @param item0 a T item
+     * @param item1 a T item
+     * @return a new Path that holds the given items
+     * @param <T> the type of item, typically inferred
+     */
+    public static <T> Path<T> with (T item0, T item1) {
+        Path<T> path = new Path<>(2);
+        path.add(item0);
+        path.add(item1);
+        return path;
+    }
+
+    /**
+     * Creates a new Path that holds only the given items, but can be resized.
+     * @param item0 a T item
+     * @param item1 a T item
+     * @param item2 a T item
+     * @return a new Path that holds the given items
+     * @param <T> the type of item, typically inferred
+     */
+    public static <T> Path<T> with (T item0, T item1, T item2) {
+        Path<T> path = new Path<>(3);
+        path.add(item0);
+        path.add(item1);
+        path.add(item2);
+        return path;
+    }
+
+    /**
+     * Creates a new Path that holds only the given items, but can be resized.
+     * @param item0 a T item
+     * @param item1 a T item
+     * @param item2 a T item
+     * @param item3 a T item
+     * @return a new Path that holds the given items
+     * @param <T> the type of item, typically inferred
+     */
+    public static <T> Path<T> with (T item0, T item1, T item2, T item3) {
+        Path<T> path = new Path<>(4);
+        path.add(item0);
+        path.add(item1);
+        path.add(item2);
+        path.add(item3);
+        return path;
+    }
+
+    /**
+     * Creates a new Path that holds only the given items, but can be resized.
+     * @param item0 a T item
+     * @param item1 a T item
+     * @param item2 a T item
+     * @param item3 a T item
+     * @param item4 a T item
+     * @return a new Path that holds the given items
+     * @param <T> the type of item, typically inferred
+     */
+    public static <T> Path<T> with (T item0, T item1, T item2, T item3, T item4) {
+        Path<T> path = new Path<>(5);
+        path.add(item0);
+        path.add(item1);
+        path.add(item2);
+        path.add(item3);
+        path.add(item4);
+        return path;
+    }
+
+    /**
+     * Creates a new Path that holds only the given items, but can be resized.
+     * @param item0 a T item
+     * @param item1 a T item
+     * @param item2 a T item
+     * @param item3 a T item
+     * @param item4 a T item
+     * @param item5 a T item
+     * @return a new Path that holds the given items
+     * @param <T> the type of item, typically inferred
+     */
+    public static <T> Path<T> with (T item0, T item1, T item2, T item3, T item4, T item5) {
+        Path<T> path = new Path<>(6);
+        path.add(item0);
+        path.add(item1);
+        path.add(item2);
+        path.add(item3);
+        path.add(item4);
+        path.add(item5);
+        return path;
+    }
+
+    /**
+     * Creates a new Path that holds only the given items, but can be resized.
+     * @param item0 a T item
+     * @param item1 a T item
+     * @param item2 a T item
+     * @param item3 a T item
+     * @param item4 a T item
+     * @param item5 a T item
+     * @param item6 a T item
+     * @return a new Path that holds the given items
+     * @param <T> the type of item, typically inferred
+     */
+    public static <T> Path<T> with (T item0, T item1, T item2, T item3, T item4, T item5, T item6) {
+        Path<T> path = new Path<>(7);
+        path.add(item0);
+        path.add(item1);
+        path.add(item2);
+        path.add(item3);
+        path.add(item4);
+        path.add(item5);
+        path.add(item6);
+        return path;
+    }
+
+    /**
+     * Creates a new Path that holds only the given items, but can be resized.
+     * @param item0 a T item
+     * @param item1 a T item
+     * @param item2 a T item
+     * @param item3 a T item
+     * @param item4 a T item
+     * @param item5 a T item
+     * @param item6 a T item
+     * @param item7 a T item
+     * @return a new Path that holds the given items
+     * @param <T> the type of item, typically inferred
+     */
+    public static <T> Path<T> with (T item0, T item1, T item2, T item3, T item4, T item5, T item6, T item7) {
+        Path<T> path = new Path<>(8);
+        path.add(item0);
+        path.add(item1);
+        path.add(item2);
+        path.add(item3);
+        path.add(item4);
+        path.add(item5);
+        path.add(item6);
+        path.add(item7);
+        return path;
+    }
+
+    /**
+     * Creates a new Path that will hold the items in the given array or varargs.
+     * This overload will only be used when an array is supplied and the type of the
+     * items requested is the component type of the array, or if varargs are used and
+     * there are 9 or more arguments.
+     * @param varargs either 0 or more T items, or an array of T
+     * @return a new Path that holds the given T items
+     * @param <T> the type of items, typically inferred by all the items being the same type
+     */
     @SafeVarargs
-    public static <T> Path<T> with (T... items) {
-        return new Path<>(items);
+    public static <T> Path<T> with (T... varargs) {
+        return new Path<>(varargs);
     }
 }

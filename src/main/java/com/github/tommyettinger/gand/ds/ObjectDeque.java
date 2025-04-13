@@ -23,69 +23,91 @@ import com.badlogic.gdx.utils.JsonValue;
 import java.util.*;
 
 /**
- * A resizable, insertion-ordered double-ended queue of objects with efficient add and remove at the beginning and end. Values in the
- * backing array may wrap back to the beginning, making add and remove at the beginning and end O(1) (unless the backing array needs to
- * resize when adding). Deque functionality is provided via {@link #removeLast()} and {@link #addFirst(Object)}.
+ * A resizable, insertion-ordered double-ended queue of objects with efficient add and remove at the beginning and end.
+ * This implements both the {@link List} and {@link Deque} interfaces, and supports {@link RandomAccess}.
+ * Values in the backing array may wrap back to the beginning, making add and remove at the beginning and end O(1)
+ * (unless the backing array needs to resize when adding). Deque functionality is provided via {@link #removeLast()} and
+ * {@link #addFirst(Object)}.
  * <br>
- * Unlike most Deque implementations in the JDK, you can get and set items anywhere in the deque in constant time with {@link #get(int)}
- * and {@link #set(int, Object)}. Unlike ArrayDeque in the JDK, this implements {@link #equals(Object)} and {@link #hashCode()}, as well
- * as {@link #equalsIdentity(Object)}.
+ * Unlike most Deque implementations in the JDK, you can get and set items anywhere in the deque in constant time with
+ * {@link #get(int)} and {@link #set(int, Object)}. Relative to an {@link ArrayList}, {@link #get(int)} has slightly
+ * higher overhead, but it still runs in constant time. Unlike ArrayDeque in the JDK, this implements
+ * {@link #equals(Object)} and {@link #hashCode()}, as well as {@link #equalsIdentity(Object)}. This can provide
+ * full-blown {@link ListIterator ListIterators} for iteration from an index or in reverse order.
+ * <br>
+ * Unlike {@link ArrayDeque} or {@link ArrayList}, most methods that take an index here try to be "forgiving;" that is,
+ * they treat negative indices as index 0, and too-large indices as the last index, rather than throwing an Exception,
+ * except in some cases where the ObjectDeque is empty and an item from it is required. An exception is in
+ * {@link #set(int, Object)}, which allows prepending by setting a negative index, or appending by setting a too-large
+ * index. This isn't a standard JDK behavior, and it doesn't always act how Deque or List is documented.
+ * <br>
+ * Some new methods are present here, or have been made public when they weren't before. {@link #removeRange(int, int)},
+ * for instance, is now public, as is {@link #resize(int)}. New APIs include Deque-like methods that affect the middle
+ * of the deque, such as {@link #peekAt(int)} and {@link #pollAt(int)}. There are more bulk methods that work at the
+ * head or tail region of the deque, such as {@link #addAllFirst(Collection)} and {@link #truncateFirst(int)}.
+ * <br>
+ * In general, this is an improvement over {@link ArrayDeque} in every type of functionality, and is mostly equivalent
+ * to {@link ArrayList} as long as the performance of {@link #get(int)} is adequate. Because it is array-backed, it
+ * should usually be much faster than {@link LinkedList}, as well; only periodic resizing and modifications in the
+ * middle of the List using an iterator should be typically faster for {@link LinkedList}.
  */
-public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess {
+public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>, RandomAccess {
 
 	/**
 	 * The value returned when nothing can be obtained from this deque and an exception is not meant to be thrown,
 	 * such as when calling {@link #peek()} on an empty deque.
 	 */
-	protected T defaultValue = null;
+	public T defaultValue = null;
 	/**
-	 * Contains the values in the queue. Head and tail indices go in a circle around this array, wrapping at the end.
+	 * Contains the values in the deque. Head and tail indices go in a circle around this array, wrapping at the end.
 	 */
 	protected T[] values;
 
 	/**
-	 * Index of first element. Logically smaller than tail. Unless empty, it points to a valid element inside queue.
+	 * Index of first element. Logically smaller than tail. Unless empty, it points to a valid element inside the deque.
 	 */
 	protected int head = 0;
 
 	/**
-	 * Index of last element. Logically bigger than head. Usually points to an empty position, but points to the head when full
-	 * {@code (size == values.length)}.
+	 * Index of last element. Logically bigger than head. Unless empty, it points to a valid element inside the deque.
+	 * This may be the same as head, and is if there is one element in the deque (or none), that will be the case.
 	 */
 	protected int tail = 0;
 
 	/**
-	 * Number of elements in the queue.
+	 * Number of elements in the deque.
 	 */
 	public int size = 0;
 
 	protected transient ObjectDequeIterator<T> iterator1;
 	protected transient ObjectDequeIterator<T> iterator2;
-
 	protected transient ObjectDequeIterator<T> descendingIterator1;
 	protected transient ObjectDequeIterator<T> descendingIterator2;
 
 	/**
-	 * Creates a new ObjectDeque which can hold 16 values without needing to resize its backing array.
+	 * Creates a new ObjectDeque which can hold 16 values without needing to resize the backing array.
 	 */
-	public ObjectDeque () {
+	public ObjectDeque() {
 		this(16);
 	}
 
 	/**
-	 * Creates a new ObjectDeque which can hold the specified number of values without needing to resize its backing array.
+	 * Creates a new ObjectDeque which can hold the specified number of values without needing to resize the backing
+	 * array.
+	 * @param initialSize how large the backing array should be, without any padding
 	 */
-	public ObjectDeque (int initialSize) {
+	public ObjectDeque(int initialSize) {
 		// noinspection unchecked
-		this.values = (T[])new Object[initialSize];
+		this.values = (T[])new Object[Math.max(1, initialSize)];
 	}
 
 	/**
 	 * Creates a new ObjectDeque using all the contents of the given Collection.
 	 *
 	 * @param coll a Collection of T that will be copied into this and used in full
+	 * @throws NullPointerException if {@code coll} is {@code null}
 	 */
-	public ObjectDeque (Collection<? extends T> coll) {
+	public ObjectDeque(Collection<? extends T> coll) {
 		this(coll.size());
 		addAll(coll);
 	}
@@ -94,8 +116,9 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * Copies the given ObjectDeque exactly into this one. Individual values will be shallow-copied.
 	 *
 	 * @param deque another ObjectDeque to copy
+	 * @throws NullPointerException if {@code deque} is {@code null}
 	 */
-	public ObjectDeque (ObjectDeque<? extends T> deque) {
+	public ObjectDeque(ObjectDeque<? extends T> deque) {
 		this.values = Arrays.copyOf(deque.values, deque.values.length);
 		this.size = deque.size;
 		this.head = deque.head;
@@ -107,31 +130,46 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * Creates a new ObjectDeque using all the contents of the given array.
 	 *
 	 * @param a an array of T that will be copied into this and used in full
+	 * @throws NullPointerException if {@code a} is {@code null}
 	 */
-	public ObjectDeque (T[] a) {
-		tail = a.length;
-		this.values = Arrays.copyOf(a, tail);
-		size = tail;
+	public ObjectDeque(T[] a) {
+		this.values = Arrays.copyOf(a, Math.max(1, a.length));
+		size = a.length;
+		tail = Math.max(0, size - 1);
 	}
 
 	/**
 	 * Creates a new ObjectDeque using {@code count} items from {@code a}, starting at {@code offset}.
-	 *
+	 * If {@code count} is 0 or less, this will create an empty ObjectDeque with capacity 1.
 	 * @param a      an array of T
 	 * @param offset where in {@code a} to start using items
 	 * @param count  how many items to use from {@code a}
+	 * @throws NullPointerException if {@code a} is {@code null}
 	 */
-	public ObjectDeque (T[] a, int offset, int count) {
-		this.values = Arrays.copyOfRange(a, offset, offset + count);
-		tail = count;
-		size = count;
+	public ObjectDeque(T[] a, int offset, int count) {
+		int adjusted = Math.max(1, count);
+		this.values = Arrays.copyOfRange(a, offset, offset + adjusted);
+		tail = adjusted - 1;
+		size = Math.max(0, count);
 	}
 
+	/**
+	 * Gets the default value, which is the value returned when nothing can be obtained from this deque and an exception
+	 * is not meant to be thrown, such as when calling peek() on an empty deque. Unless changed, the default value is
+	 * usually {@code null}.
+	 * @return the current default value
+	 */
 	public T getDefaultValue () {
 		return defaultValue;
 	}
 
-	public void setDefaultValue (T defaultValue) {
+	/**
+	 * Sets the default value, which is the value returned when nothing can be obtained from this deque and an exception
+	 * is not meant to be thrown, such as when calling peek() on an empty deque. Unless changed, the default value is
+	 * usually {@code null}.
+	 * @param defaultValue any T object this can return instead of throwing an Exception, or {@code null}
+	 */
+	public void setDefaultValue ( T defaultValue) {
 		this.defaultValue = defaultValue;
 	}
 
@@ -140,19 +178,18 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 *
 	 * @param object can be null
 	 */
-	public void addLast (T object) {
-		T[] values = this.values;
+	@Override
+	public void addLast ( T object) { T[] values = this.values;
 
 		if (size == values.length) {
 			resize(values.length << 1);
 			values = this.values;
 		}
 
-		if (tail == values.length) {
-			tail = 0;
-		}
-		values[tail++] = object;
-		size++;
+		if (++tail == values.length) tail = 0;
+		if(++size == 1) tail = head;
+		values[tail] = object;
+		modCount++;
 	}
 
 	/**
@@ -161,8 +198,8 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * @param object can be null
 	 * @see #addLast(Object)
 	 */
-	public void addFirst (T object) {
-		T[] values = this.values;
+	@Override
+	public void addFirst ( T object) { T[] values = this.values;
 
 		if (size == values.length) {
 			resize(values.length << 1);
@@ -177,7 +214,28 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		values[head] = object;
 
 		this.head = head;
-		size++;
+		if(++size == 1) tail = head;
+		modCount++;
+	}
+
+	/**
+	 * Trims the capacity of this {@code ObjectDeque} instance to be the
+	 * deque's current size.  An application can use this operation to minimize
+	 * the storage of an {@code ObjectDeque} instance.
+	 */
+	public void trimToSize() {
+		modCount++;
+		if (size < values.length) {
+			if(head <= tail) {
+				values = Arrays.copyOfRange(values, head, tail+1);
+			} else { T[] next = Arrays.copyOf(values, size);
+				System.arraycopy(values, head, next, 0, values.length - head);
+				System.arraycopy(values, 0, next, values.length - head, tail + 1);
+				values = next;
+			}
+			head = 0;
+			tail = values.length - 1;
+		}
 	}
 
 	/**
@@ -192,34 +250,168 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	}
 
 	/**
-	 * Resize backing array. newSize must be bigger than current size.
+	 * Resizes the backing array. newSize should be greater than the current size; otherwise, newSize will be set to
+	 * size and the resize to the same size will (for most purposes) be wasted effort. If this is not empty, this will
+	 * rearrange the items internally to be linear and have the head at index 0, with the tail at {@code size - 1}.
+	 * This always allocates a new internal backing array.
 	 */
-	protected void resize (int newSize) {
+	public void resize (int newSize) {
+		if(newSize < size)
+			newSize = size;
 		final T[] values = this.values;
 		final int head = this.head;
 		final int tail = this.tail;
 
+		@SuppressWarnings("unchecked")
 		final T[] newArray = (T[])new Object[Math.max(1, newSize)];
-		if (head < tail) {
-			// Continuous
-			System.arraycopy(values, head, newArray, 0, tail - head);
-		} else if (size > 0) {
-			// Wrapped
-			final int rest = values.length - head;
-			System.arraycopy(values, head, newArray, 0, rest);
-			System.arraycopy(values, 0, newArray, rest, tail);
+
+		if (size > 0) {
+			if (head <= tail) {
+				// Continuous
+				System.arraycopy(values, head, newArray, 0, tail - head + 1);
+			} else {
+				// Wrapped
+				final int rest = values.length - head;
+				System.arraycopy(values, head, newArray, 0, rest);
+				System.arraycopy(values, 0, newArray, rest, tail + 1);
+			}
+			this.head = 0;
+			this.tail = size - 1;
 		}
 		this.values = newArray;
-		this.head = 0;
-		this.tail = size;
 	}
 
 	/**
-	 * Remove the first item from the queue. (dequeue from head) Always O(1).
+	 * Make sure there is a "gap" of exactly {@code gapSize} values starting at {@code index}. This can
+	 * resize the backing array to achieve this goal. If possible, this will keep the same backing array and modify
+	 * it in-place. The "gap" is not assigned null, and may contain old/duplicate references; calling code <em>must</em>
+	 * overwrite the entire gap with additional values to ensure GC correctness.
+	 * @implNote This is considered an incomplete modification for the purpose of {@link #modCount}, so it does not
+	 * change modCount; the code that fills in the gap should change modCount instead.
+	 * @param index the 0-based index in the iteration order where the gap will be present
+	 * @param gapSize the number of items that will need filling in the gap, and can be filled without issues.
+	 * @return the position in the array where the gap will begin, which is unrelated to the index
+	 */
+	protected int ensureGap(int index, int gapSize) {
+		if (gapSize <= 0) return 0;
+		if (index < 0) index = 0;
+		if (index > size) {
+			int oldSize = size;
+			ensureCapacity(gapSize);
+			return oldSize;
+		}
+		if (size == 0) {
+			this.head = this.tail = 0;
+			if (values.length < gapSize) {
+				//noinspection unchecked
+				this.values = (T[]) new Object[gapSize];
+			}
+			return 0;
+		} else if (size == 1) {
+			if (values.length < gapSize + size) {
+				T item = this.values[head];
+				//noinspection unchecked
+				this.values = (T[]) new Object[gapSize + size];
+				if (index == 0) {
+					this.values[gapSize] = item;
+					this.head = 0;
+					this.tail = gapSize;
+					return 0;
+				} else {
+					this.values[0] = item;
+					this.head = 0;
+					this.tail = gapSize;
+					return 1;
+				}
+			} else {
+				if (index == 0) {
+					if (head != 0) {
+						this.values[0] = this.values[head];
+						this.values[head] = null;
+					}
+					this.head = 0;
+					this.tail = gapSize;
+					return 0;
+				} else {
+					if (head != gapSize) {
+						this.values[gapSize] = this.values[head];
+						this.values[head] = null;
+					}
+					this.head = 0;
+					this.tail = gapSize;
+					return 1;
+				}
+			}
+		}
+
+		final T[] values = this.values;
+		final int head = this.head;
+		final int tail = this.tail;
+		final int newSize = Math.max(size + gapSize, values.length);
+		if (newSize == values.length) {
+			// keep the same array because there is enough room to form the gap.
+			if (head <= tail) {
+				if (head != 0) {
+					if (index > 0)
+						System.arraycopy(values, head, values, 0, index);
+					this.head = 0;
+				}
+				System.arraycopy(values, head + index, values, index + gapSize, size - this.head - index);
+				this.tail += gapSize - (head - this.head);
+				return index;
+			} else {
+				if (head + index < values.length) {
+					if (index > 0)
+						System.arraycopy(values, head, values, head - gapSize, index);
+					this.head -= gapSize;
+					return this.head + index;
+				} else {
+					int wrapped = head + index - values.length;
+					System.arraycopy(values, wrapped, values, wrapped + gapSize, tail + 1 - wrapped);
+					this.tail += gapSize;
+					return wrapped;
+				}
+			}
+		} else {
+			@SuppressWarnings("unchecked") final T[] newArray = (T[]) new Object[newSize];
+
+			if (head <= tail) {
+				// Continuous
+				if (index > 0)
+					System.arraycopy(values, head, newArray, 0, index);
+				this.head = 0;
+				System.arraycopy(values, head + index, newArray, index + gapSize, size - head - index);
+				this.tail += gapSize;
+			} else {
+				// Wrapped
+				final int headPart = values.length - head;
+				if (index < headPart) {
+					if (index > 0)
+						System.arraycopy(values, head, newArray, 0, index);
+					this.head = 0;
+					System.arraycopy(values, head + index, newArray, index + gapSize, headPart - index);
+					this.tail = size + gapSize - 1;
+				} else {
+					System.arraycopy(values, head, newArray, 0, headPart);
+					int wrapped = index - headPart; // same as: head + index - values.length;
+					System.arraycopy(values, 0, newArray, headPart, wrapped);
+					System.arraycopy(values, wrapped, newArray, headPart + wrapped + gapSize, tail + 1 - wrapped);
+					this.tail = size + gapSize - 1;
+					index = headPart + wrapped;
+				}
+			}
+			this.values = newArray;
+			return index;
+		}
+	}
+
+	/**
+	 * Remove the first item from the deque. (dequeue from head) Always O(1).
 	 *
 	 * @return removed object
-	 * @throws NoSuchElementException when queue is empty
+	 * @throws NoSuchElementException when the deque is empty
 	 */
+	@Override
 	public T removeFirst () {
 		if (size == 0) {
 			// Underflow
@@ -234,18 +426,20 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		if (head == values.length) {
 			head = 0;
 		}
-		size--;
+		if(--size == 0) tail = head;
+		modCount++;
 
 		return result;
 	}
 
 	/**
-	 * Remove the last item from the queue. (dequeue from tail) Always O(1).
+	 * Remove the last item from the deque. (dequeue from tail) Always O(1).
 	 *
 	 * @return removed object
-	 * @throws NoSuchElementException when queue is empty
+	 * @throws NoSuchElementException when the deque is empty
 	 * @see #removeFirst()
 	 */
+	@Override
 	public T removeLast () {
 		if (size == 0) {
 			throw new NoSuchElementException("ObjectDeque is empty.");
@@ -253,14 +447,18 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 
 		final T[] values = this.values;
 		int tail = this.tail;
-		tail--;
-		if (tail == -1) {
-			tail = values.length - 1;
-		}
 		final T result = values[tail];
 		values[tail] = null;
+
+		if (tail == 0) {
+			tail = values.length - 1;
+		} else {
+			--tail;
+		}
 		this.tail = tail;
-		size--;
+
+		if(--size == 0) head = tail;
+		modCount++;
 
 		return result;
 	}
@@ -282,7 +480,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 *                                  element prevents it from being added to this deque
 	 */
 	@Override
-	public boolean offerFirst (T t) {
+	public boolean offerFirst ( T t) {
 		int oldSize = size;
 		addFirst(t);
 		return oldSize != size;
@@ -305,7 +503,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 *                                  element prevents it from being added to this deque
 	 */
 	@Override
-	public boolean offerLast (T t) {
+	public boolean offerLast ( T t) {
 		int oldSize = size;
 		addLast(t);
 		return oldSize != size;
@@ -313,8 +511,10 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 
 	/**
 	 * Retrieves and removes the first element of this deque,
-	 * or returns {@link #getDefaultValue() defaultValue} if this deque is empty.
+	 * or returns {@link #getDefaultValue() defaultValue} if this deque is empty. The default value is usually
+	 * {@code null} unless it has been changed with {@link #setDefaultValue(Object)}.
 	 *
+	 * @see #removeFirst() the alternative removeFirst() throws an Exception if the deque is empty
 	 * @return the head of this deque, or {@link #getDefaultValue() defaultValue} if this deque is empty
 	 */
 	@Override
@@ -332,15 +532,18 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		if (head == values.length) {
 			head = 0;
 		}
-		size--;
+		if(--size == 0) tail = head;
+		modCount++;
 
 		return result;
 	}
 
 	/**
 	 * Retrieves and removes the last element of this deque,
-	 * or returns {@link #getDefaultValue() defaultValue} if this deque is empty.
+	 * or returns {@link #getDefaultValue() defaultValue} if this deque is empty. The default value is usually
+	 * {@code null} unless it has been changed with {@link #setDefaultValue(Object)}.
 	 *
+	 * @see #removeLast() the alternative removeLast() throws an Exception if the deque is empty
 	 * @return the tail of this deque, or {@link #getDefaultValue() defaultValue} if this deque is empty
 	 */
 	@Override
@@ -351,14 +554,18 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 
 		final T[] values = this.values;
 		int tail = this.tail;
-		tail--;
-		if (tail == -1) {
-			tail = values.length - 1;
-		}
 		final T result = values[tail];
 		values[tail] = null;
+
+		if (tail == 0) {
+			tail = values.length - 1;
+		} else {
+			--tail;
+		}
 		this.tail = tail;
-		size--;
+
+		if(--size == 0) head = tail;
+		modCount++;
 
 		return result;
 	}
@@ -417,12 +624,6 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 			// Underflow
 			return defaultValue;
 		}
-		final T[] values = this.values;
-		int tail = this.tail;
-		tail--;
-		if (tail == -1) {
-			tail = values.length - 1;
-		}
 		return values[tail];
 	}
 
@@ -444,7 +645,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 *                              (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
 	 */
 	@Override
-	public boolean removeFirstOccurrence (Object o) {
+	public boolean removeFirstOccurrence ( Object o) {
 		return removeValue(o, false);
 	}
 
@@ -466,12 +667,12 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 *                              (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
 	 */
 	@Override
-	public boolean removeLastOccurrence (Object o) {
+	public boolean removeLastOccurrence ( Object o) {
 		return removeLastValue(o, false);
 	}
 
 	/**
-	 * Inserts the specified element into the queue represented by this deque
+	 * Inserts the specified element into the deque represented by this deque
 	 * (in other words, at the tail of this deque) if it is possible to do so
 	 * immediately without violating capacity restrictions, returning
 	 * {@code true} upon success and throwing an
@@ -493,7 +694,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 *                                  element prevents it from being added to this deque
 	 */
 	@Override
-	public boolean add (T t) {
+	public boolean add ( T t) {
 		int oldSize = size;
 		addLast(t);
 		return oldSize != size;
@@ -506,30 +707,44 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * (where it acts like offerLast()).
 	 * @param index the index in the deque's insertion order to insert the item
 	 * @param item a T item to insert; may be null
-	 * @return true if this deque was modified
 	 */
-	public boolean add (int index, T item) {
+	@Override
+	public void add (int index, T item) {
+		insert(index, item);
+	}
+
+	/**
+	 * This is an alias for {@link #add(int, Object)} that returns {@code true} to indicate it does modify
+	 * this ObjectDeque.
+	 *
+	 * @param index index at which the specified element is to be inserted
+	 * @param item  element to be inserted
+	 * @return true if this was modified, which should always happen
+	 */
+	public boolean insert (int index, T item) {
 		int oldSize = size;
 		if(index <= 0)
 			addFirst(item);
 		else if(index >= oldSize)
 			addLast(item);
-		else {
-			T[] values = this.values;
+		else { T[] values = this.values;
 
-			if (size == values.length) {
+			if (++size > values.length) {
 				resize(values.length << 1);
 				values = this.values;
 			}
 
-			if(head < tail) {
+			if(head <= tail) {
 				index += head;
 				if(index >= values.length) index -= values.length;
-				System.arraycopy(values, index, values, (index + 1) % values.length, tail - index);
+				int after = index + 1;
+				if(after >= values.length) after = 0;
+
+				System.arraycopy(values, index, values, after, head + size - index - 1);
 				values[index] = item;
-				tail++;
-				if (tail > values.length) {
-					tail = 1;
+				tail = head + size - 1;
+				if (tail >= values.length) {
+					tail = 0;
 				}
 			} else {
 				if (head + index < values.length) {
@@ -537,31 +752,18 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 					System.arraycopy(values, head, values, head - 1, index);
 					values[head - 1 + index] = item;
 					head--;
-					// don't need to check for head being negative, because head is always > tail
 				}
 				else {
 					// forward shift
-					index -= values.length - 1;
-					System.arraycopy(values, head + index, values, head + index + 1, tail - head - index);
-					values[head + index] = item;
+					index = head + index - values.length;
+					System.arraycopy(values, index, values, index + 1, tail - index + 1);
+					values[index] = item;
 					tail++;
-					// again, don't need to check for tail going around, because the head is in the way and doesn't need to move
 				}
 			}
-			size++;
-
+			modCount++;
 		}
 		return oldSize != size;
-	}
-
-	/**
-	 * This is an alias for {@link #add(int, Object)} to improve compatibility with primitive lists.
-	 *
-	 * @param index   index at which the specified element is to be inserted
-	 * @param element element to be inserted
-	 */
-	public boolean insert (int index, T element) {
-		return add(index, element);
 	}
 
 	/**
@@ -586,7 +788,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 *                                  element prevents it from being added to this deque
 	 */
 	@Override
-	public boolean offer (T t) {
+	public boolean offer ( T t) {
 		int oldSize = size;
 		addLast(t);
 		return oldSize != size;
@@ -655,7 +857,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	}
 
 	/**
-	 * Adds all of the elements in the specified collection at the end
+	 * Adds all the elements in the specified collection at the end
 	 * of this deque, as if by calling {@link #addLast} on each one,
 	 * in the order that they are returned by the collection's iterator.
 	 *
@@ -680,9 +882,118 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 */
 	@Override
 	public boolean addAll (Collection<? extends T> c) {
+		final int cs = c.size();
+		if(cs == 0) return false;
 		int oldSize = size;
-		for (T t : c) {
-			addLast(t);
+		ensureCapacity(Math.max(cs, oldSize));
+		if(c == this) {
+			if(head <= tail) {
+				if (tail + 1 < values.length)
+					System.arraycopy(values, head, values, tail + 1, Math.min(size, values.length - tail - 1));
+				if (values.length - tail - 1 < size)
+					System.arraycopy(values, head + values.length - tail - 1, values, 0, size - (values.length - tail - 1));
+			} else {
+				System.arraycopy(values, head, values, tail + 1, values.length - head);
+				System.arraycopy(values, 0, values, tail + 1 + values.length - head, tail + 1);
+			}
+			tail += oldSize;
+			size += oldSize;
+		} else {
+			for (T t : c) {
+				addLast(t);
+			}
+		}
+		return oldSize != size;
+	}
+
+	/**
+	 * An alias for {@link #addAll(Collection)}, this adds every item in {@code c} to this in order at the end.
+	 * @param c the elements to be inserted into this deque
+	 * @return {@code true} if this deque changed as a result of the call
+	 */
+	public boolean addAllLast (Collection<? extends T> c) {
+		return addAll(c);
+	}
+
+	/**
+	 * Adds every item in {@code c} to this in order at the start. The iteration order of {@code c} will be preserved
+	 * for the added items.
+	 * @param c the elements to be inserted into this deque
+	 * @return {@code true} if this deque changed as a result of the call
+	 */
+	public boolean addAllFirst (Collection< ? extends T> c) {
+		final int cs = c.size();
+		if(cs == 0) return false;
+		int oldSize = size;
+		ensureCapacity(Math.max(cs, oldSize));
+		if(c == this) {
+			if(head <= tail) {
+				if (head >= oldSize)
+					System.arraycopy(values, head, values, head - oldSize, oldSize);
+				else if (head > 0) {
+					System.arraycopy(values, tail + 1 - head, values, 0, head);
+					System.arraycopy(values, head, values, values.length - (oldSize - head), oldSize - head);
+				} else {
+					System.arraycopy(values, head, values, values.length - oldSize, oldSize);
+				}
+			} else {
+				System.arraycopy(values, head, values, head - oldSize, values.length - head);
+				System.arraycopy(values, 0, values, values.length - oldSize, tail + 1);
+			}
+			head -= oldSize;
+			if(head < 0) head += values.length;
+			size += oldSize;
+		} else {
+			int idx = 0;
+			for (T t : c) {
+				insert(idx++, t);
+			}
+		}
+		return oldSize != size;
+	}
+
+	/**
+	 * An alias for {@link #addAll(int, Collection)}; inserts all elements
+	 * in the specified collection into this list at the specified position.
+	 * Shifts the element currently at that position (if any) and any subsequent
+	 * elements to the right (increases their indices). The new elements
+	 * will appear in this list in the order that they are returned by the
+	 * specified collection's iterator. The behavior of this operation is
+	 * undefined if the specified collection is modified while the
+	 * operation is in progress. (Note that this will occur if the specified
+	 * collection is this list, and it's nonempty.)
+	 *
+	 * @param index index at which to insert the first element from the
+	 *              specified collection
+	 * @param c collection containing elements to be added to this list
+	 * @return {@code true} if this list changed as a result of the call
+	 */
+	public boolean insertAll(int index, Collection<? extends T> c) {
+		return addAll(index, c);
+	}
+
+	@Override
+	public boolean addAll(int index, Collection<? extends T> c) {
+		int oldSize = size;
+		if(index <= 0)
+			addAllFirst(c);
+		else if(index >= oldSize)
+			addAll(c);
+		else {
+			final int cs = c.size();
+			if(c.isEmpty()) return false;
+			int place = ensureGap(index, cs); T[] values = this.values;
+			if(c == this){
+				System.arraycopy(values, head, values, place, place - head);
+				System.arraycopy(values, place + cs, values, place + place - head, tail + 1 - place - cs);
+			} else {
+				for (T item : c) {
+					values[place++] = item;
+					if (place >= values.length) place -= values.length;
+				}
+			}
+			size += cs;
+			modCount += cs;
 		}
 		return oldSize != size;
 	}
@@ -705,9 +1016,125 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * @return {@code true} if this deque changed as a result of the call
 	 */
 	public boolean addAll (T[] array, int offset, int length) {
+		final int cs = Math.min(array.length - offset, length);
+		if(cs <= 0) return false;
+		int place = ensureGap(size, cs);
+		System.arraycopy(array, offset, this.values, place, cs);
+		size += cs;
+		modCount += cs;
+		return true;
+	}
+
+
+	/**
+	 * An alias for {@link #addAll(Object[])}.
+	 * @see #addAll(Object[])
+	 * @param array the elements to be inserted into this deque
+	 * @return {@code true} if this deque changed as a result of the call
+	 */
+	public boolean addAllLast (T[] array) {
+		return addAll(array, 0, array.length);
+	}
+	/**
+	 * An alias for {@link #addAll(Object[], int, int)}.
+	 * @see #addAll(Object[], int, int)
+	 * @param array the elements to be inserted into this deque
+	 * @param offset the index of the first item in array to add
+	 * @param length how many items, at most, to add from array into this
+	 * @return {@code true} if this deque changed as a result of the call
+	 */
+	public boolean addAllLast (T[] array, int offset, int length) {
+		return addAll(array, offset, length);
+	}
+
+	/**
+	 * Exactly like {@link #addAllFirst(Collection)}, but takes an array instead of a Collection.
+	 * @see #addAllFirst(Collection)
+	 * @param array the elements to be inserted into this deque
+	 * @return {@code true} if this deque changed as a result of the call
+	 */
+	public boolean addAllFirst (T[] array) {
+		return addAllFirst(array, 0, array.length);
+	}
+
+	/**
+	 * Like {@link #addAllFirst(Object[])}, but only uses at most {@code length} items from {@code array}, starting at
+	 * {@code offset}. The order of {@code array} will be preserved, starting at the head of the deque.
+	 * @see #addAllFirst(Object[])
+	 * @param array the elements to be inserted into this deque
+	 * @param offset the index of the first item in array to add
+	 * @param length how many items, at most, to add from array into this
+	 * @return {@code true} if this deque changed as a result of the call
+	 */
+	public boolean addAllFirst (T[] array, int offset, int length) {
+		final int cs = Math.min(array.length - offset, length);
+		if(cs <= 0) return false;
+		int place = ensureGap(0, cs);
+		System.arraycopy(array, offset, this.values, place, cs);
+		size += cs;
+		modCount += cs;
+		return true;
+	}
+
+	/**
+	 * Alias for {@link #addAll(int, Object[])}.
+	 * @param index the index in this deque's iteration order to place the first item in {@code array}
+	 * @param array the elements to be inserted into this deque
+	 * @return {@code true} if this deque changed as a result of the call
+	 */
+	public boolean insertAll(int index, T[] array) {
+		return addAll(index, array, 0, array.length);
+	}
+
+	/**
+	 * Alias for {@link #addAll(int, Object[], int, int)}.
+	 * @param index the index in this deque's iteration order to place the first item in {@code array}
+	 * @param array the elements to be inserted into this deque
+	 * @param offset the index of the first item in array to add
+	 * @param length how many items, at most, to add from array into this
+	 * @return {@code true} if this deque changed as a result of the call
+	 */
+	public boolean insertAll(int index, T[] array, int offset, int length) {
+		return addAll(index, array, offset, length);
+	}
+	/**
+	 * Like {@link #addAll(int, Collection)}, but takes an array instead of a Collection and inserts it
+	 * so the first item will be at the given {@code index}.
+	 * The order of {@code array} will be preserved, starting at the given index in this deque.
+	 * @see #addAll(Object[])
+	 * @param index the index in this deque's iteration order to place the first item in {@code array}
+	 * @param array the elements to be inserted into this deque
+	 * @return {@code true} if this deque changed as a result of the call
+	 */
+	public boolean addAll(int index, T[] array) {
+		return addAll(index, array, 0, array.length);
+	}
+
+	/**
+	 * Like {@link #addAll(int, Collection)}, but takes an array instead of a Collection, gets items starting at
+	 * {@code offset} from that array, using {@code length} items, and inserts them
+	 * so the item at the given offset will be at the given {@code index}.
+	 * The order of {@code array} will be preserved, starting at the given index in this deque.
+	 * @see #addAll(Object[])
+	 * @param index the index in this deque's iteration order to place the first item in {@code array}
+	 * @param array the elements to be inserted into this deque
+	 * @param offset the index of the first item in array to add
+	 * @param length how many items, at most, to add from array into this
+	 * @return {@code true} if this deque changed as a result of the call
+	 */
+	public boolean addAll(int index, T[] array, int offset, int length) {
 		int oldSize = size;
-		for (int i = offset, n = 0; n < length && i < array.length; i++, n++) {
-			addLast(array[i]);
+		if(index <= 0)
+			addAllFirst(array, offset, length);
+		else if(index >= oldSize)
+			addAll(array, offset, length);
+		else {
+			final int cs = Math.min(array.length - offset, length);
+			if(cs <= 0) return false;
+			int place = ensureGap(index, cs);
+			System.arraycopy(array, offset, this.values, place, cs);
+			size += cs;
+			modCount += cs;
 		}
 		return oldSize != size;
 	}
@@ -731,7 +1158,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 *                                  element prevents it from being added to this deque
 	 */
 	@Override
-	public void push (T t) {
+	public void push ( T t) {
 		addFirst(t);
 	}
 
@@ -770,7 +1197,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 *                              (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
 	 */
 	@Override
-	public boolean remove (Object o) {
+	public boolean remove ( Object o) {
 		return removeFirstOccurrence(o);
 	}
 
@@ -789,7 +1216,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 *                              (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
 	 */
 	@Override
-	public boolean contains (Object o) {
+	public boolean contains ( Object o) {
 		return indexOf(o, false) != -1;
 	}
 
@@ -804,7 +1231,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	}
 
 	/**
-	 * Returns an array containing all of the elements in this collection.
+	 * Returns an array containing all the elements in this collection.
 	 * If this collection makes any guarantees as to what order its elements
 	 * are returned by its iterator, this method must return the elements in
 	 * the same order. The returned array's {@linkplain Class#getComponentType
@@ -816,22 +1243,22 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * The caller is thus free to modify the returned array.
 	 *
 	 * @return an array, whose {@linkplain Class#getComponentType runtime component
-	 * type} is {@code Object}, containing all of the elements in this collection
+	 * type} is {@code Object}, containing all the elements in this collection
 	 */
 	@Override
-	public Object [] toArray () {
+	public Object[] toArray () {
 		Object[] next = new Object[size];
-		if (head < tail) {
-			System.arraycopy(values, head, next, 0, tail - head);
+		if (head <= tail) {
+			System.arraycopy(values, head, next, 0, tail - head + 1);
 		} else {
 			System.arraycopy(values, head, next, 0, size - head);
-			System.arraycopy(values, 0, next, size - head, tail);
+			System.arraycopy(values, 0, next, size - head, tail + 1);
 		}
 		return next;
 	}
 
 	/**
-	 * Returns an array containing all of the elements in this collection;
+	 * Returns an array containing all the elements in this collection;
 	 * the runtime type of the returned array is that of the specified array.
 	 * If the collection fits in the specified array, it is returned therein.
 	 * Otherwise, a new array is allocated with the runtime type of the
@@ -851,19 +1278,18 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * @param a the array into which the elements of this collection are to be
 	 *          stored, if it is big enough; otherwise, a new array of the same
 	 *          runtime type is allocated for this purpose.
-	 * @return an array containing all of the elements in this collection
+	 * @return an array containing all the elements in this collection
 	 * @throws ArrayStoreException  if the runtime type of any element in this
 	 *                              collection is not assignable to the {@linkplain Class#getComponentType
 	 *                              runtime component type} of the specified array
 	 * @throws NullPointerException if the specified array is null
 	 */
 	@Override
-	public <E> E [] toArray (E[] a) {
+	public <E> E[] toArray (E[] a) {
 		int oldSize = size;
 		if (a.length < oldSize) {
 			a = Arrays.copyOf(a, oldSize);
-		}
-		Object[] result = a;
+		} Object[] result = a;
 		Iterator<T> it = iterator();
 		for (int i = 0; i < oldSize; ++i) {
 			result[i] = it.next();
@@ -875,11 +1301,11 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	}
 
 	/**
-	 * Returns {@code true} if this collection contains all of the elements
+	 * Returns {@code true} if this collection contains all the elements
 	 * in the specified collection.
 	 *
 	 * @param c collection to be checked for containment in this collection
-	 * @return {@code true} if this collection contains all of the elements
+	 * @return {@code true} if this collection contains all the elements
 	 * in the specified collection
 	 * @throws ClassCastException   if the types of one or more elements
 	 *                              in the specified collection are incompatible with this
@@ -938,7 +1364,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * @param values may contain nulls, but must not be null itself
 	 * @return true if this ObjectDeque contains any of the items in {@code values}, false otherwise
 	 */
-	public boolean containsAny (Iterable<?> values) {
+	public boolean containsAnyIterable(Iterable<?> values) {
 		for (Object v : values) {
 			if (contains(v)) {return true;}
 		}
@@ -1051,7 +1477,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * @param other a Collection of items to remove one-by-one, such as an ObjectList or an ObjectSet
 	 * @return true if this deque was modified.
 	 */
-	public boolean removeEach (Iterable<?> other) {
+	public boolean removeEachIterable(Iterable<?> other) {
 		boolean changed = false;
 		for(Object item : other) {
 			changed |= remove(item);
@@ -1060,8 +1486,8 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	}
 
 	/**
-	 * Exactly like {@link #removeEach(Iterable)}, but takes an array instead of a Collection.
-	 * @see #removeEach(Iterable)
+	 * Exactly like {@link #removeEachIterable(Iterable)}, but takes an array instead of a Collection.
+	 * @see #removeEachIterable(Iterable)
 	 * @param array array containing elements to be removed from this collection
 	 * @return {@code true} if this deque changed as a result of the call
 	 */
@@ -1086,56 +1512,26 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	}
 
 	/**
-	 * Retains only the elements in this collection that are contained in the
-	 * specified collection (optional operation).  In other words, removes from
-	 * this collection all of its elements that are not contained in the
-	 * specified collection.
-	 *
-	 * @param c collection containing elements to be retained in this collection
-	 * @return {@code true} if this collection changed as a result of the call
-	 * @throws UnsupportedOperationException if the {@code retainAll} operation
-	 *                                       is not supported by this collection
-	 * @throws ClassCastException            if the types of one or more elements
-	 *                                       in this collection are incompatible with the specified
-	 *                                       collection
-	 *                                       (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
-	 * @throws NullPointerException          if this collection contains one or more
-	 *                                       null elements and the specified collection does not permit null
-	 *                                       elements
-	 *                                       (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>),
-	 *                                       or if the specified collection is null
-	 * @see #remove(Object)
-	 * @see #contains(Object)
-	 */
-	@Override
-	public boolean retainAll (Collection<?> c) {
-		int oldSize = size;
-		for (Object o : c) {
-			int idx;
-			do {
-				if ((idx = indexOf(o, false)) != -1)
-					removeAt(idx);
-			} while (idx == -1);
-		}
-		return oldSize != size;
-	}
-
-	/**
 	 * Exactly like {@link #retainAll(Collection)}, but takes an array instead of a Collection.
 	 * @see #retainAll(Collection)
 	 * @param array array containing elements to be retained in this collection
 	 * @return {@code true} if this deque changed as a result of the call
 	 */
 	public boolean retainAll (Object[] array) {
-		int oldSize = size;
-		for (Object o : array) {
-			int idx;
-			do {
-				if ((idx = indexOf(o, false)) != -1)
-					removeAt(idx);
-			} while (idx == -1);
+		Objects.requireNonNull(array);
+		boolean modified = false;
+		ListIterator<T> it = iterator();
+		OUTER:
+		while (it.hasNext()) {
+			T check = it.next();
+			for (int i = 0, n = array.length; i < n; i++) {
+				if(Objects.equals(array[i], check))
+					continue OUTER;
+			}
+			it.remove();
+			modified = true;
 		}
-		return oldSize != size;
+		return modified;
 	}
 
 	/**
@@ -1147,90 +1543,235 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * @return {@code true} if this deque changed as a result of the call
 	 */
 	public boolean retainAll (Object[] array, int offset, int length) {
-		int oldSize = size;
-		for (int i = offset, n = 0; n < length && i < array.length; i++, n++) {
-			Object o = array[i];
-			int idx;
-			do {
-				if ((idx = indexOf(o, false)) != -1)
-					removeAt(idx);
-			} while (idx == -1);
+		Objects.requireNonNull(array);
+		boolean modified = false;
+		ListIterator<T> it = iterator();
+		OUTER:
+		while (it.hasNext()) {
+			T check = it.next();
+			for (int i = offset, n = 0; n < length && i < array.length; i++, n++) {
+				if(Objects.equals(array[i], check))
+					continue OUTER;
+			}
+			it.remove();
+			modified = true;
 		}
-		return oldSize != size;
+		return modified;
+	}
+	/**
+	 * Alias for {@link #truncate(int)}.
+	 * @param newSize the size this deque should have after this call completes, if smaller than the current size
+	 */
+	public void truncateLast (int newSize) {
+		truncate(newSize);
 	}
 
 	/**
-	 * Reduces the size of the deque to the specified size. If the deque is already smaller than the specified
-	 * size, no action is taken.
+	 * Reduces the size of the deque to the specified size by bulk-removing items from the tail end.
+	 * If the deque is already smaller than the specified size, no action is taken.
+	 * @param newSize the size this deque should have after this call completes, if smaller than the current size
 	 */
 	public void truncate (int newSize) {
-		newSize = Math.max(0, newSize);
-		if (size() > newSize) {
-			if(head < tail) {
+		if(newSize <= 0) {
+			clear();
+			return;
+		}
+		int oldSize = size;
+		if (oldSize > newSize) {
+			if(head <= tail) {
 				// only removing from tail, near the end, toward head, near the start
-				Arrays.fill(values, head + newSize, tail, null);
-				tail -= size() - newSize;
+				Arrays.fill(values, head + newSize, tail + 1, null);
+				tail -= oldSize - newSize;
 				size = newSize;
 			} else if(head + newSize < values.length) {
 				// tail is near the start, but we have to remove elements through the start and into the back
-				Arrays.fill(values, 0, tail, null);
+				Arrays.fill(values, 0, tail + 1, null);
 				tail = head + newSize;
 				Arrays.fill(values, tail, values.length, null);
 				size = newSize;
 			} else {
 				// tail is near the start, but we only have to remove some elements between tail and the start
-				final int newTail = tail - (size() - newSize);
-				Arrays.fill(values, newTail, tail, null);
+				final int newTail = tail - (oldSize - newSize);
+				Arrays.fill(values, newTail + 1, tail + 1, null);
 				tail = newTail;
 				size = newSize;
 			}
+			modCount += oldSize - newSize;
 		}
 	}
 
 	/**
-	 * Returns the index of the first occurrence of value in the queue, or -1 if no such value exists.
+	 * Reduces the size of the deque to the specified size by bulk-removing from the head.
+	 * If the deque is already smaller than the specified size, no action is taken.
+	 * @param newSize the size this deque should have after this call completes, if smaller than the current size
+	 */
+	public void truncateFirst (int newSize) {
+		if(newSize <= 0) {
+			clear();
+			return;
+		}
+		int oldSize = size;
+		if (oldSize > newSize) {
+			if(head <= tail || head + oldSize - newSize < values.length) {
+				// only removing from head to head + newSize, which is contiguous
+				Arrays.fill(values, head, head + oldSize - newSize, null);
+				head += oldSize - newSize;
+				if(head >= values.length) head -= values.length;
+				size = newSize;
+			} else {
+				// tail is near the start, and we are removing from head to the end and then part near start
+				Arrays.fill(values, head, values.length, null);
+				head = tail + 1 - newSize;
+				Arrays.fill(values, 0, head, null);
+				size = newSize;
+			}
+			modCount += oldSize - newSize;
+		}
+	}
+
+	/**
+	 * Removes from this list all the elements whose index is between
+	 * {@code fromIndex}, inclusive, and {@code toIndex}, exclusive.
+	 * Shifts any succeeding elements to the left (reduces their index).
+	 * This call shortens the list by {@code (toIndex - fromIndex)} elements.
+	 * If {@code toIndex==fromIndex}, this operation has no effect.
+	 * If {@code fromIndex} is 0 or less, this delegates to {@link #truncateFirst(int)};
+	 * if {@code toIndex} is equal to or greater than the
+	 * size of this collection, this delegates to {@link #truncate(int)}.
+	 * <br>
+	 * This is public here, not protected as in most JDK collections, because there are
+	 * actually sometimes needs for this in user code.
+	 *
+	 * @param fromIndex index of first element to be removed (inclusive)
+	 * @param toIndex index after last element to be removed (exclusive)
+	 */
+	@Override
+	public void removeRange(int fromIndex, int toIndex) {
+		if(fromIndex <= 0){
+			truncateFirst(size - toIndex);
+			return;
+		}
+		if(toIndex >= size) {
+			truncate(fromIndex);
+			return;
+		}
+		if (fromIndex < toIndex) {
+			int removedCount = toIndex - fromIndex;
+			if(head <= tail) {
+				// tail is near the end, head is near the start
+				int tailMinusTo = tail + 1 - (head + toIndex);
+				if(tailMinusTo < 0) tailMinusTo += values.length;
+				System.arraycopy(values, head + toIndex, values, head + fromIndex, tailMinusTo);
+				Arrays.fill(values, tail + 1 - removedCount, tail + 1, null);
+				tail -= removedCount;
+				size -= removedCount;
+			} else if(head + toIndex < values.length) {
+				// head is at the end, and tail wraps around, but we are only removing items between head and end
+				int headPlusFrom = head + fromIndex;
+				if(headPlusFrom >= values.length) headPlusFrom -= values.length;
+				System.arraycopy(values, head, values, headPlusFrom, removedCount);
+				Arrays.fill(values, head, head + removedCount, null);
+				head += removedCount;
+				size -= removedCount;
+			} else if(head + toIndex - values.length - removedCount >= 0) {
+				// head is at the end, and tail wraps around, but we are only removing items between start and tail
+				System.arraycopy(values, head + toIndex - values.length, values, head + fromIndex - values.length, tail + 1 - (head + toIndex - values.length));
+				Arrays.fill(values, tail + 1 - removedCount, tail + 1, null);
+				tail -= removedCount;
+				size -= removedCount;
+			} else {
+				// head is at the end, tail wraps around, and we must remove items that wrap from end to start
+				System.arraycopy(values, head, values, values.length - fromIndex, fromIndex);
+				System.arraycopy(values, head + toIndex - values.length, values, 0, tail + 1 - (head + toIndex - values.length));
+				Arrays.fill(values, head, values.length - fromIndex, null);
+				Arrays.fill(values, tail + 1 - (head + toIndex - values.length), tail + 1, null);
+				tail -= (head + toIndex - values.length);
+				head = (values.length - fromIndex);
+				size -= removedCount;
+			}
+			modCount += removedCount;
+		}
+	}
+
+	/**
+	 * Returns the index of the first occurrence of value in the deque, or -1 if no such value exists.
 	 * Uses .equals() to compare items.
 	 *
-	 * @return An index of the first occurrence of value in queue or -1 if no such value exists
+	 * @param value the Object to look for, which may be null
+	 * @return An index of the first occurrence of value in the deque or -1 if no such value exists
 	 */
-	public int indexOf (Object value) {
+	@Override
+	public int indexOf ( Object value) {
 		return indexOf(value, false);
 	}
 
 	/**
-	 * Returns the index of first occurrence of value in the queue, or -1 if no such value exists.
+	 * Returns the index of the first occurrence of value in the deque, or -1 if no such value exists.
+	 * Uses .equals() to compare items. This returns {@code fromIndex} if {@code value} is present at that point,
+	 * so if you chain calls to indexOf(), the subsequent fromIndex should be larger than the last-returned index.
 	 *
-	 * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
-	 * @return An index of first occurrence of value in queue or -1 if no such value exists
+	 * @param value the Object to look for, which may be null
+	 * @param fromIndex the initial index to check (zero-indexed, starts at the head, inclusive)
+	 * @return An index of first occurrence of value at or after fromIndex in the deque, or -1 if no such value exists
 	 */
-	public int indexOf (Object value, boolean identity) {
+	public int indexOf ( Object value, int fromIndex) {
+		return indexOf(value, fromIndex, false);
+	}
+
+	/**
+	 * Returns the index of first occurrence of value in the deque, or -1 if no such value exists.
+	 * When {@code identity} is false, uses .equals() to compare items; when identity is true, uses {@code ==} .
+	 *
+	 * @param value the Object to look for, which may be null
+	 * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
+	 * @return An index of first occurrence of value in the deque or -1 if no such value exists
+	 */
+	public int indexOf ( Object value, boolean identity) {
+		return indexOf(value, 0, identity);
+	}
+
+	/**
+	 * Returns the index of first occurrence of {@code value} in the deque, starting from {@code fromIndex},
+	 * or -1 if no such value exists. This returns {@code fromIndex} if {@code value} is present at that point,
+	 * so if you chain calls to indexOf(), the subsequent fromIndex should be larger than the last-returned index.
+	 * When {@code identity} is false, uses .equals() to compare items; when identity is true, uses {@code ==} .
+	 *
+	 * @param value the Object to look for, which may be null
+	 * @param fromIndex the initial index to check (zero-indexed, starts at the head, inclusive)
+	 * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
+	 * @return An index of first occurrence of value at or after fromIndex in the deque, or -1 if no such value exists
+	 */
+	public int indexOf ( Object value, int fromIndex, boolean identity) {
 		if (size == 0)
-			return -1;
-		T[] values = this.values;
+			return -1; T[] values = this.values;
 		final int head = this.head, tail = this.tail;
+		int i = head + Math.min(Math.max(fromIndex, 0), size - 1);
+		if (i >= values.length)
+			i -= values.length;
+
 		if (identity || value == null) {
-			if (head < tail) {
-				for (int i = head; i < tail; i++)
+			if (head <= tail) {
+				for (; i <= tail; i++)
 					if (values[i] == value)
 						return i - head;
 			} else {
-				for (int i = head, n = values.length; i < n; i++)
+				for (int n = values.length; i < n; i++)
 					if (values[i] == value)
 						return i - head;
-				for (int i = 0; i < tail; i++)
+				for (i = 0; i <= tail; i++)
 					if (values[i] == value)
 						return i + values.length - head;
 			}
 		} else {
-			if (head < tail) {
-				for (int i = head; i < tail; i++)
+			if (head <= tail) {
+				for (; i <= tail; i++)
 					if (value.equals(values[i]))
 						return i - head;
 			} else {
-				for (int i = head, n = values.length; i < n; i++)
+				for (int n = values.length; i < n; i++)
 					if (value.equals(values[i]))
 						return i - head;
-				for (int i = 0; i < tail; i++)
+				for (i = 0; i <= tail; i++)
 					if (value.equals(values[i]))
 						return i + values.length - head;
 			}
@@ -1239,49 +1780,86 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	}
 
 	/**
-	 * Returns the index of the last occurrence of value in the queue, or -1 if no such value exists.
+	 * Returns the index of the last occurrence of value in the deque, or -1 if no such value exists.
 	 * Uses .equals() to compare items.
 	 *
-	 * @return An index of the last occurrence of value in queue or -1 if no such value exists
+	 * @param value the Object to look for, which may be null
+	 * @return An index of the last occurrence of value in the deque or -1 if no such value exists
 	 */
-	public int lastIndexOf (Object value) {
+	@Override
+	public int lastIndexOf ( Object value) {
 		return lastIndexOf(value, false);
 	}
 
 	/**
-	 * Returns the index of last occurrence of value in the queue, or -1 if no such value exists.
+	 * Returns the index of last occurrence of {@code value} in the deque, starting from {@code fromIndex} and going
+	 * backwards, or -1 if no such value exists. This returns {@code fromIndex} if {@code value} is present at that
+	 * point, so if you chain calls to indexOf(), the subsequent fromIndex should be smaller than the last-returned
+	 * index. Uses .equals() to compare items.
 	 *
-	 * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
-	 * @return An index of last occurrence of value in queue or -1 if no such value exists
+	 * @param value the Object to look for, which may be null
+	 * @param fromIndex the initial index to check (zero-indexed, starts at the head, inclusive)
+	 * @return An index of last occurrence of value at or before fromIndex in the deque, or -1 if no such value exists
 	 */
-	public int lastIndexOf (Object value, boolean identity) {
+	public int lastIndexOf ( Object value, int fromIndex) {
+		return lastIndexOf(value, fromIndex, false);
+	}
+
+	/**
+	 * Returns the index of the last occurrence of value in the deque, or -1 if no such value exists.
+	 *
+	 * @param value the Object to look for, which may be null
+	 * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
+	 * @return An index of the last occurrence of value in the deque or -1 if no such value exists
+	 */
+	public int lastIndexOf ( Object value, boolean identity) {
+		return lastIndexOf(value, size - 1, identity);
+	}
+
+	/**
+	 * Returns the index of last occurrence of {@code value} in the deque, starting from {@code fromIndex} and going
+	 * backwards, or -1 if no such value exists. This returns {@code fromIndex} if {@code value} is present at that
+	 * point, so if you chain calls to indexOf(), the subsequent fromIndex should be smaller than the last-returned
+	 * index. When {@code identity} is false, uses .equals() to compare items; when identity is true, uses {@code ==} .
+	 *
+	 * @param value the Object to look for, which may be null
+	 * @param fromIndex the initial index to check (zero-indexed, starts at the head, inclusive)
+	 * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
+	 * @return An index of last occurrence of value at or before fromIndex in the deque, or -1 if no such value exists
+	 */
+	public int lastIndexOf ( Object value, int fromIndex, boolean identity) {
 		if (size == 0)
-			return -1;
-		T[] values = this.values;
+			return -1; T[] values = this.values;
 		final int head = this.head, tail = this.tail;
+		int i = head + Math.min(Math.max(fromIndex, 0), size - 1);
+		if (i >= values.length)
+			i -= values.length;
+		else if (i < 0)
+			i += values.length;
+
 		if (identity || value == null) {
-			if (head < tail) {
-				for (int i = tail - 1; i >= head; i--)
+			if (head <= tail) {
+				for (; i >= head; i--)
 					if (values[i] == value)
 						return i - head;
 			} else {
-				for (int i = tail - 1; i >= 0; i--)
+				for (; i >= 0; i--)
 					if (values[i] == value)
 						return i + values.length - head;
-				for (int i = values.length - 1; i >= head; i--)
+				for (i = values.length - 1; i >= head; i--)
 					if (values[i] == value)
 						return i - head;
 			}
 		} else {
-			if (head < tail) {
-				for (int i = tail - 1; i >= head; i--)
+			if (head <= tail) {
+				for (; i >= head; i--)
 					if (value.equals(values[i]))
 						return i - head;
 			} else {
-				for (int i = tail - 1; i >= 0; i--)
+				for (; i >= 0; i--)
 					if (value.equals(values[i]))
 						return i + values.length - head;
-				for (int i = values.length - 1; i >= head; i--)
+				for (i = values.length - 1; i >= head; i--)
 					if (value.equals(values[i]))
 						return i - head;
 			}
@@ -1289,58 +1867,122 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		return -1;
 	}
 
+	@Override
+	public ListIterator<T> listIterator() {
+		if (iterator1 == null || iterator2 == null) {
+			iterator1 = new ObjectDequeIterator<>(this);
+			iterator2 = new ObjectDequeIterator<>(this);
+		}
+		if (!iterator1.valid) {
+			iterator1.reset();
+			iterator1.valid = true;
+			iterator2.valid = false;
+			return iterator1;
+		}
+		iterator2.reset();
+		iterator2.valid = true;
+		iterator1.valid = false;
+		return iterator2;
+	}
+
+	@Override
+	public ListIterator<T> listIterator(int index) {
+		if (iterator1 == null || iterator2 == null) {
+			iterator1 = new ObjectDequeIterator<>(this, index, false);
+			iterator2 = new ObjectDequeIterator<>(this, index, false);
+		}
+		if (!iterator1.valid) {
+			iterator1.reset(index);
+			iterator1.valid = true;
+			iterator2.valid = false;
+			return iterator1;
+		}
+		iterator2.reset(index);
+		iterator2.valid = true;
+		iterator1.valid = false;
+		return iterator2;
+	}
+
+	@Override
+	public List<T> subList(int fromIndex, int toIndex) {
+		return super.subList(fromIndex, toIndex);
+	}
+
 	/**
-	 * Removes the first instance of the specified value in the queue.
+	 * Removes the first instance of the specified value in the deque.
 	 *
 	 * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
 	 * @return true if value was found and removed, false otherwise
 	 */
-	public boolean removeValue (Object value, boolean identity) {
+	public boolean removeValue ( Object value, boolean identity) {
 		int index = indexOf(value, identity);
 		if (index == -1)
 			return false;
-		removeAt(index);
+		remove(index);
 		return true;
 	}
 
 	/**
-	 * Removes the last instance of the specified value in the queue.
+	 * Removes the last instance of the specified value in the deque.
 	 *
 	 * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
 	 * @return true if value was found and removed, false otherwise
 	 */
-	public boolean removeLastValue (Object value, boolean identity) {
+	public boolean removeLastValue ( Object value, boolean identity) {
 		int index = lastIndexOf(value, identity);
 		if (index == -1)
 			return false;
-		removeAt(index);
+		remove(index);
 		return true;
 	}
 
 	/**
-	 * Removes and returns the item at the specified index.
+	 * Removes the element at the specified position in this deque.
+	 * Shifts any subsequent elements to the left (subtracts one
+	 * from their indices).  Returns the element that was removed from the
+	 * deque.
+	 * <br>
+	 * This is an alias for {@link #remove(int)} for compatibility with primitive-backed lists and deques;
+	 * {@link #remove(int)} can refer to the method that removes an item by value, not by index, in those types.
+	 *
+	 * @param index the index of the element to be removed
+	 * @return the element previously at the specified position
 	 */
-	public T removeAt (int index) {
-		if (index < 0)
-			throw new IndexOutOfBoundsException("index can't be < 0: " + index);
-		if (index >= size)
-			throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
+	public T removeAt(int index) {
+		return remove(index);
+	}
 
-		T[] values = this.values;
+	/**
+	 * Removes the element at the specified position in this deque.
+	 * Shifts any subsequent elements to the left (subtracts one
+	 * from their indices).  Returns the element that was removed from the
+	 * deque.
+	 *
+	 * @param index the index of the element to be removed
+	 * @return the element previously at the specified position
+	 */
+	@Override
+	public T remove(int index) {
+		if (index <= 0)
+			return removeFirst();
+		if (index >= size)
+			return removeLast(); T[] values = this.values;
 		int head = this.head, tail = this.tail;
 		index += head;
 		T value;
-		if (head < tail) { // index is between head and tail.
+		if (head <= tail) { // index is between head and tail.
 			value = values[index];
-			System.arraycopy(values, index + 1, values, index, tail - index - 1);
-			this.tail--;
+			System.arraycopy(values, index + 1, values, index, tail - index);
 			values[this.tail] = null;
+			this.tail--;
+			if(this.tail == -1) this.tail = values.length - 1;
 		} else if (index >= values.length) { // index is between 0 and tail.
 			index -= values.length;
 			value = values[index];
-			System.arraycopy(values, index + 1, values, index, tail - index - 1);
-			this.tail--;
+			System.arraycopy(values, index + 1, values, index, tail - index);
 			values[this.tail] = null;
+			this.tail--;
+			if(this.tail == -1) this.tail = values.length - 1;
 		} else { // index is between head and values.length.
 			value = values[index];
 			System.arraycopy(values, head, values, head + 1, index - head);
@@ -1351,28 +1993,98 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 			}
 		}
 		size--;
+		modCount++;
+		return value;
+	}
+
+
+	/**
+	 * Removes the element at the specified position in this deque.
+	 * Shifts any subsequent elements to the left (subtracts one
+	 * from their indices).  Returns the element that was removed from the
+	 * deque, or {@link #getDefaultValue() the default value} if this is empty.
+	 * This will not throw an Exception in normal usage, even if index is
+	 * negative (which makes this simply return {@link #pollFirst()}) or greater
+	 * than or equal to {@link #size()} (which makes this return {@link #pollLast()}).
+	 * <br>
+	 * This is an alias for {@link #poll(int)} for compatibility with primitive-backed lists and deques;
+	 * {@link #poll(int)} can refer to the method that removes an item by value, not by index, in those types.
+	 *
+	 * @param index the index of the element to be removed
+	 * @return the element previously at the specified position
+	 */
+	public T pollAt(int index) {
+		return poll(index);
+	}
+
+	/**
+	 * Removes the element at the specified position in this deque.
+	 * Shifts any subsequent elements to the left (subtracts one
+	 * from their indices). Returns the element that was removed from the
+	 * deque, or {@link #getDefaultValue() the default value} if this is empty.
+	 * This will not throw an Exception in normal usage, even if index is
+	 * negative (which makes this simply return {@link #pollFirst()}) or greater
+	 * than or equal to {@link #size()} (which makes this return {@link #pollLast()}).
+	 *
+	 * @param index the index of the element to be removed
+	 * @return the element previously at the specified position
+	 */
+	public T poll(int index) {
+		if (index <= 0)
+			return pollFirst();
+		if (index >= size)
+			return pollLast();
+		// No need to check for size to be 0 because the above checks will already do that, and one will run. T[] values = this.values;
+		int head = this.head, tail = this.tail;
+		index += head;
+		T value;
+		if (head <= tail) { // index is between head and tail.
+			value = values[index];
+			System.arraycopy(values, index + 1, values, index, tail - index);
+			values[this.tail] = null;
+			this.tail--;
+			if(this.tail == -1) this.tail = values.length - 1;
+		} else if (index >= values.length) { // index is between 0 and tail.
+			index -= values.length;
+			value = values[index];
+			System.arraycopy(values, index + 1, values, index, tail - index);
+			values[this.tail] = null;
+			this.tail--;
+			if(this.tail == -1) this.tail = values.length - 1;
+		} else { // index is between head and values.length.
+			value = values[index];
+			System.arraycopy(values, head, values, head + 1, index - head);
+			values[this.head] = null;
+			this.head++;
+			if (this.head == values.length) {
+				this.head = 0;
+			}
+		}
+		size--;
+		modCount++;
 		return value;
 	}
 
 	/**
-	 * Returns true if the queue has one or more items.
+	 * Returns true if the deque has one or more items.
 	 */
 	public boolean notEmpty () {
 		return size != 0;
 	}
 
 	/**
-	 * Returns true if the queue is empty.
+	 * Returns true if the deque is empty.
 	 */
+	@Override
 	public boolean isEmpty () {
 		return size == 0;
 	}
 
 	/**
-	 * Returns the first (head) item in the queue (without removing it).
+	 * Returns the first (head) item in the deque (without removing it).
 	 *
-	 * @throws NoSuchElementException when queue is empty
-	 * @see #addFirst(Object)
+	 * @throws NoSuchElementException when the deque is empty
+	 * @see #peekFirst() peeking won't throw an exception, and will return the ObjectDeque's default value if empty
 	 * @see #removeFirst()
 	 */
 	public T first () {
@@ -1384,36 +2096,38 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	}
 
 	/**
-	 * Returns the last (tail) item in the queue (without removing it).
+	 * Returns the last (tail) item in the deque (without removing it).
 	 *
-	 * @throws NoSuchElementException when queue is empty
-	 * @see #addLast(Object)
-	 * @see #removeLast()
+	 * @throws NoSuchElementException when the deque is empty
+	 * @see #peekLast() peeking won't throw an exception, and will return the ObjectDeque's default value if empty
 	 */
 	public T last () {
 		if (size == 0) {
 			// Underflow
 			throw new NoSuchElementException("ObjectDeque is empty.");
 		}
-		final T[] values = this.values;
-		int tail = this.tail;
-		tail--;
-		if (tail == -1)
-			tail = values.length - 1;
 		return values[tail];
 	}
 
 	/**
-	 * Retrieves the value in queue without removing it. Indexing is from the front to back, zero based. Therefore get(0) is the
-	 * same as {@link #first()}.
+	 * Returns the element at the specified position in this deque.
+	 * Like {@link ArrayList}, but unlike {@link LinkedList}, this runs in O(1) time.
+	 * It is expected to be slightly slower than {@link ArrayList#get(int)}, which also runs in O(1) time.
+	 * Unlike get() in ArrayList or ObjectList, this considers negative indices to refer to the first item, and
+	 * too-large indices to refer to the last item. That means it delegates to {@link #getFirst()} or
+	 * {@link #getLast()} in those cases instead of throwing an {@link IndexOutOfBoundsException}, though it may
+	 * throw a {@link NoSuchElementException} if the deque is empty and there is no item it can get.
 	 *
-	 * @throws IndexOutOfBoundsException when the index is negative or >= size
+	 * @param index index of the element to return
+	 * @return the element at the specified position in this deque
+	 * @throws NoSuchElementException if the deque is empty
 	 */
+	@Override
 	public T get (int index) {
-		if (index < 0)
-			throw new IndexOutOfBoundsException("index can't be < 0: " + index);
-		if (index >= size)
-			throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
+		if (index <= 0)
+			return getFirst();
+		if (index >= size - 1)
+			return getLast();
 		final T[] values = this.values;
 
 		int i = head + index;
@@ -1423,32 +2137,70 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	}
 
 	/**
-	 * Sets an existing position in this deque to the given item. Indexing is from the front to back, zero based.
+	 * Returns the element at the specified position in this deque.
+	 * Like {@link ArrayList}, but unlike {@link LinkedList}, this runs in O(1) time.
+	 * It is expected to be slightly slower than {@link ArrayList#get(int)}, which also runs in O(1) time.
+	 * Unlike get() in ArrayList or ObjectList, this considers negative indices to refer to the first item, and
+	 * too-large indices to refer to the last item. That means it delegates to {@link #peekFirst()} or
+	 * {@link #peekLast()} in those cases instead of throwing an {@link IndexOutOfBoundsException}, and it will
+	 * return {@link #getDefaultValue() the default value} if the deque is empty. Unless changed, the default value
+	 * is usually {@code null}.
 	 *
-	 * @param index the index to set
-	 * @param item  what value should replace the contents of the specified index
-	 * @return the previous contents of the specified index
-	 * @throws IndexOutOfBoundsException when the index is negative or >= size
+	 * @param index index of the element to return
+	 * @return the element at the specified position in this deque
 	 */
-	public T set (int index, T item) {
-		if (index < 0)
-			throw new IndexOutOfBoundsException("index can't be < 0: " + index);
-		if (index >= size)
-			throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
+	public T peekAt (int index) {
+		if (index <= 0)
+			return peekFirst();
+		if (index >= size - 1)
+			return peekLast();
 		final T[] values = this.values;
 
 		int i = head + index;
 		if (i >= values.length)
 			i -= values.length;
+		return values[i];
+	}
+
+	/**
+	 * Replaces the element at the specified position in this list with the
+	 * specified element. If this deque is empty or the index is larger than the largest index currently in this
+	 * deque, this delegates to {@link #addLast(Object)} and returns {@link #getDefaultValue() the default value}.
+	 * If the index is negative, this delegates to {@link #addFirst(Object)} and returns
+	 * {@link #getDefaultValue() the default value}.
+	 *
+	 * @param index index of the element to replace
+	 * @param item element to be stored at the specified position
+	 * @return the element previously at the specified position
+	 * @throws ClassCastException if the class of the specified element
+	 *         prevents it from being put in this list
+	 */
+	@Override
+	public T set (int index, T item) {
+		if (size <= 0 || index >= size) {
+			addLast(item);
+			return defaultValue;
+		}
+		if (index < 0) {
+			addFirst(item);
+			return defaultValue;
+		}
+		final T[] values = this.values;
+
+		int i = head + Math.max(Math.min(index, size - 1), 0);
+		if (i >= values.length)
+			i -= values.length;
 		T old = values[i];
 		values[i] = item;
+//		modCount++; // apparently this isn't a structural modification?
 		return old;
 	}
 
 	/**
-	 * Removes all values from this queue. Values in backing array are set to null to prevent memory leak, so this operates in
-	 * O(n).
+	 * Removes all values from this deque. Values in backing array are set to null to prevent memory leaks, so this
+	 * operates in O(n) time.
 	 */
+	@Override
 	public void clear () {
 		if (size == 0)
 			return;
@@ -1456,22 +2208,19 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		final int head = this.head;
 		final int tail = this.tail;
 
-		if (head < tail) {
+		if (head <= tail) {
 			// Continuous
-			for (int i = head; i < tail; i++) {
-				values[i] = null;
-			}
+			Arrays.fill(values, head, tail + 1, null);
+		} else if(tail == 0){
+			Arrays.fill(values, head, values.length, null);
 		} else {
 			// Wrapped
-			for (int i = head; i < values.length; i++) {
-				values[i] = null;
-			}
-			for (int i = 0; i < tail; i++) {
-				values[i] = null;
-			}
+			Arrays.fill(values, head, values.length, null);
+			Arrays.fill(values, 0, tail + 1, null);
 		}
 		this.head = 0;
 		this.tail = 0;
+		modCount += size;
 		this.size = 0;
 	}
 
@@ -1527,43 +2276,67 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		return descendingIterator2;
 	}
 
+	/**
+	 * Delegates to {@link #toString(String, boolean)} with a delimiter of {@code ", "} and square brackets enabled.
+	 * @return the square-bracketed String representation of this ObjectDeque, with items separated by ", "
+	 */
+	@Override
 	public String toString () {
-		if (size == 0) {
-			return "[]";
-		}
-		final T[] values = this.values;
-		final int head = this.head;
-		final int tail = this.tail;
-
-		StringBuilder sb = new StringBuilder(64);
-		sb.append('[');
-		sb.append(values[head]);
-		for (int i = (head + 1) % values.length; i != tail;) {
-			sb.append(", ").append(values[i]);
-			if(++i == tail) break;
-			if(i == values.length) i = 0;
-		}
-		sb.append(']');
-		return sb.toString();
+		return toString(", ", true);
+	}
+	/**
+	 * Delegates to {@link #toString(String, boolean)} with the given itemSeparator and without surrounding brackets.
+	 *
+	 * @param itemSeparator how to separate items, such as {@code ", "}
+	 * @return a new String representing this map
+	 */
+	public String toString (String itemSeparator) {
+		return toString(itemSeparator, false);
 	}
 
-	public String toString (String separator) {
-		if (size == 0)
-			return "";
-		final T[] values = this.values;
-		final int head = this.head;
-		final int tail = this.tail;
-
-		StringBuilder sb = new StringBuilder(64);
-		sb.append(values[head]);
-		for (int i = (head + 1) % values.length; i != tail;) {
-			sb.append(separator).append(values[i]);
-			if(++i == tail) break;
-			if(i == values.length) i = 0;
-		}
-		return sb.toString();
+	/**
+	 * Makes a String from the contents of this EnhancedCollection, using the {@link Object#toString()} method of each
+	 * item, separating items with the given {@code itemSeparator}, and wrapping the result in square brackets if
+	 * {@code brackets} is true.
+	 * <br>
+	 * Delegates to {@link #appendTo(StringBuilder, String, boolean)}.
+	 *
+	 * @param itemSeparator how to separate items, such as {@code ", "}
+	 * @param brackets true to wrap the result in square brackets, or false to leave the items unadorned
+	 * @return a new String representing this EnhancedCollection
+	 */
+	public String toString (String itemSeparator, boolean brackets) {
+		return appendTo(new StringBuilder(32), itemSeparator, brackets).toString();
 	}
 
+	/**
+	 * Appends to a StringBuilder from the contents of this EnhancedCollection, using
+	 * {@link StringBuilder#append(Object)} to append each item's String representation, separating items with
+	 * {@code separator}, and optionally wrapping the output in square brackets if {@code brackets} is true.
+	 *
+	 * @param sb a StringBuilder that this can append to
+	 * @param separator how to separate items, such as {@code ", "}
+	 * @param brackets true to wrap the output in square brackets, or false to omit them
+	 * @return {@code sb}, with the appended items of this EnhancedCollection
+	 */
+	public StringBuilder appendTo (StringBuilder sb, String separator, boolean brackets) {
+		if (isEmpty()) {return brackets ? sb.append("[]") : sb;}
+		if (brackets) {sb.append('[');}
+		Iterator<T> it = iterator();
+		if(it.hasNext()) {
+			while (true) {
+				T next = it.next();
+				if (next == this) sb.append("(this)");
+				else sb.append(next);
+				if (it.hasNext()) sb.append(separator);
+				else break;
+			}
+		}
+		if (brackets) sb.append(']');
+		return sb;
+	}
+
+	@Override
 	public int hashCode () {
 		final int size = this.size;
 		final T[] values = this.values;
@@ -1574,7 +2347,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		for (int s = 0; s < size; s++) {
 			final T value = values[index];
 
-			hash *= 31;
+			hash *= 29; // avoids LEA pessimization
 			if (value != null)
 				hash += value.hashCode();
 
@@ -1587,84 +2360,58 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	}
 
 	/**
-	 * Using {@link Object#equals(Object)} between each item in order, compares for equality specifically with
-	 * other ObjectDeque collections. If {@code o} is not an ObjectDeque
+	 * Using {@link Objects#equals(Object)} between each item in order, compares for equality with
+	 * other types implementing {@link List} or {@link Queue}, including other {@link Deque} types.
+	 * If {@code o} is not a List or Queue
 	 * (and is also not somehow reference-equivalent to this collection), this returns false.
+	 * This uses the {@link Iterable#iterator()} of both this and {@code o}, so if either is in the
+	 * middle of a concurrent iteration that modifies the Collection, this may fail.
 	 * @param o object to be compared for equality with this collection
 	 * @return true if this is equal to o, or false otherwise
 	 */
-	public boolean equals (Object o) {
-		if (this == o)
+	@Override
+	public boolean equals(Object o) {
+		if (o == this)
 			return true;
-		if (!(o instanceof ObjectDeque))
+		if (!((o instanceof List) || (o instanceof Queue)))
 			return false;
 
-		ObjectDeque<?> q = (ObjectDeque<?>)o;
-		final int size = this.size;
-
-		if (q.size != size)
-			return false;
-
-		final T[] myValues = this.values;
-		final int myBackingLength = myValues.length;
-		final Object[] itsValues = q.values;
-		final int itsBackingLength = itsValues.length;
-
-		int myIndex = head;
-		int itsIndex = q.head;
-		for (int s = 0; s < size; s++) {
-			T myValue = myValues[myIndex];
-			Object itsValue = itsValues[itsIndex];
-
-			if (!(Objects.equals(myValue, itsValue)))
+		Iterator<T> e1 = iterator();
+		Iterator<?> e2 = ((Iterable<?>) o).iterator();
+		while (e1.hasNext() && e2.hasNext()) {
+			T o1 = e1.next();
+			Object o2 = e2.next();
+			if (!Objects.equals(o1, o2))
 				return false;
-			myIndex++;
-			itsIndex++;
-			if (myIndex == myBackingLength)
-				myIndex = 0;
-			if (itsIndex == itsBackingLength)
-				itsIndex = 0;
 		}
-		return true;
+		return !(e1.hasNext() || e2.hasNext());
 	}
 
 	/**
-	 * Using {@code ==} between each item in order, compares for equality specifically with
-	 * other ObjectDeque collections. If {@code o} is not an ObjectDeque
+	 * Using {@code ==} between each item in order, compares for equality with
+	 * other types implementing {@link List} or {@link Queue}, including other {@link Deque} types.
+	 * If {@code o} is not a List or Queue
 	 * (and is also not somehow reference-equivalent to this collection), this returns false.
+	 * This uses the {@link Iterable#iterator()} of both this and {@code o}, so if either is in the
+	 * middle of a concurrent iteration that modifies the Collection, this may fail.
 	 * @param o object to be compared for equality with this collection
 	 * @return true if this is equal to o, or false otherwise
 	 */
 	public boolean equalsIdentity (Object o) {
-		if (this == o)
+		if (o == this)
 			return true;
-		if (!(o instanceof ObjectDeque))
+		if (!((o instanceof List) || (o instanceof Queue)))
 			return false;
 
-		ObjectDeque<?> q = (ObjectDeque<?>)o;
-		final int size = this.size;
-
-		if (q.size != size)
-			return false;
-
-		final T[] myValues = this.values;
-		final int myBackingLength = myValues.length;
-		final Object[] itsValues = q.values;
-		final int itsBackingLength = itsValues.length;
-
-		int myIndex = head;
-		int itsIndex = q.head;
-		for (int s = 0; s < size; s++) {
-			if (myValues[myIndex] != itsValues[itsIndex])
+		Iterator<T> e1 = iterator();
+		Iterator<?> e2 = ((Iterable<?>) o).iterator();
+		while (e1.hasNext() && e2.hasNext()) {
+			T o1 = e1.next();
+			Object o2 = e2.next();
+			if (o1 != o2)
 				return false;
-			myIndex++;
-			itsIndex++;
-			if (myIndex == myBackingLength)
-				myIndex = 0;
-			if (itsIndex == itsBackingLength)
-				itsIndex = 0;
 		}
-		return true;
+		return !(e1.hasNext() || e2.hasNext());
 	}
 
 	/**
@@ -1682,6 +2429,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 			throw new IndexOutOfBoundsException("second index can't be < 0: " + second);
 		if (second >= size)
 			throw new IndexOutOfBoundsException("second index can't be >= size: " + second + " >= " + size);
+		if(first == second) return;
 		final T[] values = this.values;
 
 		int f = head + first;
@@ -1696,6 +2444,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		values[f] = values[s];
 		values[s] = fv;
 
+		//modCount += 2; // I don't think this is "structural"
 	}
 
 	/**
@@ -1715,21 +2464,26 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 			fv = values[f];
 			values[f] = values[s];
 			values[s] = fv;
+//			modCount += 2; // I don't think this is "structural"
 		}
 	}
-	/**
-	 * Pseudo-randomly shuffles the order of this Arrangeable in-place.
-	 *
-	 * @param random any {@link Random}, such as {@link com.github.tommyettinger.gand.utils.FlowRandom}
-	 */
-	public void shuffle (Random random) {
-		for (int i = size() - 1; i > 0; i--)
-			swap(i, random.nextInt(i + 1));
+
+	public void shuffle (Random rng) {
+		// This won't change modCount, because it isn't "structural"
+		for (int i = size() - 1; i > 0; i--) {
+			int r = rng.nextInt(i + 1);
+			if(r != i)
+				set(i, set(r, get(i)));
+		}
 	}
 
 	/**
-	 * Attempts to sort this deque in-place using its natural ordering, which requires T to
-	 * implement {@link Comparable} of T.
+	 * Sorts this deque in-place using {@link Arrays#sort(Object[], int, int, Comparator)} with a null Comparator.
+	 * This should operate in O(n log(n)) time or less when the internals of the deque are
+	 * continuous (the head is before the tail in the array). If the internals are not
+	 * continuous, this takes an additional O(n) step (where n is less than the size of
+	 * the deque) to rearrange the internals before sorting. This needs T to implement
+	 * {@link Comparable} of T, and this uses the natural ordering for T.
 	 */
 	public void sort () {
 		sort(null);
@@ -1747,17 +2501,23 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * @param comparator the Comparator to use for T items; may be null to use the natural
 	 *                   order of T items when T implements Comparable of T
 	 */
-	public void sort (Comparator<? super T> comparator) {
+	public void sort ( Comparator<? super T> comparator) {
 		if (head <= tail) {
-			Arrays.sort(values, head, tail, comparator);
+			Arrays.sort(values, head, tail+1, comparator);
 		} else {
-			System.arraycopy(values, head, values, tail, values.length - head);
-			Arrays.sort(values, 0, tail + values.length - head, comparator);
-			tail = tail + values.length - head;
+			System.arraycopy(values, head, values, tail + 1, values.length - head);
+			Arrays.sort(values, 0, tail + 1 + values.length - head, comparator);
+			tail += values.length - head;
 			head = 0;
 		}
+//		modCount += size; // I don't think this is "structural"
 	}
 
+	/**
+	 * Gets a randomly selected item from this ObjectDeque. Throws a {@link NoSuchElementException} if empty.
+	 * @param random any Random or subclass of it, such as {@link com.github.tommyettinger.gand.utils.Choo32Random}.
+	 * @return a randomly selected item from this deque, or the default value if empty
+	 */
 	public T random (Random random) {
 		if (size <= 0) {
 			throw new NoSuchElementException("ObjectDeque is empty.");
@@ -1765,21 +2525,13 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		return get(random.nextInt(size));
 	}
 
-	@Override
-	public void write(Json json) {
-		json.writeArrayStart("items");
-		for (int i = 0; i < size; i++) {
-			json.writeValue(get(i), null);
-		}
-		json.writeArrayEnd();
-	}
-
-	@Override
-	public void read(Json json, JsonValue jsonData) {
-		clear();
-		for (JsonValue value = jsonData.child; value != null; value = value.next) {
-			add(json.readValue(null, value));
-		}
+	/**
+	 * Like {@link #random(Random)}, but returns {@link #getDefaultValue() the default value} if empty.
+	 * @param random any Random or subclass of it, such as {@link com.github.tommyettinger.gand.utils.Choo32Random}
+	 * @return a randomly selected item from this deque, or the default value if empty
+	 */
+	public T peekRandom (Random random) {
+		return peekAt(random.nextInt(size));
 	}
 
 	/**
@@ -1787,10 +2539,11 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 	 * @param <T> the generic type for the ObjectDeque this iterates over
 	 */
 	public static class ObjectDequeIterator<T> implements Iterable<T>, ListIterator<T> {
-		protected int index, latest = -1;
-		protected ObjectDeque<T> deque;
-		protected boolean valid = true;
-		private final int direction;
+		public int index, latest = -1;
+		public ObjectDeque<T> deque;
+		public boolean valid = true;
+		public final int direction;
+		public int expectedModCount;
 
 		public ObjectDequeIterator (ObjectDeque<T> deque) {
 			this(deque, false);
@@ -1806,6 +2559,18 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 			this.deque = deque;
 			this.index = index;
 			direction = descendingOrder ? -1 : 1;
+			expectedModCount = deque.modCount;
+		}
+
+		/**
+		 * Checks if this iterator's expected amount of modifications to the deque matches what the deque reports.
+		 * This is used to ensure the {@link ObjectDeque#iterator()} and {@link ObjectDeque#listIterator()} are
+		 * both fail-fast iterators.
+		 * @throws ConcurrentModificationException if the check fails
+		 */
+		public final void modCheck() {
+			if (deque.modCount != expectedModCount)
+				throw new ConcurrentModificationException("ObjectDeque's iterator is mismatched with its ObjectDeque.");
 		}
 
 		/**
@@ -1815,11 +2580,14 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		 * @throws NoSuchElementException if the iteration has no more elements
 		 */
 		@Override
-			public T next () {
+		public T next () {
 			if (!hasNext()) {throw new NoSuchElementException();}
+			modCheck();
 			latest = index;
 			index += direction;
-			return deque.get(latest);
+			final T t = deque.get(latest);
+			modCheck();
+			return t;
 		}
 
 		/**
@@ -1863,9 +2631,14 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		 *                                element
 		 */
 		@Override
-			public T previous () {
+		public T previous () {
 			if (!hasPrevious()) {throw new NoSuchElementException();}
-			return deque.get(latest = (index -= direction));
+			modCheck();
+			latest = index -= direction;
+			final T t = deque.get(latest);
+			modCheck();
+			return t;
+
 		}
 
 		/**
@@ -1914,9 +2687,11 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		public void remove () {
 			if (!valid) {throw new RuntimeException("#iterator() cannot be used nested.");}
 			if (latest == -1 || latest >= deque.size()) {throw new NoSuchElementException();}
-			deque.removeAt(latest);
+			modCheck();
+			deque.remove(latest);
 			index = latest;
 			latest = -1;
+			expectedModCount = deque.modCount;
 		}
 
 		/**
@@ -1940,10 +2715,12 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		 *                                       {@code next} or {@code previous}
 		 */
 		@Override
-		public void set (T t) {
+		public void set ( T t) {
 			if (!valid) {throw new RuntimeException("#iterator() cannot be used nested.");}
 			if (latest == -1 || latest >= deque.size()) {throw new NoSuchElementException();}
+			modCheck();
 			deque.set(latest, t);
+			expectedModCount = deque.modCount;
 		}
 
 		/**
@@ -1967,17 +2744,21 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		 *                                       prevents it from being added to this list
 		 */
 		@Override
-		public void add (T t) {
+		public void add ( T t) {
 			if (!valid) {throw new RuntimeException("#iterator() cannot be used nested.");}
 			if (index > deque.size()) {throw new NoSuchElementException();}
+			modCheck();
 			deque.insert(index, t);
 			index += direction;
 			latest = -1;
+			expectedModCount = deque.modCount;
+
 		}
 
 		public void reset () {
 			index = deque.size - 1 & direction >> 31;
 			latest = -1;
+			expectedModCount = deque.modCount;
 		}
 
 		public void reset (int index) {
@@ -1985,6 +2766,7 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 				throw new IndexOutOfBoundsException("ObjectDequeIterator does not satisfy index >= 0 && index < deque.size()");
 			this.index = index;
 			latest = -1;
+			expectedModCount = deque.modCount;
 		}
 
 		/**
@@ -1998,14 +2780,196 @@ public class ObjectDeque<T> implements Deque<T>, Json.Serializable, RandomAccess
 		}
 	}
 
+	/**
+	 * Constructs an empty deque given the type as a generic type argument.
+	 * This is usually less useful than just using the constructor, but can be handy
+	 * in some code-generation scenarios when you don't know how many arguments you will have.
+	 *
+	 * @param <T>    the type of items; must be given explicitly
+	 * @return a new deque containing nothing
+	 */
+	public static <T> ObjectDeque<T> with () {
+		return new ObjectDeque<>(0);
+	}
+
+	/**
+	 * Creates a new ObjectDeque that holds only the given item, but can be resized.
+	 * @param item one T item
+	 * @return a new ObjectDeque that holds the given item
+	 * @param <T> the type of item, typically inferred
+	 */
 	public static <T> ObjectDeque<T> with (T item) {
-		ObjectDeque<T> deque = new ObjectDeque<>();
+		ObjectDeque<T> deque = new ObjectDeque<>(1);
 		deque.add(item);
 		return deque;
 	}
 
+	/**
+	 * Creates a new ObjectDeque that holds only the given items, but can be resized.
+	 * @param item0 a T item
+	 * @param item1 a T item
+	 * @return a new ObjectDeque that holds the given items
+	 * @param <T> the type of item, typically inferred
+	 */
+	public static <T> ObjectDeque<T> with (T item0, T item1) {
+		ObjectDeque<T> deque = new ObjectDeque<>(2);
+		deque.add(item0);
+		deque.add(item1);
+		return deque;
+	}
+
+	/**
+	 * Creates a new ObjectDeque that holds only the given items, but can be resized.
+	 * @param item0 a T item
+	 * @param item1 a T item
+	 * @param item2 a T item
+	 * @return a new ObjectDeque that holds the given items
+	 * @param <T> the type of item, typically inferred
+	 */
+	public static <T> ObjectDeque<T> with (T item0, T item1, T item2) {
+		ObjectDeque<T> deque = new ObjectDeque<>(3);
+		deque.add(item0);
+		deque.add(item1);
+		deque.add(item2);
+		return deque;
+	}
+
+	/**
+	 * Creates a new ObjectDeque that holds only the given items, but can be resized.
+	 * @param item0 a T item
+	 * @param item1 a T item
+	 * @param item2 a T item
+	 * @param item3 a T item
+	 * @return a new ObjectDeque that holds the given items
+	 * @param <T> the type of item, typically inferred
+	 */
+	public static <T> ObjectDeque<T> with (T item0, T item1, T item2, T item3) {
+		ObjectDeque<T> deque = new ObjectDeque<>(4);
+		deque.add(item0);
+		deque.add(item1);
+		deque.add(item2);
+		deque.add(item3);
+		return deque;
+	}
+
+	/**
+	 * Creates a new ObjectDeque that holds only the given items, but can be resized.
+	 * @param item0 a T item
+	 * @param item1 a T item
+	 * @param item2 a T item
+	 * @param item3 a T item
+	 * @param item4 a T item
+	 * @return a new ObjectDeque that holds the given items
+	 * @param <T> the type of item, typically inferred
+	 */
+	public static <T> ObjectDeque<T> with (T item0, T item1, T item2, T item3, T item4) {
+		ObjectDeque<T> deque = new ObjectDeque<>(5);
+		deque.add(item0);
+		deque.add(item1);
+		deque.add(item2);
+		deque.add(item3);
+		deque.add(item4);
+		return deque;
+	}
+
+	/**
+	 * Creates a new ObjectDeque that holds only the given items, but can be resized.
+	 * @param item0 a T item
+	 * @param item1 a T item
+	 * @param item2 a T item
+	 * @param item3 a T item
+	 * @param item4 a T item
+	 * @param item5 a T item
+	 * @return a new ObjectDeque that holds the given items
+	 * @param <T> the type of item, typically inferred
+	 */
+	public static <T> ObjectDeque<T> with (T item0, T item1, T item2, T item3, T item4, T item5) {
+		ObjectDeque<T> deque = new ObjectDeque<>(6);
+		deque.add(item0);
+		deque.add(item1);
+		deque.add(item2);
+		deque.add(item3);
+		deque.add(item4);
+		deque.add(item5);
+		return deque;
+	}
+
+	/**
+	 * Creates a new ObjectDeque that holds only the given items, but can be resized.
+	 * @param item0 a T item
+	 * @param item1 a T item
+	 * @param item2 a T item
+	 * @param item3 a T item
+	 * @param item4 a T item
+	 * @param item5 a T item
+	 * @param item6 a T item
+	 * @return a new ObjectDeque that holds the given items
+	 * @param <T> the type of item, typically inferred
+	 */
+	public static <T> ObjectDeque<T> with (T item0, T item1, T item2, T item3, T item4, T item5, T item6) {
+		ObjectDeque<T> deque = new ObjectDeque<>(7);
+		deque.add(item0);
+		deque.add(item1);
+		deque.add(item2);
+		deque.add(item3);
+		deque.add(item4);
+		deque.add(item5);
+		deque.add(item6);
+		return deque;
+	}
+
+	/**
+	 * Creates a new ObjectDeque that holds only the given items, but can be resized.
+	 * @param item0 a T item
+	 * @param item1 a T item
+	 * @param item2 a T item
+	 * @param item3 a T item
+	 * @param item4 a T item
+	 * @param item5 a T item
+	 * @param item6 a T item
+	 * @param item7 a T item
+	 * @return a new ObjectDeque that holds the given items
+	 * @param <T> the type of item, typically inferred
+	 */
+	public static <T> ObjectDeque<T> with (T item0, T item1, T item2, T item3, T item4, T item5, T item6, T item7) {
+		ObjectDeque<T> deque = new ObjectDeque<>(8);
+		deque.add(item0);
+		deque.add(item1);
+		deque.add(item2);
+		deque.add(item3);
+		deque.add(item4);
+		deque.add(item5);
+		deque.add(item6);
+		deque.add(item7);
+		return deque;
+	}
+
+	/**
+	 * Creates a new ObjectDeque that will hold the items in the given array or varargs.
+	 * This overload will only be used when an array is supplied and the type of the
+	 * items requested is the component type of the array, or if varargs are used and
+	 * there are 9 or more arguments.
+	 * @param varargs either 0 or more T items, or an array of T
+	 * @return a new ObjectDeque that holds the given T items
+	 * @param <T> the type of items, typically inferred by all the items being the same type
+	 */
 	@SafeVarargs
-	public static <T> ObjectDeque<T> with (T... items) {
-		return new ObjectDeque<>(items);
+	public static <T> ObjectDeque<T> with (T... varargs) {
+		return new ObjectDeque<>(varargs);
+	}
+
+	public void write(Json json) {
+		json.writeArrayStart("items");
+		for (int i = 0; i < size; i++) {
+			json.writeValue(get(i), null);
+		}
+		json.writeArrayEnd();
+	}
+
+	public void read(Json json, JsonValue jsonData) {
+		clear();
+		for (JsonValue value = jsonData.child; value != null; value = value.next) {
+			add(json.readValue(null, value));
+		}
 	}
 }

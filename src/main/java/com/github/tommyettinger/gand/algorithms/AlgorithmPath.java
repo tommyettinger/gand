@@ -6,11 +6,11 @@ import com.github.tommyettinger.gand.Path;
 class AlgorithmPath<V> extends Path<V> {
 
     AlgorithmPath() {
-        super(0, false);
+        super(0);
     }
 
     AlgorithmPath(Node<V> v) {
-        super(v.getIndex() + 1, true);
+        super(v.getIndex() + 1);
         setByBacktracking(v);
     }
 
@@ -21,7 +21,7 @@ class AlgorithmPath<V> extends Path<V> {
 
         Node<V> v = node;
         while(v != null) {
-            set(v.getIndex(), v.getObject());
+            addFirst(v.getObject());
             v = v.getPrev();
         }
 
