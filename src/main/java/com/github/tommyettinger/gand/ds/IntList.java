@@ -17,6 +17,8 @@
 
 package com.github.tommyettinger.gand.ds;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gand.utils.IntComparator;
 import com.github.tommyettinger.gand.utils.IntComparators;
 import com.github.tommyettinger.gand.utils.IntIterator;
@@ -34,7 +36,7 @@ import java.util.Random;
  * @author Nathan Sweet
  * @author Tommy Ettinger
  */
-public class IntList implements IntCollection {
+public class IntList implements IntCollection, Json.Serializable {
 	public int[] items;
 	protected int size;
 	protected transient IntListIterator iterator1;
@@ -996,5 +998,21 @@ public class IntList implements IntCollection {
 	 */
 	public static IntList with (int... array) {
 		return new IntList(array);
+	}
+
+	@Override
+	public void write(Json json) {
+		json.writeArrayStart("items");
+		for (int i = 0; i < size; i++) {
+			json.writeValue(get(i), int.class);
+		}
+		json.writeArrayEnd();
+	}
+
+	public void read(Json json, JsonValue jsonData) {
+		clear();
+		for (JsonValue value = jsonData.child; value != null; value = value.next) {
+			add(json.readValue(int.class, value));
+		}
 	}
 }
