@@ -35,6 +35,7 @@ import com.github.tommyettinger.gand.GradientGridI2;
 import com.github.tommyettinger.gand.ds.ObjectDeque;
 import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gand.utils.GridMetric;
+import com.github.tommyettinger.random.Choo32Random;
 import com.github.tommyettinger.random.EnhancedRandom;
 import com.github.tommyettinger.random.WhiskerRandom;
 import com.github.tommyettinger.textra.Font;
@@ -72,8 +73,8 @@ public class LightingTest extends ApplicationAdapter {
 
     private static final int GRID_WIDTH = 75;
     private static final int GRID_HEIGHT = 40;
-    private static final int CELL_WIDTH = 24;
-    private static final int CELL_HEIGHT = 24;
+    private static final int CELL_WIDTH = 22;
+    private static final int CELL_HEIGHT = 22;
 
     private static final int DEEP_OKLAB = describeOklab("dark dull cobalt");
     private static final int SHALLOW_OKLAB = describeOklab("dull denim");
@@ -104,12 +105,12 @@ public class LightingTest extends ApplicationAdapter {
 //        long seed = EnhancedRandom.seedFromMath();// random seed every time
 //        long seed = TimeUtils.millis() >>> 21; // use to keep each seed for about half an hour; useful for testing
         Gdx.app.log("SEED", "Initial seed is " + seed);
-        EnhancedRandom random = new WhiskerRandom(seed);
+        EnhancedRandom random = new Choo32Random(seed);
         stage = new Stage();
-        Font font = KnownFonts.getFont(KnownFonts.IOSEVKA_SLAB, Font.DistanceFieldType.SDF);
+        Font font = KnownFonts.getFont(KnownFonts.IOSEVKA_SLAB, Font.DistanceFieldType.SDF_OUTLINE).multiplyCrispness(0.4f);
         gg = new GlyphGrid(font, GRID_WIDTH, GRID_HEIGHT, true);
-        //use Ă to test glyph height
-        playerGlyph = new GlyphActor('@', "[red orange]", gg.getFont());
+        //use Ă to test glyph height, or @ for the traditional rogue
+        playerGlyph = new GlyphActor('Ă', "[red orange]", gg.getFont());
         gg.addActor(playerGlyph);
         post = () -> {
             Coord player = playerGlyph.getLocation();
