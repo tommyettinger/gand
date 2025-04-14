@@ -17,6 +17,8 @@
 
 package com.github.tommyettinger.gand.ds;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.github.tommyettinger.gand.utils.IntComparator;
 import com.github.tommyettinger.gand.utils.IntComparators;
 import com.github.tommyettinger.gand.utils.IntIterator;
@@ -31,7 +33,7 @@ import java.util.*;
  * Unlike most Deque implementations in the JDK, you can get and set items anywhere in the deque in constant time with {@link #get(int)}
  * and {@link #set(int, int)}.
  */
-public class IntDeque implements IntCollection {
+public class IntDeque implements IntCollection, Json.Serializable {
 
 	protected int defaultValue = -1;
 
@@ -1404,6 +1406,22 @@ public class IntDeque implements IntCollection {
 
 	public static IntDeque with (int... items) {
 		return new IntDeque(items);
+	}
+
+	@Override
+	public void write(Json json) {
+		json.writeArrayStart("items");
+		for (int i = 0; i < size; i++) {
+			json.writeValue(get(i), int.class);
+		}
+		json.writeArrayEnd();
+	}
+
+	public void read(Json json, JsonValue jsonData) {
+		clear();
+		for (JsonValue value = jsonData.child; value != null; value = value.next) {
+			add(json.readValue(int.class, value));
+		}
 	}
 
 }
