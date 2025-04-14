@@ -177,39 +177,72 @@ public class GradientGridI2 extends GradientGrid<PointI2> implements Json.Serial
 
     /**
      * Creates a 1D char array (which can be passed to {@link String#valueOf(char[])}) filled with a grid made of the
-     * vertices in this Graph and their estimated costs, if this has done an estimate. Each estimate is rounded to the
+     * vertices in this Graph and their estimated costs, if this has done an estimate. Each estimate is multiplied by
+     * 10, rounded to the
      * nearest int and only printed if it is 4 digits or fewer; otherwise this puts '####' in the grid cell. This is a
      * building-block for toString() implementations that may have debugging uses as well.
      * <br>
-     * This uses y-up positioning.
+     * This uses y-up positioning, where the end of the char array contains row 0.
+     *
      * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
      */
     public char[] show() {
+        return show(true);
+    }
+    /**
+     * Creates a 1D char array (which can be passed to {@link String#valueOf(char[])}) filled with a grid made of the
+     * vertices in this Graph and their estimated costs, if this has done an estimate. Each estimate is multiplied by
+     * 10, rounded to the
+     * nearest int and only printed if it is 4 digits or fewer; otherwise this puts '####' in the grid cell. This is a
+     * building-block for toString() implementations that may have debugging uses as well. This overload allows
+     * configuring whether the y-axis should use the end of the char array for row 0 (when yUp is true) or the start of
+     * the char array for row 0 (when yUp is false).
+     *
+     * @param yUp if true, this uses y-up positions where y=0 is at the end of the char array; if false, it uses y-down
+     * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
+     */
+    public char[] show(boolean yUp) {
         final int w5 = width * 5, len = w5 * height;
-        final char[] cs = new char[len];
+        final char[] cs = new char[len - 1];
         Arrays.fill(cs,  '#');
         for (int i = 4; i < cs.length; i += 5) {
             cs[i] = (i + 1) % w5 == 0 ? '\n' : ' ';
         }
 
-        for (int y = 0, yi = 0; yi < height; y += w5, yi++) {
+        for (int y = yUp ? len - w5 : 0, yi = 0; yi < height; y += yUp ? -w5 : w5, yi++) {
             for (int x = 0, xi = 0; xi < width; x+=5, xi++) {
                 float distance = gradientMap[xi][yi];
                 if (distance >= FLOOR)
                     continue;
-                int d = (int) (distance + 0.5f);
-                cs[len - w5 - y + x] = (d >= 1000) ? (char) ('0' + d / 1000) : ' ';
-                cs[len - w5 - y + x + 1] = (d >= 100) ? (char) ('0' + d / 100 % 10) : ' ';
-                cs[len - w5 - y + x + 2] = (d >= 10) ? (char) ('0' + d / 10 % 10) : ' ';
-                cs[len - w5 - y + x + 3] = (char) ('0' + d % 10);
+                int d = (int) (distance * 10 + 0.5f);
+                cs[y + x] = (d >= 1000) ? (char) ('0' + d / 1000) : ' ';
+                cs[y + x + 1] = (d >= 100) ? (char) ('0' + d / 100 % 10) : ' ';
+                cs[y + x + 2] = (d >= 10) ? (char) ('0' + d / 10 % 10) : ' ';
+                cs[y + x + 3] = (char) ('0' + d % 10);
             }
         }
         return cs;
     }
 
+    /**
+     * Shows the GradientGridI2's {@link #gradientMap} using {@link #show()}, with y-up coordinates.
+     * This multiplies each item in the gradientMap by 10 so decimal differences are visible.
+     *
+     * @return a user-viewable version of the last scan (or partial scan) results
+     */
     @Override
     public String toString() {
         return "GradientGridI2: {\n" + String.valueOf(show()) + "\n}";
+    }
+    /**
+     * Shows the GradientGridI2's {@link #gradientMap} using {@link #show(boolean)}, with either y-up or y-down
+     * coordinates. This multiplies each item in the gradientMap by 10 so decimal differences are visible.
+     *
+     * @param yUp if true, this uses y-up positions where y=0 is at the end of the String; if false, it uses y-down
+     * @return a user-viewable version of the last scan (or partial scan) results
+     */
+    public String toString(boolean yUp) {
+        return "GradientGridI2: {\n" + String.valueOf(show(yUp)) + "\n}";
     }
 
     @Override
