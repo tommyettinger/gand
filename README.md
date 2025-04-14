@@ -9,7 +9,7 @@ changes some features to make serializing graphs easier, and integrates more clo
 other dependency is a tiny library of mostly interfaces, [crux](https://github.com/tommyettinger/crux).
 Crux generalizes the point types used by libGDX and other libraries so they can share an API in subclasses.
 You can optionally depend on [Fury](https://fury.apache.org) for binary serialization, or you can
-simply use the JSON serialization built into libGDX.
+simply use the JSON serialization built into libGDX. Kryo should work again soon!
 
 **[JavaDocs are here.](https://tommyettinger.github.io/gand/apidocs/)**
 
@@ -47,7 +47,7 @@ line algorithm for when only orthogonal connections are considered adjacent.
 Something that hasn't changed much from simple-graphs is the performance. This library is extremely competitive
 with simple-graphs for pathfinding speed, usually within 5% time taken per path (either more or less). This is
 a little surprising, because simple-graphs stripped out quite a few features from things like BinaryHeap and its
-Array class in order to maximize speed. Our ObjectDeque here has 981 SLoC, while the Array in simple-graphs has
+Array class in order to maximize speed. Our ObjectDeque here has 1474 SLoC, while the Array in simple-graphs has
 only 170, so you would expect ObjectDeque to slow things down a bit with added complexity. It actually does slow
 some things down, but none of them are done especially often. Plus, other code is a little faster, so it all
 essentially evens out.
@@ -74,28 +74,18 @@ A small change in 0.1.1 makes the Graph types (all of them) `Externalizable`, wh
 [Fury](https://fury.apache.org) to serialize them without needing any extra work in your code. Only the Graph
 types actually needed this; everything else exposed to users can be handled by Fury already. Fury is in
 "incubating" status in the Apache project, but it's already faster than Kryo (both in their benchmarks and with
-a more modest gain in my benchmarks), and is substantially easier to use, for me. The other reason you might want
-to prefer Fury over Kryo for a binary serializer is that...
-
-There appears to be some kind of bug or other issue in Kryo 5.x that makes one class from this library wreck
-serialized Kryo files while it's being written. Writing `PointI3` values to the end of a Kryo `Output` somehow
-changes the bytes at the beginning of the `Output`, making them invalid. Any classes that use `PointI3` seem to
-always have this happen, and classes that don't use `PointI3` won't notice it. Even serializing a `PointI3` by
-writing a `String` with Kryo incurs this issue, so it's like the class name is what causes the problem. All in
-all, it is very strange, and Fury is not affected by this bug.
-
-tl;dr [Fury](https://fury.apache.org) is a great library and should be considered if you want binary serialization.
-
-Kryo is still good, it just seems to have a rare (but serious) bug with this library...
+a more modest gain in my benchmarks), and is substantially easier to use, for me. They both work fine, and both
+have some quirks to get them working... In an earlier version of this README.md, I had seriously struggled with
+one such quirk in Kryo, but it was a user error in the end and Kryo does work fine here.
 
 # Find It
 
-`implementation "com.github.tommyettinger:gand:0.3.1"`
+`implementation "com.github.tommyettinger:gand:0.3.2"`
 
-If you use GWT, then your GWT module needs to depend on libGDX 1.12.1 or higher, as well as:
+If you use GWT, then your GWT module needs to depend on libGDX 1.13.1 or higher, as well as:
 
 ```
-implementation "com.github.tommyettinger:gand:0.3.1:sources"
+implementation "com.github.tommyettinger:gand:0.3.2:sources"
 implementation "com.github.tommyettinger:gdcrux:0.1.0:sources"
 implementation "com.github.tommyettinger:crux:0.1.2:sources"
 ```
