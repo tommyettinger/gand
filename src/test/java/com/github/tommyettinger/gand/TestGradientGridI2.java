@@ -101,6 +101,7 @@ public class TestGradientGridI2 {
 
         gg.findPath(path, 10, 10, null, null, start, ObjectDeque.with(goal0, goal1));
         print(map);
+        System.out.println(gg);
 
         System.out.println("Original, pretty-printed:");
         String ppgg = json.prettyPrint(gg);

@@ -27,6 +27,7 @@ import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gdcrux.PointI3;
 import org.apache.fury.Fury;
 import org.apache.fury.config.Language;
+import org.apache.fury.logging.FuryLogger;
 import org.apache.fury.logging.LoggerFactory;
 import org.junit.Assert;
 import org.junit.Test;
@@ -137,6 +138,7 @@ public class FuryTest {
 
     @Test
     public void testUndirectedGraph() {
+        LoggerFactory.disableLogging();
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(UndirectedGraph.class);
         fury.register(Vector2.class);
@@ -203,6 +205,7 @@ public class FuryTest {
 
     @Test
     public void testInt2DirectedGraph() {
+        LoggerFactory.disableLogging();
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(Int2DirectedGraph.class);
         fury.register(PointI2.class);
@@ -229,6 +232,7 @@ public class FuryTest {
 
     @Test
     public void testInt2UndirectedGraph() {
+        LoggerFactory.disableLogging();
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(Int2UndirectedGraph.class);
         fury.register(PointI2.class);
@@ -255,6 +259,7 @@ public class FuryTest {
 
     @Test
     public void testFloat2DirectedGraph() {
+        LoggerFactory.disableLogging();
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(Float2DirectedGraph.class);
         fury.register(PointF2.class);
@@ -276,6 +281,7 @@ public class FuryTest {
 
     @Test
     public void testFloat2UndirectedGraph() {
+        LoggerFactory.disableLogging();
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(Float2UndirectedGraph.class);
         fury.register(PointF2.class);
@@ -297,6 +303,7 @@ public class FuryTest {
 
     @Test
     public void testInt3DirectedGraph() {
+        LoggerFactory.disableLogging();
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(Int3DirectedGraph.class);
         fury.register(PointI3.class);
@@ -324,6 +331,7 @@ public class FuryTest {
 
     @Test
     public void testInt3UndirectedGraph() {
+        LoggerFactory.disableLogging();
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(Int3UndirectedGraph.class);
         fury.register(PointI3.class);
@@ -351,6 +359,7 @@ public class FuryTest {
     
     @Test
     public void testFloat3DirectedGraph() {
+        LoggerFactory.disableLogging();
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(Float3DirectedGraph.class);
         fury.register(PointF3.class);
@@ -378,6 +387,7 @@ public class FuryTest {
 
     @Test
     public void testFloat3UndirectedGraph() {
+        LoggerFactory.disableLogging();
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(Float3UndirectedGraph.class);
         fury.register(PointF3.class);
@@ -406,6 +416,7 @@ public class FuryTest {
 
     @Test
     public void testPath() {
+        LoggerFactory.disableLogging();
         Fury fury = Fury.builder().withLanguage(Language.JAVA).build();
         fury.register(PointI2.class);
         fury.register(Path.class);

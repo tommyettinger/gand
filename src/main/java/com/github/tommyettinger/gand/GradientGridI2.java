@@ -23,6 +23,7 @@ import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gand.utils.GridMetric;
 import com.github.tommyettinger.gdcrux.PointF2;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -172,6 +173,43 @@ public class GradientGridI2 extends GradientGrid<PointI2> implements Json.Serial
         this.setMeasurement(measurement);
 
         initialize(level, alternateWall);
+    }
+
+    /**
+     * Creates a 1D char array (which can be passed to {@link String#valueOf(char[])}) filled with a grid made of the
+     * vertices in this Graph and their estimated costs, if this has done an estimate. Each estimate is rounded to the
+     * nearest int and only printed if it is 4 digits or fewer; otherwise this puts '####' in the grid cell. This is a
+     * building-block for toString() implementations that may have debugging uses as well.
+     * <br>
+     * This uses y-up positioning.
+     * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
+     */
+    public char[] show() {
+        final int w5 = width * 5, len = w5 * height;
+        final char[] cs = new char[len];
+        Arrays.fill(cs,  '#');
+        for (int i = 4; i < cs.length; i += 5) {
+            cs[i] = (i + 1) % w5 == 0 ? '\n' : ' ';
+        }
+
+        for (int y = 0, yi = 0; yi < height; y += w5, yi++) {
+            for (int x = 0, xi = 0; xi < width; x+=5, xi++) {
+                float distance = gradientMap[xi][yi];
+                if (distance >= FLOOR)
+                    continue;
+                int d = (int) (distance + 0.5f);
+                cs[len - w5 - y + x] = (d >= 1000) ? (char) ('0' + d / 1000) : ' ';
+                cs[len - w5 - y + x + 1] = (d >= 100) ? (char) ('0' + d / 100 % 10) : ' ';
+                cs[len - w5 - y + x + 2] = (d >= 10) ? (char) ('0' + d / 10 % 10) : ' ';
+                cs[len - w5 - y + x + 3] = (char) ('0' + d % 10);
+            }
+        }
+        return cs;
+    }
+
+    @Override
+    public String toString() {
+        return "GradientGridI2: {\n" + String.valueOf(show()) + "\n}";
     }
 
     @Override
