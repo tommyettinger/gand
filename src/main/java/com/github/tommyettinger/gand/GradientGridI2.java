@@ -23,7 +23,6 @@ import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gand.utils.GridMetric;
 import com.github.tommyettinger.gdcrux.PointF2;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 /**

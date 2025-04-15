@@ -27,7 +27,6 @@ import com.github.tommyettinger.gdcrux.PointI2;
 import com.github.tommyettinger.gdcrux.PointI3;
 import org.apache.fury.Fury;
 import org.apache.fury.config.Language;
-import org.apache.fury.logging.FuryLogger;
 import org.apache.fury.logging.LoggerFactory;
 import org.junit.Assert;
 import org.junit.Test;

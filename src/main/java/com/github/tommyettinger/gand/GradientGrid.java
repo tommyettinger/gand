@@ -187,7 +187,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
     /**
      * Goals that pathfinding will seek out. Each item is an encoded point, as done by {@link #encode(int, int)}.
      */
-    protected final IntList goals = new IntList(256);
+    public final IntList goals = new IntList(256);
     /**
      * Working data used during scanning, this tracks the perimeter of the scanned area so far. This is a member
      * variable and not a local one to avoid reallocating the data structure. Each item is an encoded point, as done by
@@ -200,7 +200,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * deterministically before any usage. There will only be one path produced for a given set of parameters, and it
      * will be returned again and again if the same parameters are requested.
      */
-    protected final Choo32Random rng = new Choo32Random(0x9E37, 0x79B9, 0x7F4A, 0x7C15);
+    public final Choo32Random rng = new Choo32Random(0x9E37, 0x79B9, 0x7F4A, 0x7C15);
     protected transient int frustration;
 
     protected transient final Direction[] dirs = new Direction[9];
@@ -474,6 +474,10 @@ public abstract class GradientGrid<P extends Point2<P>> {
         frustration = 0;
     }
 
+    public IntList getGoals() {
+        return goals;
+    }
+
     /**
      * Marks a cell as a goal for pathfinding, unless the cell is a wall or unreachable area (then it does nothing).
      *
@@ -487,6 +491,23 @@ public abstract class GradientGrid<P extends Point2<P>> {
         }
 
         goals.add(encode(x, y));
+        gradientMap[x][y] = 0f;
+    }
+    /**
+     * Marks a cell, given as an encoded int, as a goal for pathfinding, unless the cell is a wall or unreachable area
+     * (then it does nothing). The encoded parameter is usually taken from the existing {@link #goals} or encoded with
+     * {@link #encode(int, int)} given x and y positions.
+     *
+     * @param encoded either taken from the existing {@link #goals} or encoded with {@link #encode(int, int)}
+     */
+    public void setGoal(int encoded) {
+        final int x = decodeX(encoded), y = decodeY(encoded);
+        if (!initialized || x < 0 || x >= width || y < 0 || y >= height) return;
+        if (physicalMap[x][y] > FLOOR) {
+            return;
+        }
+
+        goals.add(encoded);
         gradientMap[x][y] = 0f;
     }
 
