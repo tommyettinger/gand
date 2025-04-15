@@ -2406,6 +2406,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * @return a 1D char array containing newline-separated rows of space-separated grid cells that contain estimated costs or '####' for unexplored
      */
     public char[] show(boolean yUp) {
+        if(gradientMap == null) return "(Uninitialized)".toCharArray();
         final int w5 = width * 5, len = w5 * height;
         final char[] cs = new char[len - 1];
         Arrays.fill(cs,  '#');
