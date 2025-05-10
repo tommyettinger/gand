@@ -20,7 +20,23 @@ package com.github.tommyettinger.gand.ds;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.ConcurrentModificationException;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.Random;
+import java.util.RandomAccess;
 
 /**
  * A resizable, insertion-ordered double-ended queue of objects with efficient add and remove at the beginning and end.
@@ -61,7 +77,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	/**
 	 * Contains the values in the deque. Head and tail indices go in a circle around this array, wrapping at the end.
 	 */
-	protected T[] values;
+	protected T[] items;
 
 	/**
 	 * Index of first element. Logically smaller than tail. Unless empty, it points to a valid element inside the deque.
@@ -98,7 +114,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 */
 	public ObjectDeque(int initialSize) {
 		// noinspection unchecked
-		this.values = (T[])new Object[Math.max(1, initialSize)];
+		this.items = (T[])new Object[Math.max(1, initialSize)];
 	}
 
 	/**
@@ -119,7 +135,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 * @throws NullPointerException if {@code deque} is {@code null}
 	 */
 	public ObjectDeque(ObjectDeque<? extends T> deque) {
-		this.values = Arrays.copyOf(deque.values, deque.values.length);
+		this.items = Arrays.copyOf(deque.items, deque.items.length);
 		this.size = deque.size;
 		this.head = deque.head;
 		this.tail = deque.tail;
@@ -133,7 +149,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 * @throws NullPointerException if {@code a} is {@code null}
 	 */
 	public ObjectDeque(T[] a) {
-		this.values = Arrays.copyOf(a, Math.max(1, a.length));
+		this.items = Arrays.copyOf(a, Math.max(1, a.length));
 		size = a.length;
 		tail = Math.max(0, size - 1);
 	}
@@ -148,7 +164,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 */
 	public ObjectDeque(T[] a, int offset, int count) {
 		int adjusted = Math.max(1, count);
-		this.values = Arrays.copyOfRange(a, offset, offset + adjusted);
+		this.items = Arrays.copyOfRange(a, offset, offset + adjusted);
 		tail = adjusted - 1;
 		size = Math.max(0, count);
 	}
@@ -179,43 +195,160 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 * @param object can be null
 	 */
 	@Override
-	public void addLast ( T object) { T[] values = this.values;
+	public void addLast ( T object) {
+		T[] items = this.items;
 
-		if (size == values.length) {
-			resize(values.length << 1);
-			values = this.values;
+		if (size == items.length) {
+			resize(items.length << 1);
+			items = this.items;
 		}
 
-		if (++tail == values.length) tail = 0;
+		if (++tail == items.length) tail = 0;
 		if(++size == 1) tail = head;
-		values[tail] = object;
+		items[tail] = object;
 		modCount++;
 	}
 
+	public void addLast(T value1, T value2) {
+		T[] items = this.items;
+
+		if (size + 2 > items.length) {
+			resize(size + 2 << 1);
+			items = this.items;
+		}
+
+		if (++tail == items.length) tail = 0;
+		if(size == 0) tail = head;
+		items[tail] = value1;
+		if (++tail == items.length) tail = 0;
+		items[tail] = value2;
+		size += 2;
+		modCount += 2;
+	}
+
+	public void addLast(T value1, T value2, T value3) {
+		T[] items = this.items;
+
+		if (size + 3 > items.length) {
+			resize(size + 3 << 1);
+			items = this.items;
+		}
+		if (++tail == items.length) tail = 0;
+		if(size == 0) tail = head;
+		items[tail] = value1;
+		if (++tail == items.length) tail = 0;
+		items[tail] = value2;
+		if (++tail == items.length) tail = 0;
+		items[tail] = value3;
+		size += 3;
+		modCount += 3;
+	}
+
+	public void addLast(T value1, T value2, T value3, T value4) {
+		T[] items = this.items;
+
+		if (size + 4 > items.length) {
+			resize(size + 4 << 1);
+			items = this.items;
+		}
+		if (++tail == items.length) tail = 0;
+		if(size == 0) tail = head;
+		items[tail] = value1;
+		if (++tail == items.length) tail = 0;
+		items[tail] = value2;
+		if (++tail == items.length) tail = 0;
+		items[tail] = value3;
+		if (++tail == items.length) tail = 0;
+		items[tail] = value4;
+		size += 4;
+		modCount += 4;
+	}
+
 	/**
-	 * Prepend given object to the head (enqueue to head). Unless backing array needs resizing, operates in O(1) time.
+	 * Prepends {@code value} to the head (enqueue to head). Unless backing array needs resizing, operates in O(1) time.
 	 *
-	 * @param object can be null
+	 * @param value can be null
 	 * @see #addLast(Object)
 	 */
-	@Override
-	public void addFirst ( T object) { T[] values = this.values;
+	public void addFirst (T value) {
+		T[] items = this.items;
 
-		if (size == values.length) {
-			resize(values.length << 1);
-			values = this.values;
+		if (size == items.length) {
+			resize(size << 1);
+			items = this.items;
 		}
-
-		int head = this.head;
-		head--;
-		if (head == -1) {
-			head = values.length - 1;
-		}
-		values[head] = object;
+		int head = this.head - 1;
+		if (head == -1) head = items.length - 1;
+		items[head] = value;
 
 		this.head = head;
 		if(++size == 1) tail = head;
 		modCount++;
+	}
+
+	public void addFirst (T value1, T value2) {
+		T[] items = this.items;
+
+		if (size + 2 > items.length) {
+			resize(size + 2 << 1);
+			items = this.items;
+		}
+
+		int head = this.head - 1;
+		if (head == -1) head = items.length - 1;
+		if(size == 0) tail = head;
+		items[head] = value2;
+		if (--head == -1) head = items.length - 1;
+		items[head] = value1;
+		size += 2;
+
+		this.head = head;
+		modCount += 2;
+	}
+
+	public void addFirst (T value1, T value2, T value3) {
+		T[] items = this.items;
+
+		if (size + 3 > items.length) {
+			resize(size + 3 << 1);
+			items = this.items;
+		}
+		int head = this.head - 1;
+		if (head == -1) head = items.length - 1;
+		if(size == 0) tail = head;
+		items[head] = value3;
+		if (--head == -1) head = items.length - 1;
+		items[head] = value2;
+		if (--head == -1) head = items.length - 1;
+		items[head] = value1;
+		size += 3;
+
+		this.head = head;
+		modCount += 3;
+	}
+
+	public void addFirst (T value1, T value2, T value3, T value4) {
+		T[] items = this.items;
+
+		if (size + 4 > items.length) {
+			resize(size + 4 << 1);
+			items = this.items;
+		}
+
+		int head = this.head - 1;
+		if (head == -1) head = items.length - 1;
+		if(size == 0) tail = head;
+		items[head] = value4;
+		if (--head == -1) head = items.length - 1;
+		items[head] = value3;
+		if (--head == -1) head = items.length - 1;
+		items[head] = value2;
+		if (--head == -1) head = items.length - 1;
+		items[head] = value1;
+		size += 4;
+
+		this.head = head;
+		modCount += 4;
 	}
 
 	/**
@@ -225,16 +358,17 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 */
 	public void trimToSize() {
 		modCount++;
-		if (size < values.length) {
+		if (size < items.length) {
 			if(head <= tail) {
-				values = Arrays.copyOfRange(values, head, tail+1);
-			} else { T[] next = Arrays.copyOf(values, size);
-				System.arraycopy(values, head, next, 0, values.length - head);
-				System.arraycopy(values, 0, next, values.length - head, tail + 1);
-				values = next;
+				items = Arrays.copyOfRange(items, head, tail+1);
+			} else {
+				T[] next = Arrays.copyOf(items, size);
+				System.arraycopy(items, head, next, 0, items.length - head);
+				System.arraycopy(items, 0, next, items.length - head, tail + 1);
+				items = next;
 			}
 			head = 0;
-			tail = values.length - 1;
+			tail = items.length - 1;
 		}
 	}
 
@@ -244,9 +378,18 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 */
 	public void ensureCapacity (int additional) {
 		final int needed = size + additional;
-		if (values.length < needed) {
+		if (items.length < needed) {
 			resize(needed);
 		}
+	}
+
+	/**
+	 * Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items
+	 * have been removed, or if it is known that more items will not be added.
+	 * This is an alias for {@link #trimToSize()}.
+	 */
+	public void shrink() {
+		trimToSize();
 	}
 
 	/**
@@ -258,7 +401,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	public void resize (int newSize) {
 		if(newSize < size)
 			newSize = size;
-		final T[] values = this.values;
+		final T[] items = this.items;
 		final int head = this.head;
 		final int tail = this.tail;
 
@@ -268,17 +411,17 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		if (size > 0) {
 			if (head <= tail) {
 				// Continuous
-				System.arraycopy(values, head, newArray, 0, tail - head + 1);
+				System.arraycopy(items, head, newArray, 0, tail - head + 1);
 			} else {
 				// Wrapped
-				final int rest = values.length - head;
-				System.arraycopy(values, head, newArray, 0, rest);
-				System.arraycopy(values, 0, newArray, rest, tail + 1);
+				final int rest = items.length - head;
+				System.arraycopy(items, head, newArray, 0, rest);
+				System.arraycopy(items, 0, newArray, rest, tail + 1);
 			}
 			this.head = 0;
 			this.tail = size - 1;
 		}
-		this.values = newArray;
+		this.items = newArray;
 	}
 
 	/**
@@ -302,40 +445,40 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		}
 		if (size == 0) {
 			this.head = this.tail = 0;
-			if (values.length < gapSize) {
+			if (items.length < gapSize) {
 				//noinspection unchecked
-				this.values = (T[]) new Object[gapSize];
+				this.items = (T[]) new Object[gapSize];
 			}
 			return 0;
 		} else if (size == 1) {
-			if (values.length < gapSize + size) {
-				T item = this.values[head];
+			if (items.length < gapSize + size) {
+				T item = this.items[head];
 				//noinspection unchecked
-				this.values = (T[]) new Object[gapSize + size];
+				this.items = (T[]) new Object[gapSize + size];
 				if (index == 0) {
-					this.values[gapSize] = item;
+					this.items[gapSize] = item;
 					this.head = 0;
 					this.tail = gapSize;
 					return 0;
 				} else {
-					this.values[0] = item;
+					this.items[0] = item;
 					this.head = 0;
 					this.tail = gapSize;
 					return 1;
 				}
 			} else {
 				if (index == 0) {
-					if (head != 0) {
-						this.values[0] = this.values[head];
-						this.values[head] = null;
+					if (head != gapSize) {
+						this.items[gapSize] = this.items[head];
+						this.items[head] = null;
 					}
 					this.head = 0;
 					this.tail = gapSize;
 					return 0;
 				} else {
-					if (head != gapSize) {
-						this.values[gapSize] = this.values[head];
-						this.values[head] = null;
+					if (head != 0) {
+						this.items[0] = this.items[head];
+						this.items[head] = null;
 					}
 					this.head = 0;
 					this.tail = gapSize;
@@ -344,30 +487,34 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			}
 		}
 
-		final T[] values = this.values;
+		final T[] items = this.items;
 		final int head = this.head;
 		final int tail = this.tail;
-		final int newSize = Math.max(size + gapSize, values.length);
-		if (newSize == values.length) {
+		final int newSize = Math.max(size + gapSize, items.length);
+		if (newSize == items.length) {
 			// keep the same array because there is enough room to form the gap.
 			if (head <= tail) {
 				if (head != 0) {
 					if (index > 0)
-						System.arraycopy(values, head, values, 0, index);
+						System.arraycopy(items, head, items, 0, index);
 					this.head = 0;
 				}
-				System.arraycopy(values, head + index, values, index + gapSize, size - this.head - index);
+				System.arraycopy(items, head + index, items, index + gapSize, size - this.head - index);
 				this.tail += gapSize - (head - this.head);
 				return index;
 			} else {
-				if (head + index < values.length) {
-					if (index > 0)
-						System.arraycopy(values, head, values, head - gapSize, index);
-					this.head -= gapSize;
+				if (head + index <= items.length) {
+					if(head - gapSize >= 0) {
+						System.arraycopy(items, head, items, head - gapSize, index);
+						this.head -= gapSize;
+					} else {
+						System.arraycopy(items, head + index, items, head + index + gapSize, items.length - (head + index + gapSize));
+						this.tail += gapSize;
+					}
 					return this.head + index;
 				} else {
-					int wrapped = head + index - values.length;
-					System.arraycopy(values, wrapped, values, wrapped + gapSize, tail + 1 - wrapped);
+					int wrapped = head + index - items.length;
+					System.arraycopy(items, wrapped, items, wrapped + gapSize, tail + 1 - wrapped);
 					this.tail += gapSize;
 					return wrapped;
 				}
@@ -378,31 +525,48 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			if (head <= tail) {
 				// Continuous
 				if (index > 0)
-					System.arraycopy(values, head, newArray, 0, index);
+					System.arraycopy(items, head, newArray, 0, index);
 				this.head = 0;
-				System.arraycopy(values, head + index, newArray, index + gapSize, size - head - index);
+				System.arraycopy(items, head + index, newArray, index + gapSize, size - head - index);
 				this.tail += gapSize;
 			} else {
 				// Wrapped
-				final int headPart = values.length - head;
+				final int headPart = items.length - head;
 				if (index < headPart) {
 					if (index > 0)
-						System.arraycopy(values, head, newArray, 0, index);
+						System.arraycopy(items, head, newArray, 0, index);
 					this.head = 0;
-					System.arraycopy(values, head + index, newArray, index + gapSize, headPart - index);
-					this.tail = size + gapSize - 1;
-				} else {
-					System.arraycopy(values, head, newArray, 0, headPart);
-					int wrapped = index - headPart; // same as: head + index - values.length;
-					System.arraycopy(values, 0, newArray, headPart, wrapped);
-					System.arraycopy(values, wrapped, newArray, headPart + wrapped + gapSize, tail + 1 - wrapped);
-					this.tail = size + gapSize - 1;
-					index = headPart + wrapped;
-				}
-			}
-			this.values = newArray;
+					System.arraycopy(items, head + index, newArray, index + gapSize, headPart - index);
+					System.arraycopy(items, 0, newArray, index + gapSize + headPart - index, tail + 1);
+                } else {
+					System.arraycopy(items, head, newArray, 0, headPart);
+					int wrapped = index - headPart; // same as: head + index - items.length;
+					System.arraycopy(items, 0, newArray, headPart, wrapped);
+					System.arraycopy(items, wrapped, newArray, headPart + wrapped + gapSize, tail + 1 - wrapped);
+                }
+                this.tail = size + gapSize - 1;
+            }
+			this.items = newArray;
 			return index;
 		}
+	}
+
+	/**
+	 * Inserts the specified number of items at the specified index. The new items will have values equal to the values at those
+	 * indices before the insertion, and the previous values will be pushed to after the duplicated range.
+	 * @param index the first index to duplicate
+	 * @param count how many items to duplicate
+	 */
+	public boolean duplicateRange(int index, int count) {
+		int place = ensureGap(index + count, count);
+		if(place >= head + index + count){
+			System.arraycopy(items, head + index, items, place, count);
+		} else {
+			System.arraycopy(items, 0, items, count - place, place);
+			System.arraycopy(items, head, items, place, count - place);
+		}
+		size += count;
+		return count > 0;
 	}
 
 	/**
@@ -418,12 +582,12 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			throw new NoSuchElementException("ObjectDeque is empty.");
 		}
 
-		final T[] values = this.values;
+		final T[] items = this.items;
 
-		final T result = values[head];
-		values[head] = null;
+		final T result = items[head];
+		items[head] = null;
 		head++;
-		if (head == values.length) {
+		if (head == items.length) {
 			head = 0;
 		}
 		if(--size == 0) tail = head;
@@ -445,13 +609,13 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			throw new NoSuchElementException("ObjectDeque is empty.");
 		}
 
-		final T[] values = this.values;
+		final T[] items = this.items;
 		int tail = this.tail;
-		final T result = values[tail];
-		values[tail] = null;
+		final T result = items[tail];
+		items[tail] = null;
 
 		if (tail == 0) {
-			tail = values.length - 1;
+			tail = items.length - 1;
 		} else {
 			--tail;
 		}
@@ -461,6 +625,19 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		modCount++;
 
 		return result;
+	}
+
+	/**
+	 * Gets a new ObjectDeque (which is both List and Deque) that has had its order reversed. Doesn't create a view;
+	 * this does actually copy the ObjectDeque. Consider using {@link #descendingIterator()} to get a reverse-order
+	 * Iterator over this collection. This runs in O(n) time, and iterates over this deque once (in descending order)
+	 * to add all items to a new ObjectDeque using {@link #addAll(Iterator)}.
+	 * @return a new ObjectDeque that copies this in reverse order
+	 */
+	public ObjectDeque<T> reversed() {
+		ObjectDeque<T> od = new ObjectDeque<>(size);
+		od.addAll(descendingIterator());
+		return od;
 	}
 
 	/**
@@ -481,9 +658,8 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 */
 	@Override
 	public boolean offerFirst ( T t) {
-		int oldSize = size;
 		addFirst(t);
-		return oldSize != size;
+		return true;
 	}
 
 	/**
@@ -504,9 +680,8 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 */
 	@Override
 	public boolean offerLast ( T t) {
-		int oldSize = size;
 		addLast(t);
-		return oldSize != size;
+		return true;
 	}
 
 	/**
@@ -524,12 +699,12 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			return defaultValue;
 		}
 
-		final T[] values = this.values;
+		final T[] items = this.items;
 
-		final T result = values[head];
-		values[head] = null;
+		final T result = items[head];
+		items[head] = null;
 		head++;
-		if (head == values.length) {
+		if (head == items.length) {
 			head = 0;
 		}
 		if(--size == 0) tail = head;
@@ -552,13 +727,13 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			return defaultValue;
 		}
 
-		final T[] values = this.values;
+		final T[] items = this.items;
 		int tail = this.tail;
-		final T result = values[tail];
-		values[tail] = null;
+		final T result = items[tail];
+		items[tail] = null;
 
 		if (tail == 0) {
-			tail = values.length - 1;
+			tail = items.length - 1;
 		} else {
 			--tail;
 		}
@@ -609,7 +784,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			// Underflow
 			return defaultValue;
 		}
-		return values[head];
+		return items[head];
 	}
 
 	/**
@@ -624,7 +799,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			// Underflow
 			return defaultValue;
 		}
-		return values[tail];
+		return items[tail];
 	}
 
 	/**
@@ -694,10 +869,24 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 *                                  element prevents it from being added to this deque
 	 */
 	@Override
-	public boolean add ( T t) {
-		int oldSize = size;
+	public boolean add (T t) {
 		addLast(t);
-		return oldSize != size;
+		return true;
+	}
+
+	public boolean add(T item0, T item1) {
+		addLast(item0, item1);
+		return true;
+	}
+
+	public boolean add(T item0, T item1, T item2) {
+		addLast(item0, item1, item2);
+		return true;
+	}
+
+	public boolean add(T item0, T item1, T item2, T item3) {
+		addLast(item0, item1, item2, item3);
+		return true;
 	}
 
 	/**
@@ -710,7 +899,47 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 */
 	@Override
 	public void add (int index, T item) {
-		insert(index, item);
+		if(index <= 0)
+			addFirst(item);
+		else if(index >= size)
+			addLast(item);
+		else {
+			T[] items = this.items;
+
+			if (++size > items.length) {
+				resize(items.length << 1);
+				items = this.items;
+			}
+
+			if(head <= tail) {
+				index += head;
+				if(index >= items.length) index -= items.length;
+				int after = index + 1;
+				if(after >= items.length) after = 0;
+
+				System.arraycopy(items, index, items, after, head + size - index - 1);
+				items[index] = item;
+				tail = head + size - 1;
+				if (tail >= items.length) {
+					tail = 0;
+				}
+			} else {
+				if (head + index < items.length) {
+					// backward shift
+					System.arraycopy(items, head, items, head - 1, index);
+					items[head - 1 + index] = item;
+					head--;
+				}
+				else {
+					// forward shift
+					index = head + index - items.length;
+					System.arraycopy(items, index, items, index + 1, tail - index + 1);
+					items[index] = item;
+					tail++;
+				}
+			}
+			modCount++;
+		}
 	}
 
 	/**
@@ -722,48 +951,8 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 * @return true if this was modified, which should always happen
 	 */
 	public boolean insert (int index, T item) {
-		int oldSize = size;
-		if(index <= 0)
-			addFirst(item);
-		else if(index >= oldSize)
-			addLast(item);
-		else { T[] values = this.values;
-
-			if (++size > values.length) {
-				resize(values.length << 1);
-				values = this.values;
-			}
-
-			if(head <= tail) {
-				index += head;
-				if(index >= values.length) index -= values.length;
-				int after = index + 1;
-				if(after >= values.length) after = 0;
-
-				System.arraycopy(values, index, values, after, head + size - index - 1);
-				values[index] = item;
-				tail = head + size - 1;
-				if (tail >= values.length) {
-					tail = 0;
-				}
-			} else {
-				if (head + index < values.length) {
-					// backward shift
-					System.arraycopy(values, head, values, head - 1, index);
-					values[head - 1 + index] = item;
-					head--;
-				}
-				else {
-					// forward shift
-					index = head + index - values.length;
-					System.arraycopy(values, index, values, index + 1, tail - index + 1);
-					values[index] = item;
-					tail++;
-				}
-			}
-			modCount++;
-		}
-		return oldSize != size;
+		add(index, item);
+		return true;
 	}
 
 	/**
@@ -789,9 +978,8 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 */
 	@Override
 	public boolean offer ( T t) {
-		int oldSize = size;
 		addLast(t);
-		return oldSize != size;
+		return true;
 	}
 
 	/**
@@ -888,16 +1076,17 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		ensureCapacity(Math.max(cs, oldSize));
 		if(c == this) {
 			if(head <= tail) {
-				if (tail + 1 < values.length)
-					System.arraycopy(values, head, values, tail + 1, Math.min(size, values.length - tail - 1));
-				if (values.length - tail - 1 < size)
-					System.arraycopy(values, head + values.length - tail - 1, values, 0, size - (values.length - tail - 1));
+				if (tail + 1 < items.length)
+					System.arraycopy(items, head, items, tail + 1, Math.min(size, items.length - tail - 1));
+				if (items.length - tail - 1 < size)
+					System.arraycopy(items, head + items.length - tail - 1, items, 0, size - (items.length - tail - 1));
 			} else {
-				System.arraycopy(values, head, values, tail + 1, values.length - head);
-				System.arraycopy(values, 0, values, tail + 1 + values.length - head, tail + 1);
+				System.arraycopy(items, head, items, tail + 1, items.length - head);
+				System.arraycopy(items, 0, items, tail + 1 + items.length - head, tail + 1);
 			}
 			tail += oldSize;
 			size += oldSize;
+			modCount += oldSize;
 		} else {
 			for (T t : c) {
 				addLast(t);
@@ -929,25 +1118,29 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		if(c == this) {
 			if(head <= tail) {
 				if (head >= oldSize)
-					System.arraycopy(values, head, values, head - oldSize, oldSize);
+					System.arraycopy(items, head, items, head - oldSize, oldSize);
 				else if (head > 0) {
-					System.arraycopy(values, tail + 1 - head, values, 0, head);
-					System.arraycopy(values, head, values, values.length - (oldSize - head), oldSize - head);
+					System.arraycopy(items, tail + 1 - head, items, 0, head);
+					System.arraycopy(items, head, items, items.length - (oldSize - head), oldSize - head);
 				} else {
-					System.arraycopy(values, head, values, values.length - oldSize, oldSize);
+					System.arraycopy(items, head, items, items.length - oldSize, oldSize);
 				}
 			} else {
-				System.arraycopy(values, head, values, head - oldSize, values.length - head);
-				System.arraycopy(values, 0, values, values.length - oldSize, tail + 1);
+				System.arraycopy(items, head, items, head - oldSize, items.length - head);
+				System.arraycopy(items, 0, items, items.length - oldSize, tail + 1);
 			}
 			head -= oldSize;
-			if(head < 0) head += values.length;
+			if(head < 0) head += items.length;
 			size += oldSize;
+			modCount += oldSize;
 		} else {
-			int idx = 0;
-			for (T t : c) {
-				insert(idx++, t);
+			int i = ensureGap(0, cs);
+			for(T t : c){
+				items[i++] = t;
+				if(i == items.length) i = 0;
 			}
+			size += cs;
+			modCount += cs;
 		}
 		return oldSize != size;
 	}
@@ -982,14 +1175,15 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		else {
 			final int cs = c.size();
 			if(c.isEmpty()) return false;
-			int place = ensureGap(index, cs); T[] values = this.values;
+			int place = ensureGap(index, cs);
+			T[] items = this.items;
 			if(c == this){
-				System.arraycopy(values, head, values, place, place - head);
-				System.arraycopy(values, place + cs, values, place + place - head, tail + 1 - place - cs);
+				System.arraycopy(items, head, items, place, place - head);
+				System.arraycopy(items, place + cs, items, place + place - head, tail + 1 - place - cs);
 			} else {
 				for (T item : c) {
-					values[place++] = item;
-					if (place >= values.length) place -= values.length;
+					items[place++] = item;
+					if (place >= items.length) place -= items.length;
 				}
 			}
 			size += cs;
@@ -1019,12 +1213,31 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		final int cs = Math.min(array.length - offset, length);
 		if(cs <= 0) return false;
 		int place = ensureGap(size, cs);
-		System.arraycopy(array, offset, this.values, place, cs);
+		System.arraycopy(array, offset, this.items, place, cs);
 		size += cs;
 		modCount += cs;
 		return true;
 	}
 
+	boolean addAll (Iterator<? extends T> it) {
+		return addAllLast(it);
+	}
+
+	boolean addAllLast (Iterator<? extends T> it) {
+		int oldSize = size();
+		while (it.hasNext()) {
+			add(it.next());
+		}
+		return oldSize != size();
+	}
+
+	boolean addAllFirst (Iterator<? extends T> it) {
+		int oldSize = size();
+		while (it.hasNext()) {
+			addFirst(it.next());
+		}
+		return oldSize != size();
+	}
 
 	/**
 	 * An alias for {@link #addAll(Object[])}.
@@ -1070,7 +1283,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		final int cs = Math.min(array.length - offset, length);
 		if(cs <= 0) return false;
 		int place = ensureGap(0, cs);
-		System.arraycopy(array, offset, this.values, place, cs);
+		System.arraycopy(array, offset, this.items, place, cs);
 		size += cs;
 		modCount += cs;
 		return true;
@@ -1132,7 +1345,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			final int cs = Math.min(array.length - offset, length);
 			if(cs <= 0) return false;
 			int place = ensureGap(index, cs);
-			System.arraycopy(array, offset, this.values, place, cs);
+			System.arraycopy(array, offset, this.items, place, cs);
 			size += cs;
 			modCount += cs;
 		}
@@ -1249,10 +1462,10 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	public Object[] toArray () {
 		Object[] next = new Object[size];
 		if (head <= tail) {
-			System.arraycopy(values, head, next, 0, tail - head + 1);
+			System.arraycopy(items, head, next, 0, tail - head + 1);
 		} else {
-			System.arraycopy(values, head, next, 0, size - head);
-			System.arraycopy(values, 0, next, size - head, tail + 1);
+			System.arraycopy(items, head, next, 0, size - head);
+			System.arraycopy(items, 0, next, size - head, tail + 1);
 		}
 		return next;
 	}
@@ -1289,7 +1502,8 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		int oldSize = size;
 		if (a.length < oldSize) {
 			a = Arrays.copyOf(a, oldSize);
-		} Object[] result = a;
+		}
+		Object[] result = a;
 		Iterator<T> it = iterator();
 		for (int i = 0; i < oldSize; ++i) {
 			result[i] = it.next();
@@ -1580,19 +1794,19 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		if (oldSize > newSize) {
 			if(head <= tail) {
 				// only removing from tail, near the end, toward head, near the start
-				Arrays.fill(values, head + newSize, tail + 1, null);
+				Arrays.fill(items, head + newSize, tail + 1, null);
 				tail -= oldSize - newSize;
 				size = newSize;
-			} else if(head + newSize < values.length) {
+			} else if(head + newSize < items.length) {
 				// tail is near the start, but we have to remove elements through the start and into the back
-				Arrays.fill(values, 0, tail + 1, null);
+				Arrays.fill(items, 0, tail + 1, null);
 				tail = head + newSize;
-				Arrays.fill(values, tail, values.length, null);
+				Arrays.fill(items, tail, items.length, null);
 				size = newSize;
 			} else {
 				// tail is near the start, but we only have to remove some elements between tail and the start
 				final int newTail = tail - (oldSize - newSize);
-				Arrays.fill(values, newTail + 1, tail + 1, null);
+				Arrays.fill(items, newTail + 1, tail + 1, null);
 				tail = newTail;
 				size = newSize;
 			}
@@ -1612,17 +1826,17 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		}
 		int oldSize = size;
 		if (oldSize > newSize) {
-			if(head <= tail || head + oldSize - newSize < values.length) {
+			if(head <= tail || head + oldSize - newSize < items.length) {
 				// only removing from head to head + newSize, which is contiguous
-				Arrays.fill(values, head, head + oldSize - newSize, null);
+				Arrays.fill(items, head, head + oldSize - newSize, null);
 				head += oldSize - newSize;
-				if(head >= values.length) head -= values.length;
+				if(head >= items.length) head -= items.length;
 				size = newSize;
 			} else {
 				// tail is near the start, and we are removing from head to the end and then part near start
-				Arrays.fill(values, head, values.length, null);
+				Arrays.fill(items, head, items.length, null);
 				head = tail + 1 - newSize;
-				Arrays.fill(values, 0, head, null);
+				Arrays.fill(items, 0, head, null);
 				size = newSize;
 			}
 			modCount += oldSize - newSize;
@@ -1660,33 +1874,33 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			if(head <= tail) {
 				// tail is near the end, head is near the start
 				int tailMinusTo = tail + 1 - (head + toIndex);
-				if(tailMinusTo < 0) tailMinusTo += values.length;
-				System.arraycopy(values, head + toIndex, values, head + fromIndex, tailMinusTo);
-				Arrays.fill(values, tail + 1 - removedCount, tail + 1, null);
+				if(tailMinusTo < 0) tailMinusTo += items.length;
+				System.arraycopy(items, head + toIndex, items, head + fromIndex, tailMinusTo);
+				Arrays.fill(items, tail + 1 - removedCount, tail + 1, null);
 				tail -= removedCount;
 				size -= removedCount;
-			} else if(head + toIndex < values.length) {
+			} else if(head + toIndex < items.length) {
 				// head is at the end, and tail wraps around, but we are only removing items between head and end
 				int headPlusFrom = head + fromIndex;
-				if(headPlusFrom >= values.length) headPlusFrom -= values.length;
-				System.arraycopy(values, head, values, headPlusFrom, removedCount);
-				Arrays.fill(values, head, head + removedCount, null);
+				if(headPlusFrom >= items.length) headPlusFrom -= items.length;
+				System.arraycopy(items, head, items, headPlusFrom, removedCount);
+				Arrays.fill(items, head, head + removedCount, null);
 				head += removedCount;
 				size -= removedCount;
-			} else if(head + toIndex - values.length - removedCount >= 0) {
+			} else if(head + toIndex - items.length - removedCount >= 0) {
 				// head is at the end, and tail wraps around, but we are only removing items between start and tail
-				System.arraycopy(values, head + toIndex - values.length, values, head + fromIndex - values.length, tail + 1 - (head + toIndex - values.length));
-				Arrays.fill(values, tail + 1 - removedCount, tail + 1, null);
+				System.arraycopy(items, head + toIndex - items.length, items, head + fromIndex - items.length, tail + 1 - (head + toIndex - items.length));
+				Arrays.fill(items, tail + 1 - removedCount, tail + 1, null);
 				tail -= removedCount;
 				size -= removedCount;
 			} else {
 				// head is at the end, tail wraps around, and we must remove items that wrap from end to start
-				System.arraycopy(values, head, values, values.length - fromIndex, fromIndex);
-				System.arraycopy(values, head + toIndex - values.length, values, 0, tail + 1 - (head + toIndex - values.length));
-				Arrays.fill(values, head, values.length - fromIndex, null);
-				Arrays.fill(values, tail + 1 - (head + toIndex - values.length), tail + 1, null);
-				tail -= (head + toIndex - values.length);
-				head = (values.length - fromIndex);
+				System.arraycopy(items, head, items, items.length - fromIndex, fromIndex);
+				System.arraycopy(items, head + toIndex - items.length, items, 0, tail + 1 - (head + toIndex - items.length));
+				Arrays.fill(items, head, items.length - fromIndex, null);
+				Arrays.fill(items, tail + 1 - (head + toIndex - items.length), tail + 1, null);
+				tail -= (head + toIndex - items.length);
+				head = (items.length - fromIndex);
 				size -= removedCount;
 			}
 			modCount += removedCount;
@@ -1701,7 +1915,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 * @return An index of the first occurrence of value in the deque or -1 if no such value exists
 	 */
 	@Override
-	public int indexOf ( Object value) {
+	public int indexOf (Object value) {
 		return indexOf(value, false);
 	}
 
@@ -1714,7 +1928,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 * @param fromIndex the initial index to check (zero-indexed, starts at the head, inclusive)
 	 * @return An index of first occurrence of value at or after fromIndex in the deque, or -1 if no such value exists
 	 */
-	public int indexOf ( Object value, int fromIndex) {
+	public int indexOf (Object value, int fromIndex) {
 		return indexOf(value, fromIndex, false);
 	}
 
@@ -1726,7 +1940,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
 	 * @return An index of first occurrence of value in the deque or -1 if no such value exists
 	 */
-	public int indexOf ( Object value, boolean identity) {
+	public int indexOf (Object value, boolean identity) {
 		return indexOf(value, 0, identity);
 	}
 
@@ -1743,37 +1957,38 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 */
 	public int indexOf ( Object value, int fromIndex, boolean identity) {
 		if (size == 0)
-			return -1; T[] values = this.values;
+			return -1;
+		T[] items = this.items;
 		final int head = this.head, tail = this.tail;
 		int i = head + Math.min(Math.max(fromIndex, 0), size - 1);
-		if (i >= values.length)
-			i -= values.length;
+		if (i >= items.length)
+			i -= items.length;
 
 		if (identity || value == null) {
 			if (head <= tail) {
 				for (; i <= tail; i++)
-					if (values[i] == value)
+					if (items[i] == value)
 						return i - head;
 			} else {
-				for (int n = values.length; i < n; i++)
-					if (values[i] == value)
+				for (int n = items.length; i < n; i++)
+					if (items[i] == value)
 						return i - head;
 				for (i = 0; i <= tail; i++)
-					if (values[i] == value)
-						return i + values.length - head;
+					if (items[i] == value)
+						return i + items.length - head;
 			}
 		} else {
 			if (head <= tail) {
 				for (; i <= tail; i++)
-					if (value.equals(values[i]))
+					if (value.equals(items[i]))
 						return i - head;
 			} else {
-				for (int n = values.length; i < n; i++)
-					if (value.equals(values[i]))
+				for (int n = items.length; i < n; i++)
+					if (value.equals(items[i]))
 						return i - head;
 				for (i = 0; i <= tail; i++)
-					if (value.equals(values[i]))
-						return i + values.length - head;
+					if (value.equals(items[i]))
+						return i + items.length - head;
 			}
 		}
 		return -1;
@@ -1829,38 +2044,39 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 */
 	public int lastIndexOf ( Object value, int fromIndex, boolean identity) {
 		if (size == 0)
-			return -1; T[] values = this.values;
+			return -1;
+		T[] items = this.items;
 		final int head = this.head, tail = this.tail;
 		int i = head + Math.min(Math.max(fromIndex, 0), size - 1);
-		if (i >= values.length)
-			i -= values.length;
+		if (i >= items.length)
+			i -= items.length;
 		else if (i < 0)
-			i += values.length;
+			i += items.length;
 
 		if (identity || value == null) {
 			if (head <= tail) {
 				for (; i >= head; i--)
-					if (values[i] == value)
+					if (items[i] == value)
 						return i - head;
 			} else {
 				for (; i >= 0; i--)
-					if (values[i] == value)
-						return i + values.length - head;
-				for (i = values.length - 1; i >= head; i--)
-					if (values[i] == value)
+					if (items[i] == value)
+						return i + items.length - head;
+				for (i = items.length - 1; i >= head; i--)
+					if (items[i] == value)
 						return i - head;
 			}
 		} else {
 			if (head <= tail) {
 				for (; i >= head; i--)
-					if (value.equals(values[i]))
+					if (value.equals(items[i]))
 						return i - head;
 			} else {
 				for (; i >= 0; i--)
-					if (value.equals(values[i]))
-						return i + values.length - head;
-				for (i = values.length - 1; i >= head; i--)
-					if (value.equals(values[i]))
+					if (value.equals(items[i]))
+						return i + items.length - head;
+				for (i = items.length - 1; i >= head; i--)
+					if (value.equals(items[i]))
 						return i - head;
 			}
 		}
@@ -1914,7 +2130,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
 	 * @return true if value was found and removed, false otherwise
 	 */
-	public boolean removeValue ( Object value, boolean identity) {
+	public boolean removeValue (Object value, boolean identity) {
 		int index = indexOf(value, identity);
 		if (index == -1)
 			return false;
@@ -1928,7 +2144,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
 	 * @return true if value was found and removed, false otherwise
 	 */
-	public boolean removeLastValue ( Object value, boolean identity) {
+	public boolean removeLastValue (Object value, boolean identity) {
 		int index = lastIndexOf(value, identity);
 		if (index == -1)
 			return false;
@@ -1966,29 +2182,30 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		if (index <= 0)
 			return removeFirst();
 		if (index >= size)
-			return removeLast(); T[] values = this.values;
+			return removeLast();
+		T[] items = this.items;
 		int head = this.head, tail = this.tail;
 		index += head;
 		T value;
 		if (head <= tail) { // index is between head and tail.
-			value = values[index];
-			System.arraycopy(values, index + 1, values, index, tail - index);
-			values[this.tail] = null;
+			value = items[index];
+			System.arraycopy(items, index + 1, items, index, tail - index);
+			items[this.tail] = null;
 			this.tail--;
-			if(this.tail == -1) this.tail = values.length - 1;
-		} else if (index >= values.length) { // index is between 0 and tail.
-			index -= values.length;
-			value = values[index];
-			System.arraycopy(values, index + 1, values, index, tail - index);
-			values[this.tail] = null;
+			if(this.tail == -1) this.tail = items.length - 1;
+		} else if (index >= items.length) { // index is between 0 and tail.
+			index -= items.length;
+			value = items[index];
+			System.arraycopy(items, index + 1, items, index, tail - index);
+			items[this.tail] = null;
 			this.tail--;
-			if(this.tail == -1) this.tail = values.length - 1;
+			if(this.tail == -1) this.tail = items.length - 1;
 		} else { // index is between head and values.length.
-			value = values[index];
-			System.arraycopy(values, head, values, head + 1, index - head);
-			values[this.head] = null;
+			value = items[index];
+			System.arraycopy(items, head, items, head + 1, index - head);
+			items[this.head] = null;
 			this.head++;
-			if (this.head == values.length) {
+			if (this.head == items.length) {
 				this.head = 0;
 			}
 		}
@@ -2034,29 +2251,30 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			return pollFirst();
 		if (index >= size)
 			return pollLast();
-		// No need to check for size to be 0 because the above checks will already do that, and one will run. T[] values = this.values;
+		// No need to check for size to be 0 because the above checks will already do that, and one will run.
+		T[] items = this.items;
 		int head = this.head, tail = this.tail;
 		index += head;
 		T value;
 		if (head <= tail) { // index is between head and tail.
-			value = values[index];
-			System.arraycopy(values, index + 1, values, index, tail - index);
-			values[this.tail] = null;
+			value = items[index];
+			System.arraycopy(items, index + 1, items, index, tail - index);
+			items[this.tail] = null;
 			this.tail--;
-			if(this.tail == -1) this.tail = values.length - 1;
-		} else if (index >= values.length) { // index is between 0 and tail.
-			index -= values.length;
-			value = values[index];
-			System.arraycopy(values, index + 1, values, index, tail - index);
-			values[this.tail] = null;
+			if(this.tail == -1) this.tail = items.length - 1;
+		} else if (index >= items.length) { // index is between 0 and tail.
+			index -= items.length;
+			value = items[index];
+			System.arraycopy(items, index + 1, items, index, tail - index);
+			items[this.tail] = null;
 			this.tail--;
-			if(this.tail == -1) this.tail = values.length - 1;
+			if(this.tail == -1) this.tail = items.length - 1;
 		} else { // index is between head and values.length.
-			value = values[index];
-			System.arraycopy(values, head, values, head + 1, index - head);
-			values[this.head] = null;
+			value = items[index];
+			System.arraycopy(items, head, items, head + 1, index - head);
+			items[this.head] = null;
 			this.head++;
-			if (this.head == values.length) {
+			if (this.head == items.length) {
 				this.head = 0;
 			}
 		}
@@ -2092,7 +2310,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			// Underflow
 			throw new NoSuchElementException("ObjectDeque is empty.");
 		}
-		return values[head];
+		return items[head];
 	}
 
 	/**
@@ -2106,7 +2324,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			// Underflow
 			throw new NoSuchElementException("ObjectDeque is empty.");
 		}
-		return values[tail];
+		return items[tail];
 	}
 
 	/**
@@ -2128,12 +2346,12 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			return getFirst();
 		if (index >= size - 1)
 			return getLast();
-		final T[] values = this.values;
+		final T[] items = this.items;
 
 		int i = head + index;
-		if (i >= values.length)
-			i -= values.length;
-		return values[i];
+		if (i >= items.length)
+			i -= items.length;
+		return items[i];
 	}
 
 	/**
@@ -2154,12 +2372,12 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			return peekFirst();
 		if (index >= size - 1)
 			return peekLast();
-		final T[] values = this.values;
+		final T[] items = this.items;
 
 		int i = head + index;
-		if (i >= values.length)
-			i -= values.length;
-		return values[i];
+		if (i >= items.length)
+			i -= items.length;
+		return items[i];
 	}
 
 	/**
@@ -2185,13 +2403,13 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			addFirst(item);
 			return defaultValue;
 		}
-		final T[] values = this.values;
+		final T[] items = this.items;
 
 		int i = head + Math.max(Math.min(index, size - 1), 0);
-		if (i >= values.length)
-			i -= values.length;
-		T old = values[i];
-		values[i] = item;
+		if (i >= items.length)
+			i -= items.length;
+		T old = items[i];
+		items[i] = item;
 //		modCount++; // apparently this isn't a structural modification?
 		return old;
 	}
@@ -2204,19 +2422,19 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	public void clear () {
 		if (size == 0)
 			return;
-		final T[] values = this.values;
+		final T[] items = this.items;
 		final int head = this.head;
 		final int tail = this.tail;
 
 		if (head <= tail) {
 			// Continuous
-			Arrays.fill(values, head, tail + 1, null);
+			Arrays.fill(items, head, tail + 1, null);
 		} else if(tail == 0){
-			Arrays.fill(values, head, values.length, null);
+			Arrays.fill(items, head, items.length, null);
 		} else {
 			// Wrapped
-			Arrays.fill(values, head, values.length, null);
-			Arrays.fill(values, 0, tail + 1, null);
+			Arrays.fill(items, head, items.length, null);
+			Arrays.fill(items, 0, tail + 1, null);
 		}
 		this.head = 0;
 		this.tail = 0;
@@ -2271,6 +2489,34 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			return descendingIterator1;
 		}
 		descendingIterator2.reset();
+		descendingIterator2.valid = true;
+		descendingIterator1.valid = false;
+		return descendingIterator2;
+	}
+
+	/**
+	 * Returns an iterator over the elements in this deque in reverse
+	 * sequential order. The elements will be returned in order from
+	 * {@code index} backwards to first (head).
+	 * <br>
+	 * Reuses one of two descending iterators for this deque. For nested or multithreaded
+	 * iteration, use {@link ObjectDequeIterator#ObjectDequeIterator(ObjectDeque, boolean)}.
+	 *
+	 * @param index the index to start iterating from in this deque
+	 * @return an iterator over the elements in this deque in reverse sequence
+	 */
+	public ObjectDequeIterator<T> descendingIterator (int index) {
+		if (descendingIterator1 == null || descendingIterator2 == null) {
+			descendingIterator1 = new ObjectDequeIterator<>(this, index, true);
+			descendingIterator2 = new ObjectDequeIterator<>(this, index, true);
+		}
+		if (!descendingIterator1.valid) {
+			descendingIterator1.reset(index);
+			descendingIterator1.valid = true;
+			descendingIterator2.valid = false;
+			return descendingIterator1;
+		}
+		descendingIterator2.reset(index);
 		descendingIterator2.valid = true;
 		descendingIterator1.valid = false;
 		return descendingIterator2;
@@ -2339,13 +2585,13 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	@Override
 	public int hashCode () {
 		final int size = this.size;
-		final T[] values = this.values;
-		final int backingLength = values.length;
+		final T[] items = this.items;
+		final int backingLength = items.length;
 		int index = this.head;
 
 		int hash = size + 1;
 		for (int s = 0; s < size; s++) {
-			final T value = values[index];
+			final T value = items[index];
 
 			hash *= 29; // avoids LEA pessimization
 			if (value != null)
@@ -2430,19 +2676,19 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		if (second >= size)
 			throw new IndexOutOfBoundsException("second index can't be >= size: " + second + " >= " + size);
 		if(first == second) return;
-		final T[] values = this.values;
+		final T[] items = this.items;
 
 		int f = head + first;
-		if (f >= values.length)
-			f -= values.length;
+		if (f >= items.length)
+			f -= items.length;
 
 		int s = head + second;
-		if (s >= values.length)
-			s -= values.length;
+		if (s >= items.length)
+			s -= items.length;
 
-		T fv = values[f];
-		values[f] = values[s];
-		values[s] = fv;
+		T fv = items[f];
+		items[f] = items[s];
+		items[s] = fv;
 
 		//modCount += 2; // I don't think this is "structural"
 	}
@@ -2451,8 +2697,8 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 * Reverses this ObjectDeque in-place.
 	 */
 	public void reverse () {
-		final T[] values = this.values;
-		int f, s, len = values.length;
+		final T[] items = this.items;
+		int f, s, len = items.length;
 		T fv;
 		for (int n = size >> 1, b = 0, t = size - 1; b <= n && b != t; b++, t--) {
 			f = head + b;
@@ -2461,9 +2707,9 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			s = head + t;
 			if (s >= len)
 				s -= len;
-			fv = values[f];
-			values[f] = values[s];
-			values[s] = fv;
+			fv = items[f];
+			items[f] = items[s];
+			items[s] = fv;
 //			modCount += 2; // I don't think this is "structural"
 		}
 	}
@@ -2503,14 +2749,22 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 */
 	public void sort ( Comparator<? super T> comparator) {
 		if (head <= tail) {
-			Arrays.sort(values, head, tail+1, comparator);
+			Arrays.sort(items, head, tail+1, comparator);
 		} else {
-			System.arraycopy(values, head, values, tail + 1, values.length - head);
-			Arrays.sort(values, 0, tail + 1 + values.length - head, comparator);
-			tail += values.length - head;
+			System.arraycopy(items, head, items, tail + 1, items.length - head);
+			Arrays.sort(items, 0, tail + 1 + items.length - head, comparator);
+			tail += items.length - head;
 			head = 0;
 		}
-//		modCount += size; // I don't think this is "structural"
+	}
+
+	public void sort (int from, int to, Comparator<? super T> comparator) {
+		if (head <= tail) {
+			Arrays.sort(items, head + from, head + to, comparator);
+		} else {
+			resize(items.length);
+			Arrays.sort(items, from, to, comparator);
+		}
 	}
 
 	/**
@@ -2789,7 +3043,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 	 * @return a new deque containing nothing
 	 */
 	public static <T> ObjectDeque<T> with () {
-		return new ObjectDeque<>(0);
+		return new ObjectDeque<>(1);
 	}
 
 	/**

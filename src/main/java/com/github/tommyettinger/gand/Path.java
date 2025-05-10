@@ -131,7 +131,7 @@ public class Path<V> extends ObjectDeque<V> implements Json.Serializable {
         if (size == 0) {
             return "[|length=" + length + "]";
         }
-        final V[] values = this.values;
+        final V[] values = this.items;
         final int head = this.head;
         final int tail = this.tail;
 
@@ -150,7 +150,7 @@ public class Path<V> extends ObjectDeque<V> implements Json.Serializable {
     public String toString (String separator) {
         if (size == 0)
             return "|length=" + length;
-        final V[] values = this.values;
+        final V[] values = this.items;
         final int head = this.head;
         final int tail = this.tail;
 
