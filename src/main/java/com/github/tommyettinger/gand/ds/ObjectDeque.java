@@ -444,7 +444,8 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 			return oldSize;
 		}
 		if (size == 0) {
-			this.head = this.tail = 0;
+			this.head = 0;
+			this.tail = gapSize - 1;
 			if (items.length < gapSize) {
 				//noinspection unchecked
 				this.items = (T[]) new Object[gapSize];
@@ -590,7 +591,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		if (head == items.length) {
 			head = 0;
 		}
-		if(--size == 0) tail = head;
+		if(--size <= 1) tail = head;
 		modCount++;
 
 		return result;
@@ -619,11 +620,11 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		} else {
 			--tail;
 		}
+		if(--size <= 1) tail = head;
+
 		this.tail = tail;
 
-		if(--size == 0) head = tail;
 		modCount++;
-
 		return result;
 	}
 
@@ -707,7 +708,7 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		if (head == items.length) {
 			head = 0;
 		}
-		if(--size == 0) tail = head;
+		if(--size <= 1) tail = head;
 		modCount++;
 
 		return result;
@@ -737,9 +738,10 @@ public class ObjectDeque<T> extends AbstractList<T> implements Deque<T>, List<T>
 		} else {
 			--tail;
 		}
+		if(--size <= 1) tail = head;
+
 		this.tail = tail;
 
-		if(--size == 0) head = tail;
 		modCount++;
 
 		return result;

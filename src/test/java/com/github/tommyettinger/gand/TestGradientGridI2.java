@@ -64,6 +64,7 @@ public class TestGradientGridI2 {
 
         gg.findPath(path, 10, 10, null, null, start, ObjectDeque.with(goal0, goal1));
 
+        System.out.println(gg.toString(false));
         char ch = '1';
         for(PointI2 c : path) {
             map[c.x][c.y] = ch++;
