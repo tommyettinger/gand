@@ -791,7 +791,7 @@ public class IntList implements IntCollection, Json.Serializable {
 	public static class IntListIterator implements IntIterator {
 		protected int index, latest = -1;
 		protected IntList list;
-		protected boolean valid = true;
+		public boolean valid = true;
 
 		public IntListIterator (IntList list) {
 			this.list = list;
