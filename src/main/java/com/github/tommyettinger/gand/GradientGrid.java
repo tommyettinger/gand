@@ -172,7 +172,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
     /**
      * The latest path that was obtained by calling findPath(). It will not contain the value passed as a starting
      * cell; only steps that require movement will be included, and so if the path has not been found or a valid
-     * path toward a goal is impossible, this ObjectDeque will be empty.
+     * path toward a goal is impossible, this Path will be empty.
      */
     public final Path<P> path = new Path<>();
 
@@ -550,8 +550,8 @@ public abstract class GradientGrid<P extends Point2<P>> {
     /**
      * Marks a specific cell in gradientMap as completely impossible to enter.
      *
-     * @param x
-     * @param y
+     * @param x horizontal position to mark as impossible to enter
+     * @param y vertical position to mark as impossible to enter
      */
     public void setOccupied(int x, int y) {
         if (!initialized || x < 0 || x >= width || y < 0 || y >= height) return;
@@ -561,8 +561,8 @@ public abstract class GradientGrid<P extends Point2<P>> {
     /**
      * Reverts a cell to the value stored in the original state of the level as known by physicalMap.
      *
-     * @param x
-     * @param y
+     * @param x horizontal position to reset
+     * @param y vertical position to reset
      */
     public void resetCell(int x, int y) {
         if (!initialized || x < 0 || x >= width || y < 0 || y >= height) return;
@@ -572,7 +572,7 @@ public abstract class GradientGrid<P extends Point2<P>> {
     /**
      * Reverts a cell to the value stored in the original state of the level as known by physicalMap.
      *
-     * @param pt
+     * @param pt position to reset
      */
     public void resetCell(Point2<?> pt) {
         if (!initialized || !isWithin(pt, width, height)) return;
@@ -1366,9 +1366,9 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * @param onlyPassable a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start        the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param targets      a Collection of Point2 that this will try to pathfind toward
-     * @return an ObjectDeque of P that will contain the locations of this creature as it goes toward a target. Copy of path.
+     * @return a Collection of P that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
-    public ObjectDeque<P> findPath(int length, Collection<? extends Point2<?>> impassable,
+    public Collection<P> findPath(int length, Collection<? extends Point2<?>> impassable,
                                    Collection<? extends Point2<?>> onlyPassable, Point2<?> start, Collection<? extends Point2<?>> targets) {
         return findPath(length, -1, impassable, onlyPassable, start, targets);
     }
@@ -1396,9 +1396,9 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * @param onlyPassable a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start        the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param targets      a Collection of Point2 that this will try to pathfind toward
-     * @return an ObjectDeque of P that will contain the locations of this creature as it goes toward a target. Copy of path.
+     * @return a Collection of P that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
-    public ObjectDeque<P> findPath(int length, int scanLimit, Collection<? extends Point2<?>> impassable,
+    public Collection<P> findPath(int length, int scanLimit, Collection<? extends Point2<?>> impassable,
                                    Collection<? extends Point2<?>> onlyPassable, Point2<?> start, Collection<? extends Point2<?>> targets) {
         return findPath(null, length, scanLimit, impassable, onlyPassable, start, targets);
     }
@@ -1417,21 +1417,21 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * that distance out from each goal, which can save processing time on maps where only a small part matters.
      * Generally, scanLimit should be significantly greater than length.
      * <br>
-     * This overload takes a buffer parameter, an ObjectDeque of P, that the results will be appended to. If the
-     * buffer is null, a new ObjectDeque will be made and appended to. This caches its result in a member field, path,
+     * This overload takes a buffer parameter, a Collection of P, that the results will be appended to. If the
+     * buffer is null, a new Collection will be made and appended to. This caches its result in a member field, path,
      * which can be fetched after finding a path and will change with each call to a pathfinding method. Any existing
      * contents of buffer will not affect the path field of this GradientGrid.
      *
-     * @param buffer       an existing ObjectDeque of P that will have the result appended to it (in-place); if null, this will make a new ObjectDeque
+     * @param buffer       an existing Collection of P that will have the result appended to it (in-place); if null, this will make a new ObjectDeque
      * @param length       the length of the path to calculate
      * @param scanLimit    how many cells away from a goal to actually process; negative to process whole map
      * @param impassable   a Collection of impassable Point2 positions that may change (not constant like walls); can be null
      * @param onlyPassable a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start        the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param targets      a Collection of Point2 that this will try to pathfind toward
-     * @return an ObjectDeque of P that will contain the locations of this creature as it goes toward a target. Copy of path.
+     * @return a Collection of P that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
-    public ObjectDeque<P> findPath(ObjectDeque<P> buffer, int length, int scanLimit, Collection<? extends Point2<?>> impassable,
+    public Collection<P> findPath(Collection<P> buffer, int length, int scanLimit, Collection<? extends Point2<?>> impassable,
                                    Collection<? extends Point2<?>> onlyPassable, Point2<?> start, Collection<? extends Point2<?>> targets) {
         path.clear();
         if (!initialized || length <= 0) {
@@ -1556,9 +1556,9 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * @param onlyPassable   a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start          the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param targets        a Collection of Point2 that this will try to pathfind toward
-     * @return an ObjectDeque of P that will contain the locations of this creature as it goes toward a target. Copy of path.
+     * @return a Collection of P that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
-    public ObjectDeque<P> findAttackPath(int moveLength, int preferredRange, Collection<? extends Point2<?>> impassable,
+    public Collection<P> findAttackPath(int moveLength, int preferredRange, Collection<? extends Point2<?>> impassable,
                                          boolean los,
                                          Collection<? extends Point2<?>> onlyPassable, Point2<?> start,
                                          Collection<? extends Point2<?>> targets) {
@@ -1587,9 +1587,9 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * @param onlyPassable      a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start             the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param targets           a Collection of Point2 that this will try to pathfind toward
-     * @return an ObjectDeque of P that will contain the locations of this creature as it goes toward a target. Copy of path.
+     * @return a Collection of P that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
-    public ObjectDeque<P> findAttackPath(int moveLength, int minPreferredRange, int maxPreferredRange, boolean los,
+    public Collection<P> findAttackPath(int moveLength, int minPreferredRange, int maxPreferredRange, boolean los,
                                          Collection<? extends Point2<?>> impassable, Collection<? extends Point2<?>> onlyPassable,
                                          Point2<?> start, Collection<? extends Point2<?>> targets) {
         return findAttackPath(null, moveLength, minPreferredRange, maxPreferredRange, los, impassable, onlyPassable, start, targets);
@@ -1604,19 +1604,19 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * the list would place the mover in a position shared by one of the positions in onlyPassable
      * (which is typically filled with friendly units that can be passed through in multi-tile-
      * movement scenarios), it will recalculate a move so that it does not pass into that cell. In most roguelikes where
-     * movement happens one cell at a time, moveLength should be 1; if it is higher then the path will prefer getting
+     * movement happens one cell at a time, moveLength should be 1; if it is higher, then the path will prefer getting
      * further away from the target (using up most or all of moveLength) while minPreferredRange and maxPreferredRange
      * can be satisfied. This does ensure a pathfinder with a ranged weapon stays far from melee range, but it may not
      * be the expected behavior because it will try to find the best path rather than the shortest it can attack from.
      * The keys in impassable should be the positions of enemies and obstacles that cannot be moved
      * through, and will be ignored if there is a goal overlapping one.
      * <br>
-     * This overload takes a buffer parameter, an ObjectDeque of P, that the results will be appended to. If the
-     * buffer is null, a new ObjectDeque will be made and appended to. This caches its result in a member field, path,
+     * This overload takes a buffer parameter, a Collection of P, that the results will be appended to. If the
+     * buffer is null, a new Collection will be made and appended to. This caches its result in a member field, path,
      * which can be fetched after finding a path and will change with each call to a pathfinding method. Any existing
      * contents of buffer will not affect the path field of this GradientGrid.
      *
-     * @param buffer            an existing ObjectDeque of P that will have the result appended to it (in-place); if null, this will make a new ObjectDeque
+     * @param buffer            an existing Collection of P that will have the result appended to it (in-place); if null, this will make a new ObjectDeque
      * @param moveLength        the length of the path to calculate; almost always, the pathfinder will try to use this length in full to obtain the best range
      * @param minPreferredRange the (inclusive) lower bound of the distance this unit will try to keep from a target
      * @param maxPreferredRange the (inclusive) upper bound of the distance this unit will try to keep from a target
@@ -1625,9 +1625,9 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * @param onlyPassable      a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start             the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param targets           a Collection of Point2 that this will try to pathfind toward
-     * @return an ObjectDeque of P that will contain the locations of this creature as it goes toward a target. Copy of path.
+     * @return a Collection of P that will contain the locations of this creature as it goes toward a target. Copy of path.
      */
-    public ObjectDeque<P> findAttackPath(ObjectDeque<P> buffer, int moveLength,
+    public Collection<P> findAttackPath(Collection<P> buffer, int moveLength,
                                          int minPreferredRange, int maxPreferredRange, boolean los,
                                          Collection<? extends Point2<?>> impassable, Collection<? extends Point2<?>> onlyPassable,
                                          Point2<?> start, Collection<? extends Point2<?>> targets) {
@@ -1814,9 +1814,9 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * @param onlyPassable      a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start             the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param fearSources       a Collection of Point2 positions to run away from
-     * @return an ObjectDeque of P that will contain the locations of this creature as it goes away from fear sources. Copy of path.
+     * @return a Collection of P that will contain the locations of this creature as it goes away from fear sources. Copy of path.
      */
-    public ObjectDeque<P> findFleePath(int length, float preferLongerPaths, Collection<? extends Point2<?>> impassable,
+    public Collection<P> findFleePath(int length, float preferLongerPaths, Collection<? extends Point2<?>> impassable,
                                        Collection<? extends Point2<?>> onlyPassable, Point2<?> start, Collection<Point2<?>> fearSources) {
         return findFleePath(null, length, -1, preferLongerPaths, impassable, onlyPassable, start, fearSources);
     }
@@ -1851,9 +1851,9 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * @param onlyPassable      a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start             the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param fearSources       a Collection of Point2 positions to run away from
-     * @return an ObjectDeque of P that will contain the locations of this creature as it goes away from fear sources. Copy of path.
+     * @return a Collection of P that will contain the locations of this creature as it goes away from fear sources. Copy of path.
      */
-    public ObjectDeque<P> findFleePath(int length, int scanLimit, float preferLongerPaths, Collection<? extends Point2<?>> impassable,
+    public Collection<P> findFleePath(int length, int scanLimit, float preferLongerPaths, Collection<? extends Point2<?>> impassable,
                                        Collection<? extends Point2<?>> onlyPassable, Point2<?> start, Collection<Point2<?>> fearSources) {
         return findFleePath(null, length, scanLimit, preferLongerPaths, impassable, onlyPassable, start, fearSources);
     }
@@ -1878,12 +1878,12 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * that distance out from each goal, which can save processing time on maps where only a small part matters.
      * Generally, scanLimit should be significantly greater than length.
      * <br>
-     * This overload takes a buffer parameter, an ObjectDeque of P, that the results will be appended to. If the
-     * buffer is null, a new ObjectDeque will be made and appended to. This caches its result in a member field, path,
+     * This overload takes a buffer parameter, a Collection of P, that the results will be appended to. If the
+     * buffer is null, a new Collection will be made and appended to. This caches its result in a member field, path,
      * which can be fetched after finding a path and will change with each call to a pathfinding method. Any existing
      * contents of buffer will not affect the path field of this GradientGrid.
      *
-     * @param buffer            an existing ObjectDeque of P that will have the result appended to it (in-place); if null, this will make a new ObjectDeque
+     * @param buffer            an existing Collection of P that will have the result appended to it (in-place); if null, this will make a new ObjectDeque
      * @param length            the length of the path to calculate
      * @param scanLimit         how many steps away from a fear source to calculate; negative scans the whole map
      * @param preferLongerPaths Set this to 1.2f if you aren't sure; it will probably need tweaking for different maps.
@@ -1891,9 +1891,9 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * @param onlyPassable      a Collection of Point2 positions that this pathfinder cannot end a path occupying (typically allies); can be null
      * @param start             the start of the path, should correspond to the minimum-x, minimum-y position of the pathfinder
      * @param fearSources       a Collection of Point2 positions to run away from
-     * @return an ObjectDeque of P that will contain the locations of this creature as it goes away from fear sources. Copy of path.
+     * @return a Collection of P that will contain the locations of this creature as it goes away from fear sources. Copy of path.
      */
-    public ObjectDeque<P> findFleePath(ObjectDeque<P> buffer, int length, int scanLimit, float preferLongerPaths,
+    public Collection<P> findFleePath(Collection<P> buffer, int length, int scanLimit, float preferLongerPaths,
                                        Collection<? extends Point2<?>> impassable,
                                        Collection<? extends Point2<?>> onlyPassable, Point2<?> start, Collection<Point2<?>> fearSources) {
         if (!initialized || length <= 0) {
@@ -2056,9 +2056,9 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * each call to a pathfinding method.
      *
      * @param target the target cell
-     * @return an ObjectDeque of P that make up the best path. Copy of path.
+     * @return a Collection of P that make up the best path. Copy of path.
      */
-    public ObjectDeque<P> findPathPreScanned(Point2<?> target) {
+    public Collection<P> findPathPreScanned(Point2<?> target) {
         return findPathPreScanned(null, target);
     }
 
@@ -2068,18 +2068,18 @@ public abstract class GradientGrid<P extends Point2<P>> {
      * needed to find paths. Needs scan() or partialScan() to already be called and at least one goal to already be set,
      * and does not restrict the length of the path or behave as if the pathfinder has allies or enemies.
      * <br>
-     * This overload takes a buffer parameter, an ObjectDeque of P, that the results will be appended to. If the
-     * buffer is null, a new ObjectDeque will be made and appended to. This caches its result in a member field, path,
+     * This overload takes a buffer parameter, a Collection of P, that the results will be appended to. If the
+     * buffer is null, a new Collection will be made and appended to. This caches its result in a member field, path,
      * which can be fetched after finding a path and will change with each call to a pathfinding method. Any existing
      * contents of buffer will not affect the path field of this GradientGrid.
      *
-     * @param buffer an existing ObjectDeque of P that will have the result appended to it (in-place); if null, this will make a new ObjectDeque
+     * @param buffer an existing Collection of P that will have the result appended to it (in-place); if null, this will make a new ObjectDeque
      * @param target the target cell
-     * @return an ObjectDeque of P that make up the best path, appended to buffer (if non-null)
+     * @return a Collection of P that make up the best path, appended to buffer (if non-null)
      */
-    public ObjectDeque<P> findPathPreScanned(ObjectDeque<P> buffer, Point2<?> target) {
+    public Collection<P> findPathPreScanned(Collection<P> buffer, Point2<?> target) {
         path.clear();
-        if (!initialized || goals == null || goals.isEmpty()) {
+        if (!initialized || goals.isEmpty()) {
             if (buffer == null)
                 return new ObjectDeque<>();
             else {
