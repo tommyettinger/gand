@@ -76,25 +76,30 @@ jar {
 repositories {
     mavenLocal()
     mavenCentral()
-    maven { url 'https://s01.oss.sonatype.org' }
+//    maven { url 'https://s01.oss.sonatype.org' }
     google()
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+//    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+//    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     // JitPack is a good repo to have if you depend on commit versions.
     // Having the below repo might cause problems if uploading to Maven Central.
     maven { url 'https://jitpack.io' }
 }
 
 dependencies {
+    //noinspection GDXOutdatedVersionGradleGroovy
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
     api "com.github.tommyettinger:crux:$cruxVersion"
     api "com.github.tommyettinger:gdcrux:$gdcruxVersion"
-    testImplementation "org.apache.fury:fury-core:$furyVersion"
+    testImplementation "org.apache.fory:fory-core:$foryVersion"
     testImplementation "com.github.tommyettinger:cringe:$cringeVersion"
-    testImplementation "com.github.yellowstonegames.squidsquad:squidcore:$squidSquadVersion"
-    testImplementation "com.github.yellowstonegames.squidsquad:squidgrid:$squidSquadVersion"
-    testImplementation "com.github.yellowstonegames.squidsquad:squidglyph:$squidSquadVersion"
-    testImplementation "com.github.yellowstonegames.squidsquad:squidplace:$squidSquadVersion"
+    testImplementation "com.squidpony:squidcore:$squidSquadVersion"
+    testImplementation "com.squidpony:squidgrid:$squidSquadVersion"
+    testImplementation "com.squidpony:squidglyph:$squidSquadVersion"
+    testImplementation "com.squidpony:squidplace:$squidSquadVersion"
+//    testImplementation "com.github.yellowstonegames.squidsquad:squidcore:$squidSquadVersion"
+//    testImplementation "com.github.yellowstonegames.squidsquad:squidgrid:$squidSquadVersion"
+//    testImplementation "com.github.yellowstonegames.squidsquad:squidglyph:$squidSquadVersion"
+//    testImplementation "com.github.yellowstonegames.squidsquad:squidplace:$squidSquadVersion"
 
     testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
     testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
