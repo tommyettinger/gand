@@ -20,7 +20,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.utils.StringBuilder;
+import com.badlogic.gdx.utils.CharArray;
 
 /** A label showing current FPS prefixed by a constant string.
  * 
@@ -66,7 +66,7 @@ public class FpsLabel extends Label {
 		int newValue = getValue();
 		if (oldValue != newValue) {
 			oldValue = newValue;
-			StringBuilder sb = getText();
+			CharArray sb = getText();
 			sb.setLength(appendIndex);
 			sb.append(oldValue);
 			invalidateHierarchy();

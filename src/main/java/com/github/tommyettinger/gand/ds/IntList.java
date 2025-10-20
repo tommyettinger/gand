@@ -354,7 +354,7 @@ public class IntList implements IntCollection, Json.Serializable {
 	/**
 	 * Returns the first index in this list that contains the specified value, or -1 if it is not present.
 	 *
-	 * @param value a int value to search for
+	 * @param value an int value to search for
 	 * @return the first index of the given value, or -1 if it is not present
 	 */
 	public int indexOf (int value) {
@@ -366,7 +366,7 @@ public class IntList implements IntCollection, Json.Serializable {
 	/**
 	 * Returns the last index in this list that contains the specified value, or -1 if it is not present.
 	 *
-	 * @param value a int value to search for
+	 * @param value an int value to search for
 	 * @return the last index of the given value, or -1 if it is not present
 	 */
 	public int lastIndexOf (int value) {
@@ -699,7 +699,7 @@ public class IntList implements IntCollection, Json.Serializable {
 	 * into {@code array} and returns it; otherwise, it allocates a new int array that can fit all
 	 * the items in this, and proceeds to copy into that and return that.
 	 *
-	 * @param array a int array that will be modified if it can fit {@link #size()} items
+	 * @param array an int array that will be modified if it can fit {@link #size()} items
 	 * @return {@code array}, if it had sufficient size, or a new array otherwise, either with a copy of this
 	 */
 	public int[] toArray (int[] array) {
