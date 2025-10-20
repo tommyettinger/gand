@@ -76,17 +76,14 @@ jar {
 repositories {
     mavenLocal()
     mavenCentral()
-//    maven { url 'https://s01.oss.sonatype.org' }
     google()
-//    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-//    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
     // JitPack is a good repo to have if you depend on commit versions.
     // Having the below repo might cause problems if uploading to Maven Central.
     maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    //noinspection GDXOutdatedVersionGradleGroovy
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
     api "com.github.tommyettinger:crux:$cruxVersion"
     api "com.github.tommyettinger:gdcrux:$gdcruxVersion"

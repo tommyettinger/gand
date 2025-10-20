@@ -80,12 +80,12 @@ one such quirk in Kryo, but it was a user error in the end and Kryo does work fi
 
 # Find It
 
-`implementation "com.github.tommyettinger:gand:0.3.4"`
+`implementation "com.github.tommyettinger:gand:0.3.5"`
 
-If you use GWT, then your GWT module needs to depend on libGDX 1.13.1 or higher, as well as:
+If you use GWT, then your GWT module needs to depend on libGDX 1.14.0 or higher, as well as:
 
 ```
-implementation "com.github.tommyettinger:gand:0.3.4:sources"
+implementation "com.github.tommyettinger:gand:0.3.5:sources"
 implementation "com.github.tommyettinger:gdcrux:0.1.1:sources"
 implementation "com.github.tommyettinger:crux:0.1.2:sources"
 ```
