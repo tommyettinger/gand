@@ -3,9 +3,9 @@ package com.github.tommyettinger.gand.algorithms;
 import com.github.tommyettinger.gand.Connection;
 import com.github.tommyettinger.gand.Graph;
 import com.github.tommyettinger.gand.Node;
+import com.github.tommyettinger.gand.ds.ObjectSet;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Set;
 
 public class CycleDetector<V> extends Algorithm<V> {
@@ -30,11 +30,13 @@ public class CycleDetector<V> extends Algorithm<V> {
     boolean findCycle(Graph<V> graph) {
         if (graph.size() < 3 || graph.getEdgeCount() < 3) return false;
         int runID = graph.algorithms().requestRunID();
+        ObjectSet<Node<V>> set = new ObjectSet<>();
         for (Node<V> v : graph.internals().getNodes()) {
             v.resetAlgorithmAttribs(runID);
-            if (detectCycleDFS(v, null, new HashSet<>(), runID, graph)) {
+            if (detectCycleDFS(v, null, set, runID, graph)) {
                 return true;
             }
+            set.clear();
         }
         return false;
     }
