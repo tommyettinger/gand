@@ -2,11 +2,10 @@ buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
-//        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         gradlePluginPortal()
     }
     dependencies {
-        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.34.0'
+        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.35.0'
     }
 }
 
@@ -14,8 +13,8 @@ apply plugin: 'java-library'
 apply plugin: 'com.vanniktech.maven.publish'
 
 def projectName = 'gand'
-group 'com.github.tommyettinger'
-version "$VERSION_NAME" // You can set the version in gradle.properties .
+group = 'com.github.tommyettinger'
+version = "$VERSION_NAME" // You can set the version in gradle.properties .
 
 import com.vanniktech.maven.publish.JavaLibrary
 import com.vanniktech.maven.publish.JavadocJar
@@ -77,10 +76,10 @@ repositories {
     mavenLocal()
     mavenCentral()
     google()
-    maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
+    maven { url = 'https://central.sonatype.com/repository/maven-snapshots/' }
     // JitPack is a good repo to have if you depend on commit versions.
     // Having the below repo might cause problems if uploading to Maven Central.
-    maven { url 'https://jitpack.io' }
+    maven { url = 'https://jitpack.io' }
 }
 
 dependencies {
