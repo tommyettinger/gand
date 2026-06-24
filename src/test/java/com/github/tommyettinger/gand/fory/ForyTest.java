@@ -145,9 +145,9 @@ public class ForyTest {
         int n = 5;
         Graph<Vector2> data = makeGridGraph(new UndirectedGraph<>(), n);
 
-        byte[] bytes = fory.serializeJavaObject(data);
+        byte[] bytes = fory.serialize(data);
         System.out.println("UndirectedGraph byte length: " + bytes.length);
-        UndirectedGraph<?> data2 = fory.deserializeJavaObject(bytes, UndirectedGraph.class);
+        UndirectedGraph<?> data2 = fory.deserialize(bytes, UndirectedGraph.class);
         Assert.assertEquals(data.numberOfComponents(), data2.numberOfComponents());
         Assert.assertEquals(data.getEdgeCount(), data2.getEdgeCount());
         Assert.assertEquals(new ArrayList<>(data.getVertices()), new ArrayList<>(data2.getVertices()));
@@ -165,9 +165,9 @@ public class ForyTest {
         int n = 5;
         Graph<Vector2> data = makeGridGraph(new DirectedGraph<>(), n);
 
-        byte[] bytes = fory.serializeJavaObject(data);
+        byte[] bytes = fory.serialize(data);
         System.out.println("DirectedGraph byte length: " + bytes.length);
-        DirectedGraph<?> data2 = fory.deserializeJavaObject(bytes, DirectedGraph.class);
+        DirectedGraph<?> data2 = fory.deserialize(bytes, DirectedGraph.class);
         Assert.assertEquals(data.numberOfComponents(), data2.numberOfComponents());
         Assert.assertEquals(data.getEdgeCount(), data2.getEdgeCount());
         Assert.assertEquals(new ArrayList<>(data.getVertices()), new ArrayList<>(data2.getVertices()));
@@ -188,10 +188,10 @@ public class ForyTest {
         Graph<PointI3> data = makeGridGraph3D(new DirectedGraph<>(), n, new PointI3());
 
         System.out.println("Initial graph with length " + data.getVertices().size() + ", edge count " + data.getEdgeCount() + ": ");
-        byte[] bytes = fory.serializeJavaObject(data);
+        byte[] bytes = fory.serialize(data);
         System.out.println("DirectedGraph byte length: " + bytes.length);
 
-        DirectedGraph<?> data2 = fory.deserializeJavaObject(bytes, DirectedGraph.class);
+        DirectedGraph<?> data2 = fory.deserialize(bytes, DirectedGraph.class);
         System.out.println("Read back in with length " + data2.getVertices().size() + ", edge count " + data2.getEdgeCount() + ": ");
         Assert.assertEquals(data.numberOfComponents(), data2.numberOfComponents());
         Assert.assertEquals(data.getEdgeCount(), data2.getEdgeCount());
@@ -214,10 +214,10 @@ public class ForyTest {
         System.out.println("Initial graph with length " + data.getVertices().size() + ": ");
         System.out.println(data.getVertices());
         System.out.println(data);
-        byte[] bytes = fory.serializeJavaObject(data);
+        byte[] bytes = fory.serialize(data);
         System.out.println("Int2DirectedGraph byte length: " + bytes.length);
 
-        Int2DirectedGraph data2 = fory.deserializeJavaObject(bytes, Int2DirectedGraph.class);
+        Int2DirectedGraph data2 = fory.deserialize(bytes, Int2DirectedGraph.class);
         System.out.println("Read back in with length " + data2.getVertices().size() + ": ");
         System.out.println(data2.getVertices());
         System.out.println(data2);
@@ -241,10 +241,10 @@ public class ForyTest {
         System.out.println("Initial graph with length " + data.getVertices().size() + ": ");
         System.out.println(data.getVertices());
         System.out.println(data);
-        byte[] bytes = fory.serializeJavaObject(data);
+        byte[] bytes = fory.serialize(data);
         System.out.println("Int2UndirectedGraph byte length: " + bytes.length);
 
-        Int2UndirectedGraph data2 = fory.deserializeJavaObject(bytes, Int2UndirectedGraph.class);
+        Int2UndirectedGraph data2 = fory.deserialize(bytes, Int2UndirectedGraph.class);
         System.out.println("Read back in with length " + data2.getVertices().size() + ": ");
         System.out.println(data2.getVertices());
         System.out.println(data2);
@@ -266,10 +266,10 @@ public class ForyTest {
         int n = 5;
         Graph<PointF2> data = makeGridGraph2D(new Float2DirectedGraph(), n, new PointF2());
 
-        byte[] bytes = fory.serializeJavaObject(data);
+        byte[] bytes = fory.serialize(data);
         System.out.println("Float2DirectedGraph byte length: " + bytes.length);
 
-        Float2DirectedGraph data2 = fory.deserializeJavaObject(bytes, Float2DirectedGraph.class);
+        Float2DirectedGraph data2 = fory.deserialize(bytes, Float2DirectedGraph.class);
         Assert.assertEquals(data.numberOfComponents(), data2.numberOfComponents());
         Assert.assertEquals(data.getEdgeCount(), data2.getEdgeCount());
         Assert.assertEquals(new ArrayList<>(data.getVertices()), new ArrayList<>(data2.getVertices()));
@@ -288,10 +288,10 @@ public class ForyTest {
         int n = 5;
         Graph<PointF2> data = makeGridGraph2D(new Float2UndirectedGraph(), n, new PointF2());
 
-        byte[] bytes = fory.serializeJavaObject(data);
+        byte[] bytes = fory.serialize(data);
         System.out.println("Float2UndirectedGraph byte length: " + bytes.length);
 
-        Float2UndirectedGraph data2 = fory.deserializeJavaObject(bytes, Float2UndirectedGraph.class);
+        Float2UndirectedGraph data2 = fory.deserialize(bytes, Float2UndirectedGraph.class);
         Assert.assertEquals(data.numberOfComponents(), data2.numberOfComponents());
         Assert.assertEquals(data.getEdgeCount(), data2.getEdgeCount());
         Assert.assertEquals(new ArrayList<>(data.getVertices()), new ArrayList<>(data2.getVertices()));
@@ -313,10 +313,10 @@ public class ForyTest {
         System.out.println("Initial graph with length " + data.getVertices().size() + ", edge count " + data.getEdgeCount() + ": ");
         System.out.println(data.getVertices());
         System.out.println(data);
-        byte[] bytes = fory.serializeJavaObject(data);
+        byte[] bytes = fory.serialize(data);
         System.out.println("Int3DirectedGraph byte length: " + bytes.length);
 
-        Int3DirectedGraph data2 = fory.deserializeJavaObject(bytes, Int3DirectedGraph.class);
+        Int3DirectedGraph data2 = fory.deserialize(bytes, Int3DirectedGraph.class);
         System.out.println("Read back in with length " + data2.getVertices().size() + ", edge count " + data2.getEdgeCount() + ": ");
         System.out.println(data2.getVertices());
         System.out.println(data2);
@@ -341,10 +341,10 @@ public class ForyTest {
         System.out.println("Initial graph with length " + data.getVertices().size() + ", edge count " + data.getEdgeCount() + ": ");
         System.out.println(data.getVertices());
         System.out.println(data);
-        byte[] bytes = fory.serializeJavaObject(data);
+        byte[] bytes = fory.serialize(data);
         System.out.println("Int3UndirectedGraph byte length: " + bytes.length);
 
-        Int3UndirectedGraph data2 = fory.deserializeJavaObject(bytes, Int3UndirectedGraph.class);
+        Int3UndirectedGraph data2 = fory.deserialize(bytes, Int3UndirectedGraph.class);
         System.out.println("Read back in with length " + data2.getVertices().size() + ", edge count " + data2.getEdgeCount() + ": ");
         System.out.println(data2.getVertices());
         System.out.println(data2);
@@ -369,10 +369,10 @@ public class ForyTest {
         System.out.println("Initial graph with length " + data.getVertices().size() + ", edge count " + data.getEdgeCount() + ": ");
         System.out.println(data.getVertices());
         System.out.println(data);
-        byte[] bytes = fory.serializeJavaObject(data);
+        byte[] bytes = fory.serialize(data);
         System.out.println("Float3DirectedGraph byte length: " + bytes.length);
 
-        Float3DirectedGraph data2 = fory.deserializeJavaObject(bytes, Float3DirectedGraph.class);
+        Float3DirectedGraph data2 = fory.deserialize(bytes, Float3DirectedGraph.class);
         System.out.println("Read back in with length " + data2.getVertices().size() + ", edge count " + data2.getEdgeCount() + ": ");
         System.out.println(data2.getVertices());
         System.out.println(data2);
@@ -397,10 +397,10 @@ public class ForyTest {
         System.out.println("Initial graph with length " + data.getVertices().size() + ", edge count " + data.getEdgeCount() + ": ");
         System.out.println(data.getVertices());
         System.out.println(data);
-        byte[] bytes = fory.serializeJavaObject(data);
+        byte[] bytes = fory.serialize(data);
         System.out.println("Float3UndirectedGraph byte length: " + bytes.length);
 
-        Float3UndirectedGraph data2 = fory.deserializeJavaObject(bytes, Float3UndirectedGraph.class);
+        Float3UndirectedGraph data2 = fory.deserialize(bytes, Float3UndirectedGraph.class);
         System.out.println("Read back in with length " + data2.getVertices().size() + ", edge count " + data2.getEdgeCount() + ": ");
         System.out.println(data2.getVertices());
         System.out.println(data2);
@@ -423,8 +423,8 @@ public class ForyTest {
         Path<PointI2> data = Path.with(pt(1, 1), pt(1, 2), pt(1, 3), pt(2, 3), pt(2, 4));
         data.setLength(4f);
 
-        byte[] bytes = fory.serializeJavaObject(data);
-        Path<?> data2 = fory.deserializeJavaObject(bytes, Path.class);
+        byte[] bytes = fory.serialize(data);
+        Path<?> data2 = fory.deserialize(bytes, Path.class);
         Assert.assertEquals(data, data2);
 
     }

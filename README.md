@@ -8,8 +8,9 @@ changes some features to make serializing graphs easier, and integrates more clo
 [libGDX](https://github.com/libgdx/libgdx), which this has as one of two dependencies. The
 other dependency is a tiny library of mostly interfaces, [crux](https://github.com/tommyettinger/crux).
 Crux generalizes the point types used by libGDX and other libraries so they can share an API in subclasses.
-You can optionally depend on [Fury](https://fury.apache.org) for binary serialization, or you can
-simply use the JSON serialization built into libGDX. Kryo should work again soon!
+You can optionally depend on [Fory](https://fory.apache.org) for binary serialization, or you can
+simply use the JSON serialization built into libGDX.
+Kryo works via [kryo-gand](https://github.com/tommyettinger/kryo-gand).
 
 **[JavaDocs are here.](https://tommyettinger.github.io/gand/apidocs/)**
 
@@ -28,7 +29,7 @@ one would prefer a List because it permits random-access of items by index in co
 constant-time removal from the head and tail. It can be sorted and reversed, also.
 
 Another major change is that large parts of the library can be automatically serialized by libGDX Json. There is also
-additional support for serialization with Apache Fury, even though it isn't a dependency. See
+additional support for serialization with Apache Fory, even though it isn't a dependency. See
 Serialization below.
 
 Version 0.1.0 added the types `PointI2`, `PointF2`, `PointI3`, and `PointF3`, and they have been moved to an external
@@ -71,8 +72,8 @@ for the common vertex types `Vector2`, `Vector3`, `Vector4`, `GridPoint2`, and `
 `PointI2`, `PointI3`, `PointF2`, or `PointF3` from the dependency gdcrux, which are already `Json.Serializable`.
 
 A small change in 0.1.1 makes the Graph types (all of them) `Externalizable`, which enables
-[Fury](https://fury.apache.org) to serialize them without needing any extra work in your code. Only the Graph
-types actually needed this; everything else exposed to users can be handled by Fury already. Fury is in
+[Fory](https://fory.apache.org) to serialize them without needing any extra work in your code. Only the Graph
+types actually needed this; everything else exposed to users can be handled by Fory already. Fory is in
 "incubating" status in the Apache project, but it's already faster than Kryo (both in their benchmarks and with
 a more modest gain in my benchmarks), and is substantially easier to use, for me. They both work fine, and both
 have some quirks to get them working... In an earlier version of this README.md, I had seriously struggled with
@@ -80,12 +81,12 @@ one such quirk in Kryo, but it was a user error in the end and Kryo does work fi
 
 # Find It
 
-`implementation "com.github.tommyettinger:gand:0.3.6"`
+`implementation "com.github.tommyettinger:gand:0.3.7"`
 
 If you use GWT, then your GWT module needs to depend on libGDX 1.14.0 or higher, as well as:
 
 ```
-implementation "com.github.tommyettinger:gand:0.3.6:sources"
+implementation "com.github.tommyettinger:gand:0.3.7:sources"
 implementation "com.github.tommyettinger:gdcrux:0.1.2:sources"
 implementation "com.github.tommyettinger:crux:0.1.3:sources"
 ```
